@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# key: pr
+# --
+
+property ${1:p};
+    ${2:@(posedge Clk) a ##1 b};
+endproperty$0

@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# key: ms
+# --
+
+module ${1:module_name} (
+    ${2:// Ports}
+    );
+
+    $0
+
+endmodule: $1

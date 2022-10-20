@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# key: td
+# --
+
+typedef ${1:type} ${2:type_name};

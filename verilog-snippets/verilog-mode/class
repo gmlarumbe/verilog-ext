@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# key: cls
+# --
+
+class ${1:class_name}${2: extends ${3:base_class}};
+    ${5:`uvm_component_utils($1)}
+
+   $0
+
+    function new(string name="${6:$1}", uvm_component parent);
+        super.new(name, parent);
+    endfunction : new
+
+endclass: $1

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# key: cg
+# --
+
+covergroup ${1:CovName}${2: (${3:ref logic [7:0] data})};
+    coverpoint ${4:data};$0
+endgroup : $1

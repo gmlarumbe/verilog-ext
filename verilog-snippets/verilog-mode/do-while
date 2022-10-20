@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# key: wd
+# --
+
+do begin
+   $0
+end
+while (${1:condition});
+

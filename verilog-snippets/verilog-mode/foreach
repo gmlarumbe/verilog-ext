@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# key: fe
+# --
+
+foreach (${1:x}[i]) begin
+   $0
+end

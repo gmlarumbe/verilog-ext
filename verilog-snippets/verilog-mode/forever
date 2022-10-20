@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# key: fv
+# --
+
+
+forever begin
+   $0
+end

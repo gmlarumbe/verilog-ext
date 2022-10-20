@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# key: pm
+# --
+
+parameter ${1:param_name} = ${2:param_value};

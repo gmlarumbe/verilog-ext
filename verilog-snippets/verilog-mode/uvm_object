@@ -1,0 +1,28 @@
+# -*- mode: snippet -*-
+# key: uo
+# --
+
+class ${1:class_name} extends ${2:uvm_sequence_item};
+    \`uvm_object_utils($1)
+
+    $0
+
+    function new(string name);
+        super.new(name);
+    endfunction : new
+
+
+${3:    task body();
+        for (int i=0; i<N; i++) begin
+            req = ${4:<seq_item_type>}::type_id::create("req");
+            start_item(req);
+            if(!req.randomize()) begin
+                `uvm_error("", "Randomize error")
+            end
+            finish_item(req);
+            // If response is required:
+            get_response(rsp);
+        end
+    endtask
+
+}endclass: $1

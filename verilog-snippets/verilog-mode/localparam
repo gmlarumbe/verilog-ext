@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# key: lp
+# --
+
+localparam ${1:PARAM_NAME} = ${2:param_value};

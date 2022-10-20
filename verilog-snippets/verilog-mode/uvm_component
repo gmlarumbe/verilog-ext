@@ -1,0 +1,43 @@
+# -*- mode: snippet -*-
+# key: uc
+# --
+
+class ${1:class_name} extends ${2:uvm_component};
+    \`uvm_component_utils($1)
+
+    $0
+
+    function new(string name, uvm_component parent);
+        super.new(name, parent);
+    endfunction : new
+
+
+${3:    function void build_phase(uvm_phase phase);
+        // ...
+    endfunction : build_phase
+
+
+}${4:    function void connect_phase(uvm_phase phase);
+        // ...
+    endfunction : connect_phase
+
+
+}${5:    function void end_of_elaboration_phase(uvm_phase phase);
+        // ...
+    endfunction : end_of_elaboration_phase
+
+
+}${6:    task run_phase(uvm_phase phase);
+        forever begin
+            // If component is a driver ...
+            seq_item_port.get_next_item(req);
+            // Do things (drive)
+            seq_item_port.item_done();
+            // If response is required:
+            // rsp.set_ido_info(req);
+            // seq_item_port.put_response(rsp);
+        end
+    endtask : run_phase
+
+
+}endclass: $1

@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# key: pgm
+# --
+
+program automatic ${1:name};
+
+   // declarations
+   $0
+
+   // Could have only initial blocks
+   initial begin
+
+   end
+
+endprogram: $1

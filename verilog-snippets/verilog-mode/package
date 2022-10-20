@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# key: pkg
+# --
+
+package ${1:package_name};
+  $0
+endpackage: $1

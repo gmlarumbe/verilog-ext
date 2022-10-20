@@ -1,0 +1,20 @@
+# -*- mode: snippet -*-
+# key: ct
+# --
+
+constraint $1_c {
+   // define constraint here using dist, inside, = etc
+   //
+   // addr dist { 2 := 5, [10:12] := 8 \};
+   //   for addr == 2 , weight 5
+   //       addr == 10, weight 8
+   //       addr == 11, weight 8
+   //       addr == 12, weight 8
+   //
+   // addr dist { 2 :/ 5, [10:12] :/ 8 \};
+   //   for addr == 2 , weight 5
+   //       addr == 10, weight 8/3
+   //       addr == 11, weight 8/3
+   //       addr == 12, weight 8/3
+   $0
+}

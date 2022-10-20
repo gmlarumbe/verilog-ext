@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# key: @
+# --
+
+@(${1:posedge Clk})$0

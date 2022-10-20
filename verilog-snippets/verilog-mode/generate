@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# key: gen
+# --
+
+generate
+
+    for (genvar ${1:i=0}; ${2:i<N}: ${3:i++}) begin : ${4: label}
+        $0
+    end : $4
+
+endgenerate

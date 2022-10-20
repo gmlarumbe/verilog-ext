@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# key: af
+# --
+
+always${4:_ff} @(posedge ${1:Clk}) begin${3: : label}
+    if (!${2:Rst_n}) begin
+        /*AUTORESET*/
+    end
+    else begin
+        $0
+    end
+end $3

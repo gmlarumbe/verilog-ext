@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# key: ap
+# --
+
+assert property (${1:p});$0

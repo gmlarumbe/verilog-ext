@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# key: fa
+# --
+
+fork
+    begin
+        $0
+    end
+
+    begin
+        // ...
+    end
+join_any

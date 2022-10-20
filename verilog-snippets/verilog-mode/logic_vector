@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# key: lv
+# --
+
+logic [${1:WIDTH-1}:0] ${2:signal}${3: = ${4:'0}};$0

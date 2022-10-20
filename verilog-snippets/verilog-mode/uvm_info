@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# key: ui
+# --
+`uvm_info(${1:get_name()}, ${2:$sformatf("${3:<Message string>: %s}", ${4:<arg>})}, ${5:UVM_MEDIUM})
+   $0

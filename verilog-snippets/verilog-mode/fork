@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# key: fj
+# --
+
+fork
+    begin
+        $0
+    end
+
+    begin
+        // ...
+    end
+join

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# key: in
+# --
+
+initial begin
+   $0
+end

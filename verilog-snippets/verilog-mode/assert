@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# key: ai
+# --
+
+${4:label : }assert (${1:A==B})${2: $display("OK")}${3:;
+    else $error("ERROR")};$0

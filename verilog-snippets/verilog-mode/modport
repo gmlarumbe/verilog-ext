@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# key: mp
+# --
+
+modport ${1:name_mp} (
+    $0
+    // clocking cb,
+    // input input_name,
+    // output output_port,
+    // ....
+    );

@@ -1,0 +1,23 @@
+# -*- mode: snippet -*-
+# key: itf
+# --
+
+interface ${1:name} ${2:# (parameter WIDTH = 0)} (${3:input logic Clk, input logick Rst_n});
+
+    // Itf signals
+    // logic Request;
+    // logic Grant;
+
+     $0
+
+    modport master(
+        // output Request,
+        // input Grant
+        );
+
+    modport slave (
+        // input Request,
+        // output Grant
+        );
+
+endinterface: $1

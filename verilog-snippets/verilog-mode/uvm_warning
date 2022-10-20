@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# key: uw
+# --
+`uvm_warning(${1:get_name()}, ${2:$sformatf("${3:<Message string>: %s}", ${4:<arg>})})
+   $0

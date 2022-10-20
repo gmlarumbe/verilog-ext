@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# key: as
+# --
+
+assign ${1:out} = ${2:in};

@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# key: cb
+# --
+
+
+clocking ${1:name_cb} @(posedge ${2:clock});
+   default input #${3:setup_time} output #${4:hold_time};
+   $0
+   // output declarations
+   // input declarations
+endclocking: $1
