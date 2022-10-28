@@ -25,6 +25,7 @@
 ;;; Code:
 
 (require 'yasnippet)
+(require 'hydra)
 (require 'verilog-mode)
 (require 'verilog-utils)
 (require 'verilog-beautify)
