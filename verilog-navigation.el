@@ -53,6 +53,15 @@ Move backward ARG words."
     (with-syntax-table table
       (backward-word arg))))
 
+(defun verilog-ext-electric-verilog-tab ()
+  "Run `electric-verilog-tab' with original `verilog-mode' syntax table.
+Prevents indentation issues with compiler directives with a modified syntax table."
+  (interactive)
+  (let ((table (make-syntax-table verilog-mode-syntax-table)))
+    (modify-syntax-entry ?` "w" table)
+    (with-syntax-table table
+      (electric-verilog-tab))))
+
 
 ;;;; Module/instance
 (defun verilog-ext-find-module-instance-fwd (&optional limit)
@@ -263,6 +272,17 @@ If REF is non-nil show references instead."
   (verilog-ext-jump-to-module-at-point :ref))
 
 
+;;; Hooks
+(defun verilog-ext-navigation-hook ()
+  "Verilog-ext navigation hook."
+  ;; Avoid considering tick as part of a symbol on preprocessor directives while
+  ;; isearching.  Works in conjunction with `verilog-ext-electric-verilog-tab'
+  ;; to get back standard table to avoid indentation issues with compiler directives.
+  (modify-syntax-entry ?` "."))
+
+
+;;; Setup
+(add-hook 'verilog-mode-hook #'verilog-ext-navigation-hook)
 
 
 (provide 'verilog-navigation)
