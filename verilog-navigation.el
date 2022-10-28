@@ -242,6 +242,22 @@ Bound search to LIMIT in case it is non-nil."
             (list instance-type instance-name)
           nil)))))
 
+(defun verilog-ext-find-module-instance-bwd-2 ()
+  "Search backwards for a Verilog module/instance.
+The difference with `verilog-ext-find-module-instance-bwd' is that it
+moves the cursor to current instance of pointing at one."
+  (interactive)
+  (let (inside-instance-p)
+    (save-excursion
+      (backward-char)
+      (when (verilog-ext-instance-at-point)
+        (setq inside-instance-p t)))
+    (if inside-instance-p
+        (progn
+          (goto-char (match-beginning 1))
+          (message "%s : %s" (match-string-no-properties 1) (match-string-no-properties 2)))
+      (call-interactively #'verilog-ext-find-module-instance-bwd))))
+
 (defun verilog-ext-jump-to-module-at-point (&optional ref)
   "Jump to definition of module at point.
 If REF is non-nil show references instead."
