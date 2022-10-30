@@ -435,16 +435,16 @@ obj.method();
 (defun verilog-ext-font-lock-module-instance-fontify (limit)
   "Search based fontification function of Verilog modules/instances.
 Bound search by LIMIT."
-  (let (start-line end-line)
+  (let (start-line-pos end-line-pos)
     (when (verilog-ext-find-module-instance-fwd limit)
-      (setq start-line (save-excursion
-                         (goto-char (match-beginning 1))
-                         (point-at-bol)))
-      (setq end-line (save-excursion
-                       (goto-char (match-end 2))
-                       (point-at-eol)))
+      (setq start-line-pos (save-excursion
+                             (goto-char (match-beginning 1))
+                             (line-beginning-position)))
+      (setq end-line-pos (save-excursion
+                           (goto-char (match-end 2))
+                           (line-end-position)))
       (unless (get-text-property (point) 'font-lock-multiline)
-        (put-text-property start-line end-line 'font-lock-multiline t))
+        (put-text-property start-line-pos end-line-pos 'font-lock-multiline t))
       (point))))
 
 (defun verilog-ext-font-lock-modport-fontify (limit)

@@ -55,7 +55,8 @@ Move backward ARG words."
 
 (defun verilog-ext-electric-verilog-tab ()
   "Run `electric-verilog-tab' with original `verilog-mode' syntax table.
-Prevents indentation issues with compiler directives with a modified syntax table."
+Prevents indentation issues with compiler directives with a modified syntax
+table."
   (interactive)
   (let ((table (make-syntax-table verilog-mode-syntax-table)))
     (modify-syntax-entry ?` "w" table)
@@ -262,14 +263,14 @@ moves the cursor to current instance of pointing at one."
   "Jump to definition of module at point.
 If REF is non-nil show references instead."
   (interactive)
-  (let (module)
-    (unless (executable-find "global")
-      (error "Couldn't find executable `global' in PATH"))
-    (unless (member 'ggtags--xref-backend xref-backend-functions)
-      (error "Error: ggtags not configured as an xref backend.  Is ggtags-mode enabled?"))
-    (unless ggtags-project-root
-      (error "Error: `ggtags-project-root' not set.  Are GTAGS/GRTAGS/GPATH files created?"))
-    (if (setq module (car (verilog-ext-instance-at-point)))
+  (unless (executable-find "global")
+    (error "Couldn't find executable `global' in PATH"))
+  (unless (member 'ggtags--xref-backend xref-backend-functions)
+    (error "Error: ggtags not configured as an xref backend.  Is ggtags-mode enabled?"))
+  (unless ggtags-project-root
+    (error "Error: `ggtags-project-root' not set.  Are GTAGS/GRTAGS/GPATH files created?"))
+  (let ((module (car (verilog-ext-instance-at-point))))
+    (if module
         (progn
           (if ref
               (xref-find-references module)
