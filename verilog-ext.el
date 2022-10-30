@@ -35,10 +35,12 @@
 ;;  - Add `which-func' support
 ;;  - Improve `hideshow' support
 ;;  - Setup `company' to complete with verilog keywords
+;;  - Wrapper functions to make `kill-word' stop at underscores without breaking indentation
 
 ;;; Code:
 
 (require 'verilog-utils)
+(require 'verilog-editing)
 (require 'verilog-navigation)
 (require 'verilog-which-func)
 (require 'verilog-hideshow)
