@@ -24,9 +24,12 @@
 ;;
 ;;; Code:
 
+(require 'verilog-mode)
+
 ;;;; Syntax table override functions
 (defun verilog-ext-kill-word (&optional arg)
-  "Make verilog `kill-word' command stop at underscores."
+  "Make verilog `kill-word' command stop at underscores.
+Optional ARG sets number of words to kill."
   (interactive "p")
   (let ((table (make-syntax-table verilog-mode-syntax-table)))
     (modify-syntax-entry ?_ "_" table)
@@ -34,7 +37,8 @@
       (kill-word arg))))
 
 (defun verilog-ext-backward-kill-word (&optional arg)
-  "Make verilog `backward-kill-word' command stop at underscores."
+  "Make verilog `backward-kill-word' command stop at underscores.
+Optional ARG sets number of words to kill."
   (interactive "p")
   (let ((table (make-syntax-table verilog-mode-syntax-table)))
     (modify-syntax-entry ?_ "_" table)
