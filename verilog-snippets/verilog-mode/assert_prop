@@ -1,5 +1,10 @@
 # -*- mode: snippet -*-
 # key: ap
+# expand-env: ((yas-indent-line 'fixed))
 # --
 
-assert property (${1:p});$0
+${1:AP_NAME} : assert property (${2:p})
+    \`uvm_info("$1", $sformatf(${3:""}), ${4:UVM_MEDIUM})
+else
+    \`uvm_error("$1", $sformatf(${5:""}))
+$0

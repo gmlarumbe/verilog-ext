@@ -2,6 +2,7 @@
 # key: pr
 # --
 
-property ${1:p};
-    ${2:@(posedge Clk) a ##1 b};
-endproperty$0
+property ${1:p_};
+    ${2:@(posedge ${3:clk})${4: disable iff (${5:!resetn})}}
+        $0${6:a ##1 b};
+endproperty

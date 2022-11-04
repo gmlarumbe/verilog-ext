@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# key: uf
+# --
+\`uvm_fatal(${1:get_name()}, ${2:$sformatf("${3:<Message string>: %s}"${4:, ${5:<arg>})}})
+$0
