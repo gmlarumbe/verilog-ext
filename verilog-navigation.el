@@ -313,18 +313,21 @@ after the search has been done."
                          (projectile-project-root))
                        (when (featurep 'ggtags)
                          ggtags-project-root)
-                       (project-root (project-current))
                        default-directory))
          (module-name (or (verilog-ext-select-file-module buffer-file-name)
                           (error "No module/interface found @ %s" buffer-file-name)))
          (module-instance-pcre ; Many thanks to Kaushal Modi for this PCRE
-          (concat "^\\s*" module-name "\\s+"
-                  "(#\\s*\\((\\n|.)*?\\))*"               ; Optional hardware parameters, '(\n|.)*?' does non-greedy multi-line grep
-                  "(\\n|.)*?"                        ; Optional newline/space before instance name
-                  "([^.])*?"                        ; Do not match ".PARAM (PARAM_VAL)," if any
-                  "\\K"                              ; Don't highlight anything till this point
+          (concat "^\\s*\\K"                          ; Initial blank before module name. Do not highlighting anything till the name
+                  "\\b(" module-name ")\\b"           ; Module name identifier
+                  "(?="                             ; Lookahead to avoid matching
+                  "(\\s+|("                          ; Either one or more spaces before the instance name, or...
+                  "(\\s*\#\\s*\\((\\n|.)*?\\))+"           ; ... hardware parameters, '(\n|.)*?' does non-greedy multi-line grep
+                  "(\\n|.)*?"                        ; Optional newline/space before instance name/first port name
+                  "([^.])*?"                        ; Do not match more than 1 ".PARAM (PARAM_VAL),"
+                  "))"                              ; Close capture groups before matching identifier
                   "\\b(" verilog-identifier-re ")\\b" ; Instance name
-                  "(?=[^a-zA-Z0-9_]*\\()")))          ; Optional space/newline after instance name and before opening parenthesis `(' don't highlight anything in (?=..)
+                  "(?=[^a-zA-Z0-9_]*\\()"             ; Nested lookahead (space/newline after instance name and before opening parenthesis)
+                  ")")))                            ; Closing lookahead
     ;; Update variables used by the ag/rg search finished hooks
     (setq verilog-ext-jump-to-parent-module-name module-name)
     (setq verilog-ext-jump-to-parent-module-dir proj-dir)
