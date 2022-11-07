@@ -68,6 +68,28 @@
     (when found
       (goto-char pos))))
 
+(defun verilog-ext-imenu-find-task-function-class-bwd ()
+  "Find closest declaration of a function/task/class.
+Return list with position, type and name for use in Imenu index builder."
+  (let (found pos type name)
+    (save-excursion
+      (while (and (not found)
+                  (verilog-re-search-backward "\\<\\(function\\|task\\|class\\)\\>" nil t))
+        (if (string= (match-string-no-properties 0) "class")
+            (when (not (verilog-ext-class-declaration-is-typedef-p))
+              (setq found t))
+          ;; Functions and tasks
+          (setq found t))))
+    (setq type (match-string-no-properties 0))
+    (if (string= type "class")
+        (progn
+          (setq pos (verilog-ext-search-class-backwards))
+          (setq name (match-string-no-properties 3)))
+      (setq pos (car (verilog-ext-find-function-task-bwd)))
+      (setq name (match-string-no-properties 1)))
+    (when (and pos type name)
+      (list pos type name))))
+
 (defun verilog-ext-imenu--format-class-item-label (type name)
   "Return Imenu label for single node using TYPE and NAME."
   (let ((short-type (pcase type
@@ -92,24 +114,21 @@ Otherwsise create the cons cell with the label and the TREE."
 Find recursively tasks and functions inside classes."
   (save-restriction
     (narrow-to-region (point-min) (point))
-    (let* ((pos (progn
-                  (verilog-ext-search-class-backwards)
-                  (verilog-forward-sexp)
-                  (verilog-re-search-backward "\\<\\(function\\|task\\|class\\)\\>" nil t)))
-           (type (when (and pos
-                            (or (looking-at verilog-ext-task-re)
-                                (looking-at verilog-ext-function-re)
-                                (verilog-ext-looking-at-class-declaration)))
-                   (match-string-no-properties 1)))
-           (name (match-string-no-properties 3))
+    (let* ((pos-type-name (progn
+                            (verilog-ext-search-class-backwards)
+                            (verilog-forward-sexp)
+                            (verilog-ext-imenu-find-task-function-class-bwd)))
+           (pos (car pos-type-name))
+           (type (car (cdr pos-type-name)))
+           (name (car (cdr (cdr pos-type-name))))
            (label (when name
                     (verilog-ext-imenu--format-class-item-label type name))))
       (cond ((not pos)
              nil)
             ((verilog-ext-looking-at-class-declaration)
              (verilog-ext-imenu--class-put-parent type name pos tree))
-            ((or (looking-at verilog-ext-task-re)
-                 (looking-at verilog-ext-function-re))
+            ((or (string= type "function")
+                 (string= type "task"))
              (verilog-ext-imenu--build-class-tree (cons (cons label pos) tree)))
             (t ; Build subtrees recursively
              (verilog-ext-imenu--build-class-tree

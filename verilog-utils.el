@@ -199,7 +199,8 @@ Skips typedef declarations."
     (while (and (not found)
                 (verilog-re-search-backward verilog-ext-class-re nil 'move))
       (when (not (verilog-ext-class-declaration-is-typedef-p))
-        (setq found t)))))
+        (setq found t)))
+    (point)))
 
 (defun verilog-ext-point-inside-block-p (block)
   "Return block type, name and boundaries if cursor is inside specified BLOCK type."
