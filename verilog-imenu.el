@@ -30,6 +30,7 @@
 (require 'hideshow)
 (require 'verilog-mode)
 (require 'verilog-utils)
+(require 'verilog-navigation)
 
 ;;;; Regexps, vars
 (defconst verilog-ext-imenu-top-re        "^\\s-*\\(?1:connectmodule\\|m\\(?:odule\\|acromodule\\)\\|p\\(?:rimitive\\|rogram\\|ackage\\)\\)\\(\\s-+automatic\\)?\\s-+\\(?2:[a-zA-Z0-9_.:]+\\)")
@@ -50,21 +51,18 @@
     ("*Always blocks*"  ,verilog-ext-imenu-always-re 4)
     ("*Initial blocks*" ,verilog-ext-imenu-initial-re 3)
     ;; Search by function
-    ("*Task/Func*" verilog-ext-imenu-find-tf-outside-class-bwd 2)
-    ("*Instances*" verilog-ext-find-module-instance-bwd 1))) ; Use capture group index 2 to get instance name
+    ("*Task/Func*" verilog-ext-imenu-find-tf-outside-class-bwd 1)
+    ("*Instances*" verilog-ext-find-module-instance-bwd 1))) ; Use capture group index 3 to get instance name
 
 
 ;;;; Tree
 (defun verilog-ext-imenu-find-tf-outside-class-bwd ()
   "Find backwards tasks and functions outside classes."
-  (let ((tf-re "\\<\\(task\\|function\\)\\>")
-        found pos)
+  (let (found pos)
     (save-excursion
       (while (and (not found)
-                  (verilog-re-search-backward tf-re nil t))
-        (when (and (or (looking-at verilog-ext-task-re)
-                       (looking-at verilog-ext-function-re))
-                   (not (verilog-ext-point-inside-block-p 'class)))
+                  (verilog-ext-find-function-task-bwd))
+        (when (not (verilog-ext-point-inside-block-p 'class))
           (setq found t)
           (setq pos (point)))))
     (when found
@@ -95,20 +93,20 @@ Find recursively tasks and functions inside classes."
   (save-restriction
     (narrow-to-region (point-min) (point))
     (let* ((pos (progn
-                  (verilog-re-search-backward verilog-ext-class-re nil 'move)
+                  (verilog-ext-search-class-backwards)
                   (verilog-forward-sexp)
                   (verilog-re-search-backward "\\<\\(function\\|task\\|class\\)\\>" nil t)))
            (type (when (and pos
                             (or (looking-at verilog-ext-task-re)
                                 (looking-at verilog-ext-function-re)
-                                (looking-at verilog-ext-class-re)))
+                                (verilog-ext-looking-at-class-declaration)))
                    (match-string-no-properties 1)))
-           (name (match-string-no-properties 2))
+           (name (match-string-no-properties 3))
            (label (when name
                     (verilog-ext-imenu--format-class-item-label type name))))
       (cond ((not pos)
              nil)
-            ((looking-at verilog-ext-class-re)
+            ((verilog-ext-looking-at-class-declaration)
              (verilog-ext-imenu--class-put-parent type name pos tree))
             ((or (looking-at verilog-ext-task-re)
                  (looking-at verilog-ext-function-re))

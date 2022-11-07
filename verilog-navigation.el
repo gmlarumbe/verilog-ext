@@ -72,6 +72,118 @@ table."
       (electric-verilog-tab))))
 
 
+;;;; Task/function
+(defun verilog-ext-find-function-task (&optional limit bwd interactive-p)
+  "Search for a Verilog function/task declaration or definition.
+Allows matching of multiline declarations (such as in some UVM source files).
+
+If executing interactively place cursor at the beginning of the function/task
+name and show function/task name in the minibuffer.
+
+Updates `match-data' so that the function can be used in other contexts:
+- (match-string 0) = Whole function/task regexp (until semicolon)
+- (match-string 1) = Function/task name
+- (match-string 2) = Class modifier (if defined externally)
+- (match-string 3) = Function return type (if applicable)
+
+Bound search to LIMIT in case optional argument is non-nil.
+
+Search bacwards if BWD is non-nil.
+
+Third arg INTERACTIVE-P specifies whether function call should be treated as if
+it was interactive.  This changes the position where point will be at the end of
+the function call."
+  (let ((case-fold-search verilog-case-fold)
+        (tf-re "\\(\\<function\\>\\|\\<task\\>\\)")
+        (tf-modifiers-re "\\(extern\\|static\\|pure\\|virtual\\|local\\|protected\\)")
+        tf-type tf-kwd-pos-end
+        tf-name tf-name-pos-beg tf-name-pos-end tf-beg-of-statement-pos tf-end-of-statement-pos tf-modifiers
+        func-return-type func-return-type-pos-beg func-return-type-pos-end
+        class-name class-beg-pos class-end-pos
+        found)
+    (save-excursion
+      (save-match-data
+        (when (and interactive-p
+                   (not bwd))
+          (verilog-end-of-statement)) ; Avoid getting stuck if executing interactively
+        (and (if bwd
+                 (progn
+                   (goto-char (line-beginning-position))
+                   (verilog-re-search-backward tf-re limit 'move))
+               (verilog-re-search-forward tf-re limit 'move))
+             (setq tf-type (match-string-no-properties 0))
+             (setq tf-kwd-pos-end (match-end 0))
+             (verilog-re-search-forward ";" limit 'move)
+             (setq tf-end-of-statement-pos (point))
+             (verilog-ext-backward-char)
+             (verilog-ext-backward-syntactic-ws)
+             (when-t (eq (preceding-char) ?\))
+               (verilog-ext-backward-sexp))
+             (backward-word)
+             ;; Func/task name
+             (when (looking-at verilog-identifier-re)
+               (setq tf-name (match-string-no-properties 0))
+               (setq tf-name-pos-beg (match-beginning 0))
+               (setq tf-name-pos-end (match-end 0))
+               (setq found t))
+             ;; Externally defined functions
+             (when-t (eq (preceding-char) ?:)
+               (skip-chars-backward ":")
+               (backward-word)
+               (when (looking-at verilog-identifier-re)
+                 (setq class-name (match-string-no-properties 0))
+                 (setq class-beg-pos (match-beginning 0))
+                 (setq class-end-pos (match-end 0))))
+             ;; Automatic kwd and function return value
+             (when-t (string= tf-type "function")
+               (verilog-ext-backward-syntactic-ws)
+               (setq func-return-type-pos-end (point))
+               (goto-char tf-kwd-pos-end)
+               (verilog-ext-forward-syntactic-ws)
+               (when (looking-at "\\<automatic\\>")
+                 (forward-word)
+                 (verilog-ext-forward-syntactic-ws))
+               (setq func-return-type-pos-beg (point))
+               (setq func-return-type (buffer-substring-no-properties func-return-type-pos-beg
+                                                                      func-return-type-pos-end)))
+             ;; Func/task modifiers
+             (setq tf-beg-of-statement-pos (verilog-pos-at-beg-of-statement))
+             (while (verilog-re-search-backward tf-modifiers-re tf-beg-of-statement-pos 'move)
+               (push (match-string-no-properties 0) tf-modifiers)))))
+    (if found
+        (progn
+          (set-match-data (list tf-beg-of-statement-pos
+                                tf-end-of-statement-pos
+                                tf-name-pos-beg
+                                tf-name-pos-end
+                                class-beg-pos
+                                class-end-pos
+                                func-return-type-pos-beg
+                                func-return-type-pos-end))
+          (goto-char tf-beg-of-statement-pos)
+          (when interactive-p
+            (message "%s" tf-name))
+          (list tf-name-pos-beg tf-name tf-modifiers func-return-type class-name))
+      (when interactive-p
+        (if bwd
+            (message "Could not find any function/task backward")
+          (message "Could not find any function/task forward"))))))
+
+(defun verilog-ext-find-function-task-fwd (&optional limit)
+  "Search forward for a Verilog function/task declaration or definition.
+Bound search to LIMIT in case optional argument is non-nil."
+  (interactive)
+  (let ((interactive-p (called-interactively-p 'interactive)))
+    (verilog-ext-find-function-task limit nil interactive-p)))
+
+(defun verilog-ext-find-function-task-bwd (&optional limit)
+  "Search backward for a Verilog function/task declaration or definition.
+Bound search to LIMIT in case optional argument is non-nil."
+  (interactive)
+  (let ((interactive-p (called-interactively-p 'interactive)))
+    (verilog-ext-find-function-task limit :bwd interactive-p)))
+
+
 ;;;; Module/instance
 (defun verilog-ext-find-module-instance-fwd (&optional limit)
   "Search forwards for a Verilog module/instance.
@@ -95,66 +207,71 @@ Bound search to LIMIT in case optional argument is non-nil."
         module-name module-pos module-match-data
         instance-name instance-match-data
         pos found)
-    (save-excursion
-      (save-match-data
+    ;; Limit the search to files that can instantiate blocks (modules/interfaces)
+    (if (not (verilog-ext-scan-buffer-modules))
         (when (called-interactively-p 'interactive)
-          (forward-char)) ; Avoid getting stuck if executing interactively
-        (while (and (not (eobp))
-                    (when-t limit
-                      (> limit (point)))
-                    (not (and (verilog-re-search-forward (concat "\\s-*" identifier-re) limit 'move) ; Module name
-                              (not (verilog-parenthesis-depth)) ; Optimize search by avoiding looking for identifiers in parenthesized expressions
-                              (unless (member (match-string-no-properties 1) verilog-keywords)
-                                (setq module-name (match-string-no-properties 1))
-                                (setq module-pos (match-beginning 1))
-                                (setq module-match-data (match-data)))
-                              (verilog-ext-forward-syntactic-ws)
-                              (when-t (= (following-char) ?\#)
-                                (and (verilog-ext-forward-char)
-                                     (verilog-ext-forward-syntactic-ws)
-                                     (= (following-char) ?\()
-                                     (verilog-ext-forward-sexp)
-                                     (= (preceding-char) ?\))
-                                     (verilog-ext-forward-syntactic-ws)))
-                              (looking-at identifier-re) ; Instance name
-                              (unless (member (match-string-no-properties 1) verilog-keywords)
-                                (setq instance-name (match-string-no-properties 1))
-                                (setq instance-match-data (match-data)))
-                              (verilog-ext-skip-identifier-forward)
-                              (verilog-ext-forward-syntactic-ws)
-                              (when-t (= (following-char) ?\[)
-                                (and (verilog-ext-forward-sexp)
-                                     (= (preceding-char) ?\])
-                                     (verilog-ext-forward-syntactic-ws)))
-                              (= (following-char) ?\()
-                              (verilog-ext-forward-sexp)
-                              (= (preceding-char) ?\))
-                              (verilog-ext-forward-syntactic-ws)
-                              (= (following-char) ?\;)
-                              (set-marker module-end (1+ (point)))
-                              (setq found t)
-                              (if (called-interactively-p 'interactive)
-                                  (progn
-                                    (setq pos module-pos)
-                                    (message "%s : %s" module-name instance-name))
-                                (setq pos (point))))))
-          (if (verilog-parenthesis-depth)
-              (verilog-backward-up-list -1)
-            (forward-line)))))
-    (if found
-        (progn
-          (set-match-data (list (nth 0 module-match-data)
-                                module-end
-                                (nth 2 module-match-data)
-                                (nth 3 module-match-data)
-                                (nth 2 instance-match-data)
-                                (nth 3 instance-match-data)))
-          (goto-char pos)
-          (if (called-interactively-p 'interactive)
-              (message "%s : %s" module-name instance-name)
-            (point)))
-      (when (called-interactively-p 'interactive)
-        (message "Could not find any instance forward")))))
+          (user-error "Not inside a module/interface file"))
+      ;; Else do the search
+      (save-excursion
+        (save-match-data
+          (when (called-interactively-p 'interactive)
+            (forward-char)) ; Avoid getting stuck if executing interactively
+          (while (and (not (eobp))
+                      (when-t limit
+                        (> limit (point)))
+                      (not (and (verilog-re-search-forward (concat "\\s-*" identifier-re) limit 'move) ; Module name
+                                (not (verilog-parenthesis-depth)) ; Optimize search by avoiding looking for identifiers in parenthesized expressions
+                                (unless (member (match-string-no-properties 1) verilog-keywords)
+                                  (setq module-name (match-string-no-properties 1))
+                                  (setq module-pos (match-beginning 1))
+                                  (setq module-match-data (match-data)))
+                                (verilog-ext-forward-syntactic-ws)
+                                (when-t (= (following-char) ?\#)
+                                  (and (verilog-ext-forward-char)
+                                       (verilog-ext-forward-syntactic-ws)
+                                       (= (following-char) ?\()
+                                       (verilog-ext-forward-sexp)
+                                       (= (preceding-char) ?\))
+                                       (verilog-ext-forward-syntactic-ws)))
+                                (looking-at identifier-re) ; Instance name
+                                (unless (member (match-string-no-properties 1) verilog-keywords)
+                                  (setq instance-name (match-string-no-properties 1))
+                                  (setq instance-match-data (match-data)))
+                                (verilog-ext-skip-identifier-forward)
+                                (verilog-ext-forward-syntactic-ws)
+                                (when-t (= (following-char) ?\[)
+                                  (and (verilog-ext-forward-sexp)
+                                       (= (preceding-char) ?\])
+                                       (verilog-ext-forward-syntactic-ws)))
+                                (= (following-char) ?\()
+                                (verilog-ext-forward-sexp)
+                                (= (preceding-char) ?\))
+                                (verilog-ext-forward-syntactic-ws)
+                                (= (following-char) ?\;)
+                                (set-marker module-end (1+ (point)))
+                                (setq found t)
+                                (if (called-interactively-p 'interactive)
+                                    (progn
+                                      (setq pos module-pos)
+                                      (message "%s : %s" module-name instance-name))
+                                  (setq pos (point))))))
+            (if (verilog-parenthesis-depth)
+                (verilog-backward-up-list -1)
+              (forward-line)))))
+      (if found
+          (progn
+            (set-match-data (list (nth 0 module-match-data)
+                                  module-end
+                                  (nth 2 module-match-data)
+                                  (nth 3 module-match-data)
+                                  (nth 2 instance-match-data)
+                                  (nth 3 instance-match-data)))
+            (goto-char pos)
+            (if (called-interactively-p 'interactive)
+                (message "%s : %s" module-name instance-name)
+              (point)))
+        (when (called-interactively-p 'interactive)
+          (message "Could not find any instance forward"))))))
 
 (defun verilog-ext-find-module-instance-bwd (&optional limit)
   "Search backwards for a Verilog module/instance.
@@ -178,62 +295,67 @@ Bound search to LIMIT in case it is non-nil."
         module-name module-pos module-match-data
         instance-name instance-match-data
         pos found)
-    (save-excursion
-      (save-match-data
-        (while (and (not (bobp))
-                    (when-t limit
-                      (< limit (point)))
-                    (not (and (set-marker module-end (verilog-re-search-backward ";" limit 'move))
-                              (not (verilog-parenthesis-depth))
-                              (verilog-ext-backward-syntactic-ws)
-                              (= (preceding-char) ?\))
-                              (verilog-ext-backward-sexp)
-                              (= (following-char) ?\()
-                              (verilog-ext-backward-syntactic-ws)
-                              (when-t (= (preceding-char) ?\])
-                                (and (verilog-ext-backward-sexp)
-                                     (= (following-char) ?\[)
-                                     (verilog-ext-backward-syntactic-ws)))
-                              (verilog-ext-skip-identifier-backwards)
-                              (looking-at identifier-re)
-                              (unless (member (match-string-no-properties 1) verilog-keywords)
-                                (setq instance-name (match-string-no-properties 1))
-                                (setq instance-match-data (match-data)))
-                              (verilog-ext-backward-syntactic-ws)
-                              (when-t (= (preceding-char) ?\))
-                                (and (verilog-ext-backward-sexp)
-                                     (= (following-char) ?\()
-                                     (verilog-ext-backward-syntactic-ws)
-                                     (= (preceding-char) ?\#)
-                                     (verilog-ext-backward-char)
-                                     (verilog-ext-backward-syntactic-ws)))
-                              (verilog-ext-skip-identifier-backwards)
-                              (looking-at identifier-re)
-                              (unless (member (match-string-no-properties 1) verilog-keywords)
-                                (setq module-name (match-string-no-properties 1))
-                                (setq module-pos (match-beginning 1))
-                                (setq module-match-data (match-data)))
-                              (setq found t)
-                              (if (called-interactively-p 'interactive)
-                                  (setq pos module-pos)
-                                (setq pos (point))))))
-          (if (verilog-parenthesis-depth)
-              (verilog-backward-up-list 1)
-            (beginning-of-line)))))
-    (if found
-        (progn
-          (set-match-data (list (nth 0 module-match-data)
-                                module-end
-                                (nth 2 module-match-data)
-                                (nth 3 module-match-data)
-                                (nth 2 instance-match-data)
-                                (nth 3 instance-match-data)))
-          (goto-char pos)
-          (if (called-interactively-p 'interactive)
-              (message "%s : %s" module-name instance-name)
-            (point)))
-      (when (called-interactively-p 'interactive)
-        (message "Could not find any instance backwards")))))
+    ;; Limit the search to files that can instantiate blocks (modules/interfaces)
+    (if (not (verilog-ext-scan-buffer-modules))
+        (when (called-interactively-p 'interactive)
+          (user-error "Not inside a module/interface file"))
+      ;; Else do the search
+      (save-excursion
+        (save-match-data
+          (while (and (not (bobp))
+                      (when-t limit
+                        (< limit (point)))
+                      (not (and (set-marker module-end (verilog-re-search-backward ";" limit 'move))
+                                (not (verilog-parenthesis-depth))
+                                (verilog-ext-backward-syntactic-ws)
+                                (= (preceding-char) ?\))
+                                (verilog-ext-backward-sexp)
+                                (= (following-char) ?\()
+                                (verilog-ext-backward-syntactic-ws)
+                                (when-t (= (preceding-char) ?\])
+                                  (and (verilog-ext-backward-sexp)
+                                       (= (following-char) ?\[)
+                                       (verilog-ext-backward-syntactic-ws)))
+                                (verilog-ext-skip-identifier-backwards)
+                                (looking-at identifier-re)
+                                (unless (member (match-string-no-properties 1) verilog-keywords)
+                                  (setq instance-name (match-string-no-properties 1))
+                                  (setq instance-match-data (match-data)))
+                                (verilog-ext-backward-syntactic-ws)
+                                (when-t (= (preceding-char) ?\))
+                                  (and (verilog-ext-backward-sexp)
+                                       (= (following-char) ?\()
+                                       (verilog-ext-backward-syntactic-ws)
+                                       (= (preceding-char) ?\#)
+                                       (verilog-ext-backward-char)
+                                       (verilog-ext-backward-syntactic-ws)))
+                                (verilog-ext-skip-identifier-backwards)
+                                (looking-at identifier-re)
+                                (unless (member (match-string-no-properties 1) verilog-keywords)
+                                  (setq module-name (match-string-no-properties 1))
+                                  (setq module-pos (match-beginning 1))
+                                  (setq module-match-data (match-data)))
+                                (setq found t)
+                                (if (called-interactively-p 'interactive)
+                                    (setq pos module-pos)
+                                  (setq pos (point))))))
+            (if (verilog-parenthesis-depth)
+                (verilog-backward-up-list 1)
+              (beginning-of-line)))))
+      (if found
+          (progn
+            (set-match-data (list (nth 0 module-match-data)
+                                  module-end
+                                  (nth 2 module-match-data)
+                                  (nth 3 module-match-data)
+                                  (nth 2 instance-match-data)
+                                  (nth 3 instance-match-data)))
+            (goto-char pos)
+            (if (called-interactively-p 'interactive)
+                (message "%s : %s" module-name instance-name)
+              (point)))
+        (when (called-interactively-p 'interactive)
+          (message "Could not find any instance backwards"))))))
 
 (defun verilog-ext-instance-at-point ()
   "Return list with module and instance names if point is at an instance."
@@ -254,7 +376,7 @@ Bound search to LIMIT in case it is non-nil."
 (defun verilog-ext-find-module-instance-bwd-2 ()
   "Search backwards for a Verilog module/instance.
 The difference with `verilog-ext-find-module-instance-bwd' is that it
-moves the cursor to current instance of pointing at one."
+moves the cursor to current instance if pointing at one."
   (interactive)
   (let (inside-instance-p)
     (save-excursion
@@ -382,6 +504,29 @@ Kill the buffer if there is only one match."
   ;; isearching.  Works in conjunction with `verilog-ext-electric-verilog-tab'
   ;; to get back standard table to avoid indentation issues with compiler directives.
   (modify-syntax-entry ?` "."))
+
+
+;;; Dwim
+(defun verilog-ext-nav-down-dwim ()
+  "Context based search downwards.
+If in a module/interface look for instantiations.
+Otherwise look for functions/tasks."
+  (interactive)
+  (cond ((verilog-ext-scan-buffer-modules)
+         (call-interactively #'verilog-ext-find-module-instance-fwd))
+        (t
+         (call-interactively #'verilog-ext-find-function-task-fwd))))
+
+(defun verilog-ext-nav-up-dwim ()
+  "Context based search upwards.
+If in a module/interface look for instantiations.
+Otherwise look for functions/tasks."
+  (interactive)
+  (cond ((verilog-ext-scan-buffer-modules)
+         (call-interactively #'verilog-ext-find-module-instance-bwd-2))
+        (t
+         (call-interactively #'verilog-ext-find-function-task-bwd))))
+
 
 
 ;;; Setup

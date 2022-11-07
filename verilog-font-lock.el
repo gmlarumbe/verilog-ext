@@ -163,6 +163,12 @@ obj.method();
   "Face for interface modports."
   :group 'verilog-ext-font-lock-faces)
 
+(defvar verilog-ext-font-lock-typedef-face 'verilog-ext-font-lock-typedef-face)
+(defface verilog-ext-font-lock-typedef-face
+  '((t (:foreground "light blue")))
+  "Face for user defined types."
+  :group 'verilog-ext-font-lock-faces)
+
 (defvar verilog-ext-font-lock-translate-off-face 'verilog-ext-font-lock-translate-off-face)
 (defface verilog-ext-font-lock-translate-off-face
   '((t (:background "gray20" :slant italic)))
@@ -447,6 +453,14 @@ Bound search by LIMIT."
         (put-text-property start-line-pos end-line-pos 'font-lock-multiline t))
       (point))))
 
+(defun verilog-ext-font-lock-task-function-fontify (limit)
+  "Search based fontification function of Verilog tasks/function.
+Bound search by LIMIT."
+  (when (verilog-ext-find-function-task-fwd limit)
+    (unless (get-text-property (point) 'font-lock-multiline)
+      (put-text-property (match-beginning 0) (match-end 0) 'font-lock-multiline t))
+    (point)))
+
 (defun verilog-ext-font-lock-modport-fontify (limit)
   "Fontify interface modport declarations.
 Bound search by LIMIT."
@@ -463,6 +477,22 @@ Bound search by LIMIT."
       (set-match-data (list if-start if-end mp-start mp-end var-start var-end))
       (point))))
 
+(defun verilog-ext-font-lock-typedef-decl-fontify (limit)
+  "Fontify typedef declarations."
+  (let* ((decl-typedef-re (verilog-get-declaration-typedef-re))
+         start end found)
+    (when (verilog-align-typedef-enabled-p)
+      (while (and (not found)
+                  (verilog-re-search-forward decl-typedef-re limit t))
+        (when (save-excursion
+                (beginning-of-line)
+                (looking-at decl-typedef-re))
+          (setq found t)))
+      (when found
+        (setq start (match-beginning 5))
+        (setq end (match-end 5))
+        (set-match-data (list start end))
+        (point)))))
 
 (defun verilog-ext-font-lock-match-translate-off-fontify (limit)
   "Match a translate-off block, setting `match-data' and returning t, else nil.
@@ -487,8 +517,6 @@ Similar to `verilog-match-translate-off' but including
   (list
    ;; Preprocessor macros and compiler directives (place at the top to preserve precendence in `else or `include macros over keywords)
    (cons (concat "`" verilog-identifier-re) 'verilog-ext-font-lock-preprocessor-face)
-   ;; UVM constructs
-   (cons (concat "\\(" verilog-ext-font-lock-uvm-classes "\\)") 'verilog-ext-font-lock-uvm-classes-face)
    ;; Grouping keywords
    (cons (concat "\\<\\(" verilog-ext-font-lock-grouping-plus-this-keywords "\\)\\>") 'verilog-ext-font-lock-grouping-keywords-face)
    ;; Builtin keywords
@@ -497,30 +525,46 @@ Similar to `verilog-match-translate-off' but including
    (cons (concat "\\<\\(" verilog-ext-font-lock-system-task-re "\\)\\>") 'font-lock-builtin-face)
    ;; Types
    (cons (concat "\\<\\(" verilog-ext-font-lock-type-font-keywords "\\)\\>") 'font-lock-type-face)
+   ;; Punctuation
+   (list verilog-ext-font-lock-time-unit-re          2 verilog-ext-font-lock-time-unit-face)
+   (list verilog-ext-font-lock-time-event-re         0 verilog-ext-font-lock-time-event-face)
+   (list verilog-ext-font-lock-port-connection-re    1 verilog-ext-font-lock-port-connection-face)
+   (list verilog-ext-font-lock-dot-name-re           1 verilog-ext-font-lock-dot-name-face)
+   (list verilog-ext-font-lock-braces-content-re     1 verilog-ext-font-lock-braces-content-face)
+   (list verilog-ext-font-lock-punctuation-re        0 verilog-ext-font-lock-punctuation-face)
+   (list verilog-ext-font-lock-punctuation-bold-re   0 verilog-ext-font-lock-punctuation-bold-face)
+   (list verilog-ext-font-lock-braces-re             0 verilog-ext-font-lock-braces-face)
+   (list verilog-ext-font-lock-brackets-re           0 verilog-ext-font-lock-brackets-face)
+   (list verilog-ext-font-lock-curly-brackets-re     0 verilog-ext-font-lock-curly-brackets-face)
+   (list verilog-ext-font-lock-width-signal-re
+         '(1 verilog-ext-font-lock-width-num-face)
+         '(2 verilog-ext-font-lock-width-type-face))
    ))
 
 (defvar verilog-ext-font-lock-keywords-1
   (append
    verilog-ext-font-lock-keywords
    (list
-    ;; Function/task extern definitions: Must be placed before module/function definitions to override font-locking
-    (list "\\(?1:\\<function\\>\\|\\<task\\>\\)\\s-+\\(?2:\\automatic\\s-+\\)?\\(?3:\\(?4:\\sw+\\)\\s-+\\)*\\(?5:\\sw+\\)\\s-*::\\s-*\\(?6:\\sw+\\)"
-          '(5 verilog-ext-font-lock-dot-name-face)
-          '(6 font-lock-function-name-face)) ; Match 4 is return type (might be void), Match 5 is class name, Match 6 is func/task name
-    ;; Module definitions
-    (list "\\<\\(?1:\\(macro\\|connect\\)?module\\|primitive\\|class\\|program\\|interface\\|package\\|task\\)\\>\\s-*\\(automatic\\s-+\\)?\\(?3:\\sw+\\)\\s-*\\(?4:#?\\)"
+    ;; Top level definitions
+    (list "\\<\\(?1:\\(macro\\|connect\\)?module\\|primitive\\|class\\|program\\|interface\\|package\\)\\>\\s-*\\(automatic\\s-+\\)?\\(?3:\\sw+\\)\\s-*\\(?4:#?\\)"
           '(1 font-lock-keyword-face)
           '(3 font-lock-function-name-face))
-    ;; Function definitions
-    (list "\\<function\\>\\s-+\\(?1:\\automatic\\s-+\\)?\\(?2:\\(?3:\\sw+\\)\\s-+\\)*\\(?4:\\sw+\\)"
-          '(4 font-lock-function-name-face)) ; Match 3 is return type (might be void)
+    ;; Functions/tasks
+    '(verilog-ext-font-lock-task-function-fontify
+      (1 'font-lock-function-name-face)
+      (2 'verilog-ext-font-lock-dot-name-face nil t)
+      (3 'font-lock-type-face nil t))
     ;; Modport interfaces in port lists
     '(verilog-ext-font-lock-modport-fontify
       (0 'verilog-ext-font-lock-modport-face)
       (1 'verilog-ext-font-lock-dot-name-face))
     ;; Modules/instances
-    '(verilog-ext-font-lock-module-instance-fontify (1 'verilog-ext-font-lock-module-face))
-    '(verilog-ext-font-lock-module-instance-fontify (2 'verilog-ext-font-lock-instance-face))
+    '(verilog-ext-font-lock-module-instance-fontify
+      (1 'verilog-ext-font-lock-module-face)
+      (2 'verilog-ext-font-lock-instance-face))
+    ;; User types declarations
+    '(verilog-ext-font-lock-typedef-decl-fontify
+      (0 'verilog-ext-font-lock-typedef-face))
     )))
 
 (defvar verilog-ext-font-lock-keywords-2
@@ -534,29 +578,17 @@ Similar to `verilog-match-translate-off' but including
     ;; Escaped names
     '("\\(\\\\\\S-*\\s-\\)"  0 font-lock-function-name-face)
     ;; Delays/numbers
-    '("\\s-*#\\s-*\\(?1:\\([0-9_.]+\\([munpf]s\\)?\\('s?[hdxbo][0-9a-fA-F_xz]*\\)?\\)\\|\\(([^(),.=]+)\\|\\sw+\\)\\)" 1 font-lock-type-face append)
+    '("\\s-*#\\s-*\\(?1:\\([0-9_.]+\\([munpf]s\\)?\\('s?[hdxbo][0-9a-fA-F_xz]*\\)?\\)\\|\\(([^(),.=]+)\\|\\sw+\\)\\)" 1 font-lock-type-face)
     ;; Fontify property/sequence cycle delays - these start with '##'
-    '("##\\(?1:\\sw+\\|\\[[^]]+\\]\\)" 1 font-lock-type-face append)
+    '("##\\(?1:\\sw+\\|\\[[^]]+\\]\\)" 1 font-lock-type-face)
     )))
 
 (defvar verilog-ext-font-lock-keywords-3
   (append
    verilog-ext-font-lock-keywords-2
    (list
-    ;; Verilog-ext font-lock extra re
-    (list verilog-ext-font-lock-time-unit-re          2 verilog-ext-font-lock-time-unit-face)
-    (list verilog-ext-font-lock-time-event-re         0 verilog-ext-font-lock-time-event-face)
-    (list verilog-ext-font-lock-port-connection-re    1 verilog-ext-font-lock-port-connection-face)
-    (list verilog-ext-font-lock-dot-name-re           1 verilog-ext-font-lock-dot-name-face)
-    (list verilog-ext-font-lock-braces-content-re     1 verilog-ext-font-lock-braces-content-face)
-    (list verilog-ext-font-lock-punctuation-re        0 verilog-ext-font-lock-punctuation-face)
-    (list verilog-ext-font-lock-punctuation-bold-re   0 verilog-ext-font-lock-punctuation-bold-face)
-    (list verilog-ext-font-lock-braces-re             0 verilog-ext-font-lock-braces-face)
-    (list verilog-ext-font-lock-brackets-re           0 verilog-ext-font-lock-brackets-face)
-    (list verilog-ext-font-lock-curly-brackets-re     0 verilog-ext-font-lock-curly-brackets-face)
-    (list verilog-ext-font-lock-width-signal-re
-          '(1 verilog-ext-font-lock-width-num-face)
-          '(2 verilog-ext-font-lock-width-type-face))
+    ;; UVM constructs
+    (cons (concat "\\(" verilog-ext-font-lock-uvm-classes "\\)") 'verilog-ext-font-lock-uvm-classes-face)
     ;; Xilinx attributes
     (list (concat "(\\*\\s-+" "\\<\\(?1:" verilog-ext-font-lock-xilinx-attributes "\\)\\>" "\\s-+\\*)") 1 verilog-ext-font-lock-xilinx-attributes-face)
     ;; *_translate off regions

@@ -49,10 +49,10 @@
   "Retrieve `which-func' candidates."
   (let (data)
     (cond ((setq data (verilog-ext-instance-at-point))
-           (setq verilog-ext-which-func-extra (cdr data))
+           (setq verilog-ext-which-func-extra (car (cdr data)))
            (car data))
           ((setq data (verilog-ext-block-at-point))
-           (setq verilog-ext-which-func-extra (cdr data))
+           (setq verilog-ext-which-func-extra (car (cdr data)))
            (verilog-ext-which-func-shorten-block (car data)))
           (t
            (setq verilog-ext-which-func-extra nil)

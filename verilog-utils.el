@@ -33,13 +33,18 @@
     (regexp-opt verilog-keywords 'symbols)))
 
 (defconst verilog-ext-top-instantiable-re
-  (eval-when-compile
-    (concat "\\<\\(?1:module\\|interface\\)\\>\\(\\s-+\\<automatic\\>\\)?\\s-+\\(?2:\\<" verilog-identifier-re "\\>\\)")))
-
-(defconst verilog-ext-task-re     "\\(?1:\\(?:\\(?:static\\|pure\\|virtual\\|local\\|protected\\)\\s-+\\)*task\\)\\s-+\\(?:\\(?:static\\|automatic\\)\\s-+\\)?\\(?2:[A-Za-z_][A-Za-z0-9_:]+\\)") ; Can't use `verilog-identifier-re' for external declared tasks
-(defconst verilog-ext-function-re "\\(?1:\\(?:\\(?:static\\|pure\\|virtual\\|local\\|protected\\)\\s-+\\)*function\\)\\s-+\\(?:\\(?:static\\|automatic\\)\\s-+\\)?\\(?:\\w+\\s-+\\)?\\(?:\\(?:un\\)signed\\s-+\\)?\\(?2:[A-Za-z_][A-Za-z0-9_:]+\\)") ; Can't use `verilog-identifier-re' for external declared functions
-(defconst verilog-ext-class-re    (concat "\\(?1:\\(?:\\(?:virtual\\)\\s-+\\)?class\\)\\s-+\\(?2:" verilog-identifier-re "\\)"))
-(defconst verilog-ext-top-re      (concat "\\<\\(?1:package\\|program\\|module\\|interface\\)\\>\\(\\s-+\\<automatic\\>\\)?\\s-+\\(?2:\\<" verilog-identifier-re "\\>\\)"))
+  (concat "\\<\\(?1:module\\|interface\\)\\>\\(\\s-+\\<automatic\\>\\)?\\s-+\\(?3:\\<" verilog-identifier-re "\\>\\)"))
+(defconst verilog-ext-task-re
+  (concat "\\(?1:\\(?:\\(?:static\\|pure\\|virtual\\|local\\|protected\\)\\s-+\\)*task\\)\\s-+\\(?:\\(?:static\\|automatic\\)\\s-+\\)?"
+          "\\(?:\\(?2:\\w+\\)::\\)?"
+          "\\(?3:" verilog-identifier-re "\\)"))
+(defconst verilog-ext-function-re
+  (concat "\\(?1:\\(?:\\(?:static\\|pure\\|virtual\\|local\\|protected\\)\\s-+\\)*function\\)\\s-+\\(?:\\(?:static\\|automatic\\)\\s-+\\)?"
+          "\\(?:\\w+\\s-+\\)?\\(?:\\(?:un\\)signed\\s-+\\)?" ; Optional Return type
+          "\\(?:\\(?2:\\w+\\)::\\)?"
+          "\\(?3:" verilog-identifier-re "\\)"))
+(defconst verilog-ext-class-re (concat "\\(?1:\\(?:\\(?:virtual\\)\\s-+\\)?\\<class\\>\\)\\s-+\\(?3:" verilog-identifier-re "\\)"))
+(defconst verilog-ext-top-re (concat "\\<\\(?1:package\\|program\\|module\\|interface\\)\\>\\(\\s-+\\<automatic\\>\\)?\\s-+\\(?3:\\<" verilog-identifier-re "\\>\\)"))
 
 
 ;;;; Utility
@@ -74,6 +79,16 @@
   (ignore-errors
     (verilog-backward-sexp)
     (point)))
+
+(defun verilog-ext-backward-up-list ()
+  "Wrap `backward-up-list' and ignore errors."
+  (ignore-errors
+    (backward-up-list)))
+
+(defun verilog-ext-down-list ()
+  "Wrap `down-list' and ignore errors."
+  (ignore-errors
+    (down-list)))
 
 (defun verilog-ext-skip-identifier-backwards ()
   "Return non-nil if point skipped backwards verilog identifier chars."
@@ -122,21 +137,36 @@ the replacement text (see `replace-match' for more info)."
       (while (search-forward string endpos t)
         (replace-match to-string fixedcase)))))
 
-(defun verilog-ext-read-file-modules (file)
-  "Find modules in FILE.
+(defun verilog-ext-scan-buffer-modules ()
+  "Find modules in current buffer.
 Return list with found modules or nil if not found."
-  (let (modules
-        (debug nil))
-    (with-temp-buffer
-      (when debug
-        (clone-indirect-buffer-other-window "*debug*" t))
-      (insert-file-contents file)
-      (verilog-mode) ; Needed to set the syntax table to avoid searching in comments
+  (let (modules)
+    (save-excursion
+      (goto-char (point-min))
       (while (verilog-re-search-forward verilog-ext-top-instantiable-re nil t)
-        (push (match-string-no-properties 2) modules)))
+        (push (match-string-no-properties 3) modules)))
     (delete-dups modules)))
 
-(defun verilog-ext-select-file-module (file)
+(defun verilog-ext-read-file-modules (&optional file)
+  "Find modules in current buffer.
+Find modules in FILE if optional arg is non-nil.
+Return list with found modules or nil if not found."
+  (let ((buf (if file
+                 (get-file-buffer file)
+               (current-buffer)))
+        (debug nil))
+    (if buf
+        (with-current-buffer buf
+          (verilog-ext-scan-buffer-modules))
+      ;; If FILE buffer is not being visited, use a temporary buffer
+      (with-temp-buffer
+        (when debug
+          (clone-indirect-buffer-other-window "*debug*" t))
+        (insert-file-contents file)
+        (verilog-mode)
+        (verilog-ext-scan-buffer-modules)))))
+
+(defun verilog-ext-select-file-module (&optional file)
   "Select file module from FILE.
 If only one module was found return it as a string.
 If more than one module was found, select between available ones.
@@ -146,8 +176,33 @@ Return nil if no module was found."
         (completing-read "Select module: " modules)
       (car modules))))
 
+(defun verilog-ext-class-declaration-is-typedef-p ()
+  "Return non-nil if point is at a class declaration, but it is a typedef."
+  (save-excursion
+    (save-match-data
+      (and (looking-at verilog-ext-class-re)
+           (verilog-ext-backward-syntactic-ws)
+           (backward-word)
+           (looking-at "typedef")))))
+
+(defun verilog-ext-looking-at-class-declaration ()
+  "Return non-nil if point is at a class declaration (i.e. not a typedef).
+Also updates `match-data' with that of `verilog-ext-class-re'."
+  (and (looking-at verilog-ext-class-re)
+       (not (verilog-ext-class-declaration-is-typedef-p))))
+
+(defun verilog-ext-search-class-backwards ()
+  "Search backwards for a class declaration.
+Skips typedef declarations."
+  (interactive)
+  (let (found)
+    (while (and (not found)
+                (verilog-re-search-backward verilog-ext-class-re nil 'move))
+      (when (not (verilog-ext-class-declaration-is-typedef-p))
+        (setq found t)))))
+
 (defun verilog-ext-point-inside-block-p (block)
-  "Return block name if cursor is inside specified BLOCK type."
+  "Return block type, name and boundaries if cursor is inside specified BLOCK type."
   (let ((pos (point))
         (re (cond ((eq block 'function)  "\\<\\(function\\)\\>")
                   ((eq block 'task)      "\\<\\(task\\)\\>")
@@ -164,14 +219,31 @@ Return nil if no module was found."
         temp-pos block-beg-point block-end-point block-type block-name)
     (save-match-data
       (save-excursion
-        (cond ((member block '(function task class module interface package program))
+        (cond (;; Classes
+               (equal block 'class)
+               (when (verilog-re-search-backward re nil t)
+                 (if (verilog-ext-class-declaration-is-typedef-p)
+                     ;; Try again if looking at a typedef class declaration
+                     (verilog-ext-point-inside-block-p 'class)
+                   ;; Else do the same as for function/tasks and top blocks
+                   (setq block-type (match-string-no-properties 1))
+                   (looking-at verilog-ext-class-re)
+                   (setq block-name (match-string-no-properties 3))
+                   (setq temp-pos (point))
+                   (verilog-re-search-forward ";" nil t)
+                   (setq block-beg-point (point))
+                   (goto-char temp-pos)
+                   (verilog-ext-forward-sexp)
+                   (backward-word)
+                   (setq block-end-point (point)))))
+              ;; Function/tasks and top blocks
+              ((member block '(function task module interface package program))
                (and (verilog-re-search-backward re nil t)
                     (setq block-type (match-string-no-properties 1))
                     (or (looking-at verilog-ext-function-re)
                         (looking-at verilog-ext-task-re)
-                        (looking-at verilog-ext-class-re)
                         (looking-at verilog-ext-top-re))
-                    (setq block-name (match-string-no-properties 2))
+                    (setq block-name (match-string-no-properties 3))
                     (setq temp-pos (point))
                     (verilog-re-search-forward ";" nil t)
                     (setq block-beg-point (point))
@@ -179,6 +251,7 @@ Return nil if no module was found."
                     (verilog-ext-forward-sexp)
                     (backward-word)
                     (setq block-end-point (point))))
+              ;; Procedural: always, initial and final
               ((member block '(always initial final))
                (and (verilog-re-search-backward re nil t)
                     (setq block-type (match-string-no-properties 1))
@@ -190,6 +263,7 @@ Return nil if no module was found."
                     (verilog-ext-forward-sexp)
                     (backward-word)
                     (setq block-end-point (point))))
+              ;; Generate
               ((equal block 'generate)
                (and (verilog-re-search-backward re nil t)
                     (setq block-type (match-string-no-properties 1))
@@ -206,7 +280,7 @@ Return nil if no module was found."
         (if (and block-beg-point block-end-point
                  (>= pos block-beg-point)
                  (< pos block-end-point))
-            (cons block-type block-name)
+            (list block-type block-name block-beg-point block-end-point)
           nil)))))
 
 (defun verilog-ext-block-at-point ()
