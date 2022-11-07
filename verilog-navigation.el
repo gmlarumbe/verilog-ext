@@ -77,8 +77,7 @@ table."
   "Search for a Verilog function/task declaration or definition.
 Allows matching of multiline declarations (such as in some UVM source files).
 
-If executing interactively place cursor at the beginning of the function/task
-name and show function/task name in the minibuffer.
+If executing interactively show function/task name in the minibuffer.
 
 Updates `match-data' so that the function can be used in other contexts:
 - (match-string 0) = Whole function/task regexp (until semicolon)
@@ -94,8 +93,8 @@ Third arg INTERACTIVE-P specifies whether function call should be treated as if
 it was interactive.  This changes the position where point will be at the end of
 the function call."
   (let ((case-fold-search verilog-case-fold)
-        (tf-re "\\(\\<function\\>\\|\\<task\\>\\)")
-        (tf-modifiers-re "\\(extern\\|static\\|pure\\|virtual\\|local\\|protected\\)")
+        (tf-re "\\<\\(function\\|task\\)\\>")
+        (tf-modifiers-re "\\<\\(extern\\|static\\|pure\\|virtual\\|local\\|protected\\)\\>")
         tf-type tf-kwd-pos-end
         tf-name tf-name-pos-beg tf-name-pos-end tf-beg-of-statement-pos tf-end-of-statement-pos tf-modifiers
         func-return-type func-return-type-pos-beg func-return-type-pos-end
@@ -103,13 +102,8 @@ the function call."
         found)
     (save-excursion
       (save-match-data
-        (when (and interactive-p
-                   (not bwd))
-          (verilog-end-of-statement)) ; Avoid getting stuck if executing interactively
         (and (if bwd
-                 (progn
-                   (goto-char (line-beginning-position))
-                   (verilog-re-search-backward tf-re limit 'move))
+                 (verilog-re-search-backward tf-re limit 'move)
                (verilog-re-search-forward tf-re limit 'move))
              (setq tf-type (match-string-no-properties 0))
              (setq tf-kwd-pos-end (match-end 0))
@@ -160,9 +154,11 @@ the function call."
                                 class-end-pos
                                 func-return-type-pos-beg
                                 func-return-type-pos-end))
-          (goto-char tf-beg-of-statement-pos)
           (when interactive-p
             (message "%s" tf-name))
+          (if bwd
+              (goto-char tf-beg-of-statement-pos)
+            (goto-char tf-name-pos-beg))
           (list tf-name-pos-beg tf-name tf-modifiers func-return-type class-name))
       (when interactive-p
         (if bwd
