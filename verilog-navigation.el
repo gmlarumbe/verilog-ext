@@ -33,8 +33,6 @@
 (require 'xref)
 (require 'ag)
 (require 'ripgrep)
-(require 'projectile)
-(require 'ggtags)
 
 
 (defvar verilog-ext-jump-to-parent-module-engine "ag"
@@ -353,22 +351,6 @@ Bound search to LIMIT in case it is non-nil."
         (when (called-interactively-p 'interactive)
           (message "Could not find any instance backwards"))))))
 
-(defun verilog-ext-instance-at-point ()
-  "Return list with module and instance names if point is at an instance."
-  (let ((point-cur (point))
-        point-instance-begin point-instance-end instance-type instance-name)
-    (save-excursion
-      (when (and (verilog-re-search-forward ";" nil t)
-                 (verilog-ext-find-module-instance-bwd)) ; Sets match data
-        (setq instance-type (match-string-no-properties 1))
-        (setq instance-name (match-string-no-properties 2))
-        (setq point-instance-begin (match-beginning 0))
-        (setq point-instance-end   (match-end 0))
-        (if (and (>= point-cur point-instance-begin)
-                 (<= point-cur point-instance-end))
-            (list instance-type instance-name)
-          nil)))))
-
 (defun verilog-ext-find-module-instance-bwd-2 ()
   "Search backwards for a Verilog module/instance.
 The difference with `verilog-ext-find-module-instance-bwd' is that it
@@ -384,6 +366,22 @@ moves the cursor to current instance if pointing at one."
           (goto-char (match-beginning 1))
           (message "%s : %s" (match-string-no-properties 1) (match-string-no-properties 2)))
       (call-interactively #'verilog-ext-find-module-instance-bwd))))
+
+(defun verilog-ext-instance-at-point ()
+  "Return list with module and instance names if point is at an instance."
+  (let ((point-cur (point))
+        point-instance-begin point-instance-end instance-type instance-name)
+    (save-excursion
+      (when (and (verilog-re-search-forward ";" nil t)
+                 (verilog-ext-find-module-instance-bwd)) ; Sets match data
+        (setq instance-type (match-string-no-properties 1))
+        (setq instance-name (match-string-no-properties 2))
+        (setq point-instance-begin (match-beginning 0))
+        (setq point-instance-end   (match-end 0))
+        (if (and (>= point-cur point-instance-begin)
+                 (<= point-cur point-instance-end))
+            (list instance-type instance-name)
+          nil)))))
 
 (defun verilog-ext-jump-to-module-at-point (&optional ref)
   "Jump to definition of module at point.
@@ -427,11 +425,7 @@ Used in ag/rg end of search hooks to conditionally set the xref marker stack.")
 Configuration should be done so that `verilog-ext-navigation-ag-rg-hook' is run
 after the search has been done."
   (interactive)
-  (let* ((proj-dir (or (when (featurep 'projectile)
-                         (projectile-project-root))
-                       (when (featurep 'ggtags)
-                         ggtags-project-root)
-                       default-directory))
+  (let* ((proj-dir (verilog-ext-project-root))
          (module-name (or (verilog-ext-select-file-module buffer-file-name)
                           (error "No module/interface found @ %s" buffer-file-name)))
          (module-instance-pcre ; Many thanks to Kaushal Modi for this PCRE

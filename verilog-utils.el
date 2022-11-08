@@ -26,6 +26,8 @@
 
 
 (require 'verilog-mode)
+(require 'projectile)
+(require 'ggtags)
 
 
 (defconst verilog-ext-keywords-re
@@ -33,18 +35,18 @@
     (regexp-opt verilog-keywords 'symbols)))
 
 (defconst verilog-ext-top-instantiable-re
-  (concat "\\<\\(?1:module\\|interface\\)\\>\\(\\s-+\\<automatic\\>\\)?\\s-+\\(?3:\\<" verilog-identifier-re "\\>\\)"))
+  (concat "\\<\\(?1:module\\|interface\\)\\>\\(\\s-+\\<automatic\\>\\)?\\s-+\\(?3:" verilog-identifier-sym-re "\\)"))
 (defconst verilog-ext-task-re
   (concat "\\(?1:\\(?:\\(?:static\\|pure\\|virtual\\|local\\|protected\\)\\s-+\\)*task\\)\\s-+\\(?:\\(?:static\\|automatic\\)\\s-+\\)?"
           "\\(?:\\(?2:\\w+\\)::\\)?"
-          "\\(?3:" verilog-identifier-re "\\)"))
+          "\\(?3:" verilog-identifier-sym-re "\\)"))
 (defconst verilog-ext-function-re
   (concat "\\(?1:\\(?:\\(?:static\\|pure\\|virtual\\|local\\|protected\\)\\s-+\\)*function\\)\\s-+\\(?:\\(?:static\\|automatic\\)\\s-+\\)?"
           "\\(?:\\w+\\s-+\\)?\\(?:\\(?:un\\)signed\\s-+\\)?" ; Optional Return type
           "\\(?:\\(?2:\\w+\\)::\\)?"
-          "\\(?3:" verilog-identifier-re "\\)"))
-(defconst verilog-ext-class-re (concat "\\(?1:\\(?:\\(?:virtual\\)\\s-+\\)?\\<class\\>\\)\\s-+\\(?3:" verilog-identifier-re "\\)"))
-(defconst verilog-ext-top-re (concat "\\<\\(?1:package\\|program\\|module\\|interface\\)\\>\\(\\s-+\\<automatic\\>\\)?\\s-+\\(?3:\\<" verilog-identifier-re "\\>\\)"))
+          "\\(?3:" verilog-identifier-sym-re "\\)"))
+(defconst verilog-ext-class-re (concat "\\(?1:\\<class\\>\\)\\s-+\\(?3:" verilog-identifier-sym-re "\\)"))
+(defconst verilog-ext-top-re (concat "\\<\\(?1:package\\|program\\|module\\|interface\\)\\>\\(\\s-+\\<automatic\\>\\)?\\s-+\\(?3:" verilog-identifier-sym-re "\\)"))
 
 
 ;;;; Utility
@@ -176,6 +178,16 @@ Return nil if no module was found."
         (completing-read "Select module: " modules)
       (car modules))))
 
+(defun verilog-ext-project-root ()
+  "Find current project root, depending on available packages."
+  (or (when (featurep 'projectile)
+        (projectile-project-root))
+      (when (featurep 'project)
+        (project-root (project-current)))
+      (when (featurep 'ggtags)
+        ggtags-project-root)
+      default-directory))
+
 (defun verilog-ext-class-declaration-is-typedef-p ()
   "Return non-nil if point is at a class declaration, but it is a typedef."
   (save-excursion
@@ -190,17 +202,6 @@ Return nil if no module was found."
 Also updates `match-data' with that of `verilog-ext-class-re'."
   (and (looking-at verilog-ext-class-re)
        (not (verilog-ext-class-declaration-is-typedef-p))))
-
-(defun verilog-ext-search-class-backwards ()
-  "Search backwards for a class declaration.
-Skips typedef declarations."
-  (interactive)
-  (let (found)
-    (while (and (not found)
-                (verilog-re-search-backward verilog-ext-class-re nil 'move))
-      (when (not (verilog-ext-class-declaration-is-typedef-p))
-        (setq found t)))
-    (point)))
 
 (defun verilog-ext-point-inside-block-p (block)
   "Return block type, name and boundaries if cursor is inside specified BLOCK type."
