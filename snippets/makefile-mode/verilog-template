@@ -1,0 +1,110 @@
+# -*- mode: snippet -*-
+# key: verilog
+# expand-env: ((yas-indent-line 'fixed))
+# --
+
+# Makefile created at `(format-time-string "%d-%m-%Y, %H:%M:%S")` with verilog-ext:
+#  - https://github.com/gmlarumbe/verilog-ext
+#
+# Author: Gonzalo Martinez Larumbe
+
+IVERILOG=${1:iverilog}
+IVERILOG_FLAGS=${2:-g2012 -gassertions -Wall}
+IVERILOG_CDIR=${3:iver}
+VVP=${4:vvp}
+VVP_FLAGS=${5:}
+VERILATOR=${6:verilator}
+VERILATOR_FLAGS=${7:--lint-only +1800-2012ext+sv --Wno-fatal}
+VIVADO_BIN=${8:/opt/Xilinx/Vivado/2018.3/bin/vivado}
+
+WAVES_FORMAT=${9:lx2}
+WAVES_DIR=${10:waves}
+SCRIPTSDIR=${11:scripts}
+UNISIMS_DIR=${12:vivado/data/verilog/src/unisims}
+
+
+## Commands for current targets
+LINT_CMD    = $(VERILATOR) $(VERILATOR_FLAGS) $^
+COMPILE_CMD = $(IVERILOG) $(IVERILOG_FLAGS) -o $(IVERILOG_CDIR)/$@.compiled $^
+SIM_CMD     = $(VVP) $(VVP_FLAGS) $(IVERILOG_CDIR)/$@.compiled -$(WAVES_FORMAT)
+WAVES_CMD   = mv $@.$(WAVES_FORMAT) $(WAVES_DIR)
+
+
+# Example code. Replace with the current project.
+#  ...
+$0
+
+#############
+## Sources
+#############
+misc_rtl = $(wildcard src/misc/rtl/*.sv)
+uart_rtl = $(wildcard src/uart/rtl/*.sv)
+uart_viv = $(wildcard src/uart/tb/*.v) # FIFO Verilog sim netlist
+uart_sim = $(wildcard src/uart/tb/*.sv) $(uart_viv)
+
+
+##############################
+# All the targets
+##############################
+all : all_elabs all_sims vivado_syn
+
+all_sims : tb_misc tb_uart
+
+all_elabs: misc uart
+
+
+####################################################
+# UART (no lint as Verilator has issues with Unisim)
+####################################################
+tb_uart : $(pkg) $(uart_rtl) $(uart_sim)
+	$(COMPILE_CMD) -y$(UNISIMS_DIR)
+	$(SIM_CMD)
+	$(WAVES_CMD)
+
+uart : $(pkg) $(uart_rtl) $(uart_sim)
+	$(COMPILE_CMD) -y$(UNISIMS_DIR)
+
+
+##############################
+# MISC
+##############################
+tb_misc : $(misc_rtl) $(misc_sim)
+	$(COMPILE_CMD)
+	$(SIM_CMD)
+	$(WAVES_CMD)
+
+misc : $(misc_rtl)
+	$(LINT_CMD) --top-module bin2bcd
+	$(COMPILE_CMD)
+
+
+##############################
+# Setup
+##############################
+setup: check_req
+	mkdir -p $(IVERILOG_CDIR)
+	mkdir -p $(WAVES_DIR)
+
+clean:
+	rm -rf $(IVERILOG_CDIR)
+	rm -rf $(WAVES_DIR)
+	rm -rf .Xil
+
+check_req:
+	$(SCRIPTSDIR)/check_requirements.sh
+
+
+###########################
+## Vivado
+##########################
+vivado_syn : vivado_check vivado_proj
+	$(VIVADO_BIN) vivado/ucontroller/ucontroller.xpr -mode tcl -source vivado/synthesize.tcl
+
+vivado_proj : vivado_check
+	cd vivado && test -d ucontroller || $(VIVADO_BIN) -mode tcl -source ucontroller.tcl
+
+vivado_clean :
+	rm -rf vivado/ucontroller
+
+vivado_check:
+	$(SCRIPTSDIR)/check_vivado.sh
