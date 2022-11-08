@@ -70,8 +70,8 @@
 
 (defun verilog-ext-imenu-find-task-function-class-bwd ()
   "Find closest declaration of a function/task/class.
-Return list with position, type and name for use in Imenu index builder."
-  (let (found pos type name)
+Return alist with position, type and name for use in Imenu index builder."
+  (let (found pos type name data)
     (save-excursion
       (while (and (not found)
                   (verilog-re-search-backward "\\<\\(function\\|task\\|class\\)\\>" nil t))
@@ -83,12 +83,16 @@ Return list with position, type and name for use in Imenu index builder."
     (setq type (match-string-no-properties 0))
     (if (string= type "class")
         (progn
-          (setq pos (verilog-ext-search-class-backwards))
-          (setq name (match-string-no-properties 3)))
-      (setq pos (car (verilog-ext-find-function-task-bwd)))
-      (setq name (match-string-no-properties 1)))
+          (setq data (verilog-ext-find-class-bwd))
+          (setq pos (alist-get 'pos data))
+          (setq name (alist-get 'name data)))
+      (setq data (verilog-ext-find-function-task-bwd))
+      (setq pos (alist-get 'pos data))
+      (setq name (alist-get 'name data)))
     (when (and pos type name)
-      (list pos type name))))
+      `((pos  . ,pos)
+        (type . ,type)
+        (name . ,name)))))
 
 (defun verilog-ext-imenu--format-class-item-label (type name)
   "Return Imenu label for single node using TYPE and NAME."
@@ -115,12 +119,15 @@ Find recursively tasks and functions inside classes."
   (save-restriction
     (narrow-to-region (point-min) (point))
     (let* ((pos-type-name (progn
-                            (verilog-ext-search-class-backwards)
+                            (verilog-ext-find-class-bwd)
                             (verilog-forward-sexp)
                             (verilog-ext-imenu-find-task-function-class-bwd)))
-           (pos (car pos-type-name))
-           (type (car (cdr pos-type-name)))
-           (name (car (cdr (cdr pos-type-name))))
+           (pos (when pos-type-name
+                  (save-excursion
+                    (goto-char (alist-get 'pos pos-type-name))
+                    (line-beginning-position))))
+           (type (alist-get 'type pos-type-name))
+           (name (alist-get 'name pos-type-name))
            (label (when name
                     (verilog-ext-imenu--format-class-item-label type name))))
       (cond ((not pos)

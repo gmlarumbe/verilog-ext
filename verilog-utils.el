@@ -189,7 +189,8 @@ Return nil if no module was found."
       default-directory))
 
 (defun verilog-ext-class-declaration-is-typedef-p ()
-  "Return non-nil if point is at a class declaration, but it is a typedef."
+  "Return non-nil if point is at a class declaration.
+Ensure it is not a typedef class declaration."
   (save-excursion
     (save-match-data
       (and (looking-at verilog-ext-class-re)

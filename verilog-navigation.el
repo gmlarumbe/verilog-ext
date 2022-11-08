@@ -157,7 +157,13 @@ the function call."
           (if bwd
               (goto-char tf-beg-of-statement-pos)
             (goto-char tf-name-pos-beg))
-          (list tf-name-pos-beg tf-name tf-modifiers func-return-type class-name))
+          ;; Return alist
+          `((pos         . ,tf-name-pos-beg)
+            (name        . ,tf-name)
+            (modifiers   . ,tf-modifiers)
+            (return-type . ,func-return-type)
+            (class-name  . ,class-name)))
+      ;; Not found interactive reporting
       (when interactive-p
         (if bwd
             (message "Could not find any function/task backward")
@@ -176,6 +182,104 @@ Bound search to LIMIT in case optional argument is non-nil."
   (interactive)
   (let ((interactive-p (called-interactively-p 'interactive)))
     (verilog-ext-find-function-task limit :bwd interactive-p)))
+
+
+;;;; Classes
+(defun verilog-ext-find-class (&optional limit bwd interactive-p)
+  "Search for a class declaration, skipping typedef declarations.
+
+If executing interactively show class name in the minibuffer.
+
+Updates `match-data' so that the function can be used in other contexts:
+- (match-string 0) = Class definition boundaries (without modifier)
+- (match-string 1) = Class name
+- (match-string 2) = Parent class (if any)
+
+Bound search to LIMIT in case optional argument is non-nil.
+
+Search bacwards if BWD is non-nil.
+
+Third arg INTERACTIVE-P specifies whether function call should be treated as if
+it was interactive."
+  (interactive)
+  (let ((found)
+        name name-pos-start name-pos-end
+        modifier start-pos end-pos
+        parent-class parent-class-start-pos parent-class-end-pos
+        param-begin param-end param-string)
+    (save-excursion
+      (save-match-data
+        (while (and (not found)
+                    (if bwd
+                        (verilog-re-search-backward verilog-ext-class-re limit 'move)
+                      (verilog-re-search-forward verilog-ext-class-re limit 'move)))
+          (when (save-excursion
+                  (goto-char (match-beginning 1)) ; Dirty workaround to make `verilog-ext-class-declaration-is-typedef-p' work properly ...
+                  (not (verilog-ext-class-declaration-is-typedef-p))) ; ... moving point to the beginning of 'class keyword
+            (setq found t)
+            (setq name (match-string-no-properties 3))
+            (setq name-pos-start (match-beginning 3))
+            (setq name-pos-end (match-end 3))
+            (setq start-pos (point))
+            (setq end-pos (verilog-pos-at-end-of-statement))
+            ;; Find modifiers (virtual/interface)
+            (save-excursion
+              (verilog-backward-syntactic-ws)
+              (backward-word)
+              (when (looking-at "\\<\\(virtual\\|interface\\)\\>")
+                (setq modifier (match-string-no-properties 0))))
+            ;; Find parameters, if any
+            (when (and (verilog-re-search-forward "#" end-pos t)
+                       (verilog-ext-forward-syntactic-ws)
+                       (setq param-begin (1+ (point)))
+                       (verilog-ext-forward-sexp)
+                       (verilog-ext-backward-char)
+                       (verilog-ext-backward-syntactic-ws)
+                       (setq param-end (point)))
+              (setq param-string (buffer-substring-no-properties param-begin param-end)))
+            ;; Find parent class, if any
+            (when (and (verilog-re-search-forward "\\<extends\\>" end-pos t)
+                       (verilog-ext-forward-syntactic-ws)
+                       (looking-at verilog-identifier-sym-re))
+              (setq parent-class (match-string-no-properties 0))
+              (setq parent-class-start-pos (match-beginning 0))
+              (setq parent-class-end-pos (match-end 0)))))))
+    (if found
+        (progn
+          (set-match-data (list start-pos
+                                end-pos
+                                name-pos-start
+                                name-pos-end
+                                parent-class-start-pos
+                                parent-class-end-pos))
+          (goto-char start-pos)
+          (when interactive-p
+            (message "%s" name))
+          ;; Return alist
+          `((pos      . ,start-pos)
+            (name     . ,name)
+            (modifier . ,modifier)
+            (parent   . ,parent-class)
+            (params   . ,param-string)))
+      ;; Not found interactive reporting
+      (when interactive-p
+        (if bwd
+            (message "Could not find any class backward")
+          (message "Could not find any class forward"))))))
+
+(defun verilog-ext-find-class-fwd (&optional limit)
+  "Search forward for a Verilog class declaration.
+Bound search to LIMIT in case optional argument is non-nil."
+  (interactive)
+  (let ((interactive-p (called-interactively-p 'interactive)))
+    (verilog-ext-find-class limit nil interactive-p)))
+
+(defun verilog-ext-find-class-bwd (&optional limit)
+  "Search backward for a Verilog class declaration.
+Bound search to LIMIT in case optional argument is non-nil."
+  (interactive)
+  (let ((interactive-p (called-interactively-p 'interactive)))
+    (verilog-ext-find-class limit :bwd interactive-p)))
 
 
 ;;;; Module/instance

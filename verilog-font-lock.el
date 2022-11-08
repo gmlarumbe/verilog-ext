@@ -545,10 +545,14 @@ Similar to `verilog-match-translate-off' but including
   (append
    verilog-ext-font-lock-keywords
    (list
-    ;; Top level definitions
-    (list "\\<\\(?1:\\(macro\\|connect\\)?module\\|primitive\\|class\\|program\\|interface\\|package\\)\\>\\s-*\\(automatic\\s-+\\)?\\(?3:\\sw+\\)\\s-*\\(?4:#?\\)"
+    ;; Top level definitions (except classes)
+    (list "\\<\\(?1:\\(macro\\|connect\\)?module\\|primitive\\|program\\|interface\\|package\\)\\>\\s-*\\(automatic\\s-+\\)?\\(?3:\\sw+\\)\\s-*\\(?4:#?\\)"
           '(1 font-lock-keyword-face)
           '(3 font-lock-function-name-face))
+    ;; Class names and parent
+    '(verilog-ext-find-class-fwd
+      (1 'font-lock-function-name-face)
+      (2 'font-lock-type-face nil t)) ; Parent class, if any
     ;; Functions/tasks
     '(verilog-ext-font-lock-task-function-fontify
       (1 'font-lock-function-name-face)
