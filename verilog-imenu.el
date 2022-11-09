@@ -43,7 +43,7 @@
 
 (defvar verilog-ext-imenu-generic-expression
   `(;; Search by regexp
-    (nil                ,verilog-ext-imenu-top-re 2)
+    ("*Top*"            ,verilog-ext-imenu-top-re 2)
     ("*Localparams*"    ,verilog-ext-imenu-localparam-re 2)
     ("*Defines*"        ,verilog-ext-imenu-define-re 1)
     ("*Assigns*"        ,verilog-ext-imenu-assign-re 1)
@@ -51,28 +51,42 @@
     ("*Always blocks*"  ,verilog-ext-imenu-always-re 4)
     ("*Initial blocks*" ,verilog-ext-imenu-initial-re 3)
     ;; Search by function
-    ("*Task/Func*" verilog-ext-imenu-find-tf-outside-class-bwd 1)
     ("*Instances*" verilog-ext-find-module-instance-bwd 1))) ; Use capture group index 3 to get instance name
 
 
 ;;;; Tree
-(defun verilog-ext-imenu-find-tf-outside-class-bwd ()
-  "Find backwards tasks and functions outside classes."
-  (let (found pos)
-    (save-excursion
-      (while (and (not found)
-                  (verilog-ext-find-function-task-bwd))
-        (when (not (verilog-ext-point-inside-block-p 'class))
-          (setq found t)
-          (setq pos (point)))))
-    (when found
-      (goto-char pos))))
+(defun verilog-ext-imenu-find-tf-outside-class-index ()
+  "Create entries of tasks and functions outside classes.
+Group the ones that belong to same external method definitions."
+  (save-excursion
+    (goto-char (point-max))
+    (let ((tf-group-name "*Task/Func*")
+          index node data pos name class-name)
+      (while (setq data (verilog-ext-find-function-task-bwd))
+        (unless (verilog-ext-point-inside-block-p 'class)
+          ;; Get information from the subroutine
+          (setq pos (alist-get 'pos data))
+          (setq name (alist-get 'name data))
+          (setq class-name (alist-get 'class-name data))
+          ;; Add element to the tree
+          (setq node (cons name pos))
+          (if class-name
+              ;; Externally declared methods
+              (if (not (assoc class-name index))
+                  (setq index `((,class-name ,node)))
+                ;; Add to existing class
+                (setf (cdr (assoc class-name index)) (cons node (cdr (assoc class-name index)))))
+            ;; Non-methods
+            (if (not (assoc tf-group-name index))
+                (setq index `((,tf-group-name ,node)))
+              (setf (cdr (assoc tf-group-name index)) (cons node (cdr (assoc tf-group-name index))))))))
+      index)))
 
 (defun verilog-ext-imenu-find-task-function-class-bwd ()
   "Find closest declaration of a function/task/class.
 Return alist with position, type, name and modifiers for use in Imenu index
 builder."
-  (let (found pos type name modifiers data)
+  (let (found data pos type name modifiers)
     (save-excursion
       (while (and (not found)
                   (verilog-re-search-backward "\\<\\(function\\|task\\|class\\)\\>" nil t))
@@ -156,8 +170,7 @@ Find recursively tasks and functions inside classes."
   "Create entries of tasks and functions within classes."
   (save-excursion
     (goto-char (point-max))
-    (let ((index)
-          (tree))
+    (let (index tree)
       (while (setq tree (verilog-ext-imenu--build-class-tree))
         (setq index (cons tree index)))
       (when index
@@ -168,6 +181,7 @@ Find recursively tasks and functions inside classes."
 Makes use of `verilog-ext-imenu-generic-expression' for everything but classes
 and methods.  These are collected with `verilog-ext-imenu-classes-index'."
   (append (verilog-ext-imenu-classes-index)
+          (verilog-ext-imenu-find-tf-outside-class-index)
           (imenu--generic-function verilog-ext-imenu-generic-expression)))
 
 (defun verilog-ext-imenu-hook ()
