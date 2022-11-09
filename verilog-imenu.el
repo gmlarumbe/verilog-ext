@@ -70,8 +70,9 @@
 
 (defun verilog-ext-imenu-find-task-function-class-bwd ()
   "Find closest declaration of a function/task/class.
-Return alist with position, type and name for use in Imenu index builder."
-  (let (found pos type name data)
+Return alist with position, type, name and modifiers for use in Imenu index
+builder."
+  (let (found pos type name modifiers data)
     (save-excursion
       (while (and (not found)
                   (verilog-re-search-backward "\\<\\(function\\|task\\|class\\)\\>" nil t))
@@ -85,30 +86,38 @@ Return alist with position, type and name for use in Imenu index builder."
         (progn
           (setq data (verilog-ext-find-class-bwd))
           (setq pos (alist-get 'pos data))
-          (setq name (alist-get 'name data)))
+          (setq name (alist-get 'name data))
+          (setq modifiers (alist-get 'modifier data)))
       (setq data (verilog-ext-find-function-task-bwd))
       (setq pos (alist-get 'pos data))
-      (setq name (alist-get 'name data)))
+      (setq name (alist-get 'name data))
+      (setq modifiers (alist-get 'modifiers data)))
     (when (and pos type name)
-      `((pos  . ,pos)
-        (type . ,type)
-        (name . ,name)))))
+      `((pos       . ,pos)
+        (type      . ,type)
+        (name      . ,name)
+        (modifiers . ,modifiers)))))
 
-(defun verilog-ext-imenu--format-class-item-label (type name)
-  "Return Imenu label for single node using TYPE and NAME."
-  (let ((short-type (pcase type
-                      ("task"     (propertize "(t)" 'face 'italic))
-                      ("function" (propertize "(f)" 'face 'italic))
-                      ("class"    "")
-                      (_          type))))
-    (format "%s %s" name short-type)))
+(defun verilog-ext-imenu--format-class-item-label (type name modifiers)
+  "Return Imenu label for single node using TYPE, NAME and MODIFIERS."
+  (let* ((prop-name (propertize name 'face '(:foreground "goldenrod" :weight bold)))
+         (short-type (pcase type
+                       ("task"     " [T]")
+                       ("function" " [F]")
+                       ("class"    "")
+                       (_          type)))
+         (modifiers-string (mapconcat #'(lambda (x) (substring-no-properties x 0 1)) modifiers ""))
+         (prop-modifiers (if (string= modifiers-string "")
+                             ""
+                           (propertize (concat " (" modifiers-string ")") 'face 'italic))))
+    (format "%s%s%s" prop-name short-type prop-modifiers)))
 
-(defun verilog-ext-imenu--class-put-parent (type name pos tree)
+(defun verilog-ext-imenu--class-put-parent (type name pos tree modifiers)
   "Create parent node (classes).
-Use TYPE and NAME to format the node name.
+Use TYPE, NAME and MODIFIERS to format the node name.
 Create cons cell with the label and the POS if it is a leaf node.
 Otherwsise create the cons cell with the label and the TREE."
-  (let* ((label (verilog-ext-imenu--format-class-item-label type name)))
+  (let* ((label (verilog-ext-imenu--format-class-item-label type name modifiers)))
     (if (not tree)
         (cons label pos)
       (cons label tree))))
@@ -118,22 +127,23 @@ Otherwsise create the cons cell with the label and the TREE."
 Find recursively tasks and functions inside classes."
   (save-restriction
     (narrow-to-region (point-min) (point))
-    (let* ((pos-type-name (progn
-                            (verilog-ext-find-class-bwd)
-                            (verilog-forward-sexp)
-                            (verilog-ext-imenu-find-task-function-class-bwd)))
-           (pos (when pos-type-name
+    (let* ((data (progn
+                   (verilog-ext-find-class-bwd)
+                   (verilog-forward-sexp)
+                   (verilog-ext-imenu-find-task-function-class-bwd)))
+           (pos (when data
                   (save-excursion
-                    (goto-char (alist-get 'pos pos-type-name))
+                    (goto-char (alist-get 'pos data))
                     (line-beginning-position))))
-           (type (alist-get 'type pos-type-name))
-           (name (alist-get 'name pos-type-name))
+           (type (alist-get 'type data))
+           (name (alist-get 'name data))
+           (modifiers (alist-get 'modifiers data))
            (label (when name
-                    (verilog-ext-imenu--format-class-item-label type name))))
+                    (verilog-ext-imenu--format-class-item-label type name modifiers))))
       (cond ((not pos)
              nil)
             ((verilog-ext-looking-at-class-declaration)
-             (verilog-ext-imenu--class-put-parent type name pos tree))
+             (verilog-ext-imenu--class-put-parent type name pos tree modifiers))
             ((or (string= type "function")
                  (string= type "task"))
              (verilog-ext-imenu--build-class-tree (cons (cons label pos) tree)))
