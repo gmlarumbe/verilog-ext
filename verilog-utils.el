@@ -100,7 +100,7 @@
   "Return non-nil if point skipped forward verilog identifier chars."
   (> (skip-chars-forward "a-zA-Z0-9_") 0))
 
-(defmacro when-t (cond &rest body)
+(defmacro verilog-ext-when-t (cond &rest body)
   "Same function `when' from subr.el but returning t if COND is nil."
   (declare (indent 1) (debug t))
   (list 'if cond (cons 'progn body) t))

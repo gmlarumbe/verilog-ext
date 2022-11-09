@@ -109,7 +109,7 @@ the function call."
              (setq tf-end-of-statement-pos (point))
              (verilog-ext-backward-char)
              (verilog-ext-backward-syntactic-ws)
-             (when-t (eq (preceding-char) ?\))
+             (verilog-ext-when-t (eq (preceding-char) ?\))
                (verilog-ext-backward-sexp))
              (backward-word)
              ;; Func/task name
@@ -119,7 +119,7 @@ the function call."
                (setq tf-name-pos-end (match-end 0))
                (setq found t))
              ;; Externally defined functions
-             (when-t (eq (preceding-char) ?:)
+             (verilog-ext-when-t (eq (preceding-char) ?:)
                (skip-chars-backward ":")
                (backward-word)
                (when (looking-at verilog-identifier-re)
@@ -127,7 +127,7 @@ the function call."
                  (setq class-beg-pos (match-beginning 0))
                  (setq class-end-pos (match-end 0))))
              ;; Automatic kwd and function return value
-             (when-t (string= tf-type "function")
+             (verilog-ext-when-t (string= tf-type "function")
                (verilog-ext-backward-syntactic-ws)
                (setq func-return-type-pos-end (point))
                (goto-char tf-kwd-pos-end)
@@ -227,7 +227,7 @@ it was interactive."
               (verilog-backward-syntactic-ws)
               (backward-word)
               (when (looking-at "\\<\\(virtual\\|interface\\)\\>")
-                (setq modifier (match-string-no-properties 0))))
+                (setq modifier (list (match-string-no-properties 0)))))
             ;; Find parameters, if any
             (when (and (verilog-re-search-forward "#" end-pos t)
                        (verilog-ext-forward-syntactic-ws)
@@ -315,7 +315,7 @@ Bound search to LIMIT in case optional argument is non-nil."
           (when (called-interactively-p 'interactive)
             (forward-char)) ; Avoid getting stuck if executing interactively
           (while (and (not (eobp))
-                      (when-t limit
+                      (verilog-ext-when-t limit
                         (> limit (point)))
                       (not (and (verilog-re-search-forward (concat "\\s-*" identifier-re) limit 'move) ; Module name
                                 (not (verilog-parenthesis-depth)) ; Optimize search by avoiding looking for identifiers in parenthesized expressions
@@ -324,7 +324,7 @@ Bound search to LIMIT in case optional argument is non-nil."
                                   (setq module-pos (match-beginning 1))
                                   (setq module-match-data (match-data)))
                                 (verilog-ext-forward-syntactic-ws)
-                                (when-t (= (following-char) ?\#)
+                                (verilog-ext-when-t (= (following-char) ?\#)
                                   (and (verilog-ext-forward-char)
                                        (verilog-ext-forward-syntactic-ws)
                                        (= (following-char) ?\()
@@ -337,7 +337,7 @@ Bound search to LIMIT in case optional argument is non-nil."
                                   (setq instance-match-data (match-data)))
                                 (verilog-ext-skip-identifier-forward)
                                 (verilog-ext-forward-syntactic-ws)
-                                (when-t (= (following-char) ?\[)
+                                (verilog-ext-when-t (= (following-char) ?\[)
                                   (and (verilog-ext-forward-sexp)
                                        (= (preceding-char) ?\])
                                        (verilog-ext-forward-syntactic-ws)))
@@ -401,7 +401,7 @@ Bound search to LIMIT in case it is non-nil."
       (save-excursion
         (save-match-data
           (while (and (not (bobp))
-                      (when-t limit
+                      (verilog-ext-when-t limit
                         (< limit (point)))
                       (not (and (set-marker module-end (verilog-re-search-backward ";" limit 'move))
                                 (not (verilog-parenthesis-depth))
@@ -410,7 +410,7 @@ Bound search to LIMIT in case it is non-nil."
                                 (verilog-ext-backward-sexp)
                                 (= (following-char) ?\()
                                 (verilog-ext-backward-syntactic-ws)
-                                (when-t (= (preceding-char) ?\])
+                                (verilog-ext-when-t (= (preceding-char) ?\])
                                   (and (verilog-ext-backward-sexp)
                                        (= (following-char) ?\[)
                                        (verilog-ext-backward-syntactic-ws)))
@@ -420,7 +420,7 @@ Bound search to LIMIT in case it is non-nil."
                                   (setq instance-name (match-string-no-properties 1))
                                   (setq instance-match-data (match-data)))
                                 (verilog-ext-backward-syntactic-ws)
-                                (when-t (= (preceding-char) ?\))
+                                (verilog-ext-when-t (= (preceding-char) ?\))
                                   (and (verilog-ext-backward-sexp)
                                        (= (following-char) ?\()
                                        (verilog-ext-backward-syntactic-ws)
