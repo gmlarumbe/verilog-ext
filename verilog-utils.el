@@ -242,6 +242,10 @@ Also updates `match-data' with that of `verilog-ext-class-re'."
               ;; Function/tasks and top blocks
               ((member block '(function task module interface package program))
                (and (verilog-re-search-backward re nil t)
+                    (save-excursion ; Exclude external func/tasks declarations
+                      (save-match-data
+                        (verilog-beg-of-statement)
+                        (not (looking-at "\\<extern\\>"))))
                     (setq block-type (match-string-no-properties 1))
                     (or (looking-at verilog-ext-function-re)
                         (looking-at verilog-ext-task-re)
