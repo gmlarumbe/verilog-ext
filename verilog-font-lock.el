@@ -494,6 +494,38 @@ Bound search by LIMIT."
         (set-match-data (list start end))
         (point)))))
 
+(defun verilog-ext-font-lock-enum-fontify (limit)
+  "Fontify (typedef) enum declarations."
+  (let (start-line-pos end-line-pos)
+    (when (and (verilog-re-search-forward verilog-typedef-enum-re limit t)
+               (setq start-line-pos (line-beginning-position))
+               (verilog-ext-forward-syntactic-ws)
+               (looking-at "{")
+               (verilog-ext-forward-sexp)
+               (eq (preceding-char) ?})
+               (verilog-ext-forward-syntactic-ws)
+               (looking-at verilog-identifier-sym-re))
+      (setq end-line-pos (line-end-position))
+      (unless (get-text-property (point) 'font-lock-multiline)
+        (put-text-property start-line-pos end-line-pos 'font-lock-multiline t))
+      (point))))
+
+(defun verilog-ext-font-lock-struct-fontify (limit)
+  "Fontify (typedef) struct declarations."
+  (let (start-line-pos end-line-pos)
+    (when (and (verilog-re-search-forward verilog-ext-font-lock-typedef-struct-re limit t)
+               (setq start-line-pos (line-beginning-position))
+               (verilog-re-search-forward "{" limit t)
+               (verilog-ext-backward-char)
+               (verilog-ext-forward-sexp)
+               (eq (preceding-char) ?})
+               (verilog-ext-forward-syntactic-ws)
+               (looking-at verilog-identifier-sym-re))
+      (setq end-line-pos (line-end-position))
+      (unless (get-text-property (point) 'font-lock-multiline)
+        (put-text-property start-line-pos end-line-pos 'font-lock-multiline t))
+      (point))))
+
 (defun verilog-ext-font-lock-match-translate-off-fontify (limit)
   "Match a translate-off block, setting `match-data' and returning t, else nil.
 Bound search by LIMIT.
@@ -568,6 +600,12 @@ Similar to `verilog-match-translate-off' but including
       (2 'verilog-ext-font-lock-instance-face))
     ;; User types declarations
     '(verilog-ext-font-lock-typedef-decl-fontify
+      (0 'verilog-ext-font-lock-typedef-face))
+    ;; (Typedef) enums
+    '(verilog-ext-font-lock-enum-fontify
+      (0 'verilog-ext-font-lock-typedef-face))
+    ;; (Typedef) structs
+    '(verilog-ext-font-lock-struct-fontify
       (0 'verilog-ext-font-lock-typedef-face))
     )))
 
