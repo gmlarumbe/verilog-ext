@@ -205,7 +205,8 @@ Also updates `match-data' with that of `verilog-ext-class-re'."
        (not (verilog-ext-class-declaration-is-typedef-p))))
 
 (defun verilog-ext-point-inside-block-p (block)
-  "Return block type, name and boundaries if cursor is inside specified BLOCK type."
+  "Return non-nil if cursor is inside specified BLOCK type.
+Return alist with block type, name and boundaries."
   (let ((pos (point))
         (re (cond ((eq block 'function)  "\\<\\(function\\)\\>")
                   ((eq block 'task)      "\\<\\(task\\)\\>")
@@ -287,7 +288,10 @@ Also updates `match-data' with that of `verilog-ext-class-re'."
         (if (and block-beg-point block-end-point
                  (>= pos block-beg-point)
                  (< pos block-end-point))
-            (list block-type block-name block-beg-point block-end-point)
+            `((type      . ,block-type)
+              (name      . ,block-name)
+              (beg-point . ,block-beg-point)
+              (end-point . ,block-end-point))
           nil)))))
 
 (defun verilog-ext-block-at-point ()

@@ -70,7 +70,7 @@ table."
       (electric-verilog-tab))))
 
 
-;;;; Task/function
+;;;; Task/functions/classes
 (defun verilog-ext-find-function-task (&optional limit bwd interactive-p)
   "Search for a Verilog function/task declaration or definition.
 Allows matching of multiline declarations (such as in some UVM source files).
@@ -280,6 +280,68 @@ Bound search to LIMIT in case optional argument is non-nil."
   (interactive)
   (let ((interactive-p (called-interactively-p 'interactive)))
     (verilog-ext-find-class limit :bwd interactive-p)))
+
+(defun verilog-ext-find-function-task-class (&optional limit bwd interactive-p)
+  "Find closest declaration of a function/task/class.
+Return alist with data associated to the thing found.
+
+Search bacwards if BWD is non-nil.
+
+Bound search to LIMIT in case optional argument is non-nil.
+
+Third arg INTERACTIVE-P specifies whether function call should be treated as if
+it was interactive."
+  (let ((re "\\<\\(function\\|task\\|class\\)\\>")
+        found data pos type name modifiers)
+    (save-excursion
+      (while (and (not found)
+                  (if bwd
+                      (verilog-re-search-backward re limit t)
+                    (verilog-re-search-forward re limit t)))
+        (if (string= (match-string-no-properties 0) "class")
+            (unless (save-excursion
+                      (goto-char (match-beginning 0)) ; Dirty workaround to make `verilog-ext-class-declaration-is-typedef-p' work properly ...
+                      (verilog-ext-class-declaration-is-typedef-p)) ; ... moving point to the beginning of 'class keyword
+              (setq found t))
+          ;; Functions and tasks
+          (setq found t))))
+    (when found
+      (setq type (match-string-no-properties 0))
+      (if (string= type "class")
+          (progn
+            (setq data (if bwd
+                           (verilog-ext-find-class-bwd limit)
+                         (verilog-ext-find-class-fwd limit)))
+            (setq pos (alist-get 'pos data))
+            (setq name (alist-get 'name data))
+            (setq modifiers (alist-get 'modifier data)))
+        (setq data (if bwd
+                       (verilog-ext-find-function-task-bwd limit)
+                     (verilog-ext-find-function-task-fwd limit)))
+        (setq pos (alist-get 'pos data))
+        (setq name (alist-get 'name data))
+        (setq modifiers (alist-get 'modifiers data)))
+      (if interactive-p
+          (message "%s" name)
+        ;; Return alist
+        `((pos       . ,pos)
+          (type      . ,type)
+          (name      . ,name)
+          (modifiers . ,modifiers))))))
+
+(defun verilog-ext-find-function-task-class-fwd (&optional limit)
+  "Search forward for a Verilog function/task/class declaration.
+Bound search to LIMIT in case optional argument is non-nil."
+  (interactive)
+  (let ((interactive-p (called-interactively-p 'interactive)))
+    (verilog-ext-find-function-task-class limit nil interactive-p)))
+
+(defun verilog-ext-find-function-task-class-bwd (&optional limit)
+  "Search backward for a Verilog function/task/class declaration.
+Bound search to LIMIT in case optional argument is non-nil."
+  (interactive)
+  (let ((interactive-p (called-interactively-p 'interactive)))
+    (verilog-ext-find-function-task-class limit :bwd interactive-p)))
 
 
 ;;;; Module/instance
@@ -599,6 +661,42 @@ Kill the buffer if there is only one match."
   ;; to get back standard table to avoid indentation issues with compiler directives.
   (modify-syntax-entry ?` "."))
 
+
+;;; Defun movement
+(defun verilog-ext-defun-level-up ()
+  "Move up one defun-level.
+Return alist with defun data if point moved to a higher block."
+  (interactive)
+  (let ((data (verilog-ext-block-at-point)))
+    (when data
+      (goto-char (alist-get 'beg-point data))
+      (backward-char)
+      (verilog-beg-of-statement)
+      (if (called-interactively-p 'any)
+          (message "%s" (alist-get 'name data))
+        data))))
+
+(defun verilog-ext-defun-level-down ()
+  "Move down one defun-level.
+Return alist with defun data if point moved to a lower block."
+  (interactive)
+  (let* ((data (verilog-ext-block-at-point))
+         (block-type (alist-get 'type data))
+         (end-pos (alist-get 'end-point data)))
+    (when data
+      (cond ((or (equal block-type "function")
+                 (equal block-type "task"))
+             nil)
+            ((equal block-type "class")
+             (verilog-ext-find-function-task-fwd end-pos))
+            ((equal block-type "package")
+             (verilog-ext-find-function-task-class-fwd end-pos))
+            ((or (equal block-type "module")
+                 (equal block-type "interface")
+                 (equal block-type "program"))
+             (verilog-ext-find-function-task-fwd end-pos))
+            (t
+             nil)))))
 
 ;;; Dwim
 (defun verilog-ext-nav-down-dwim ()

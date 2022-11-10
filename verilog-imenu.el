@@ -82,36 +82,6 @@ Group the ones that belong to same external method definitions."
               (setf (cdr (assoc tf-group-name index)) (cons node (cdr (assoc tf-group-name index))))))))
       index)))
 
-(defun verilog-ext-imenu-find-task-function-class-bwd ()
-  "Find closest declaration of a function/task/class.
-Return alist with position, type, name and modifiers for use in Imenu index
-builder."
-  (let (found data pos type name modifiers)
-    (save-excursion
-      (while (and (not found)
-                  (verilog-re-search-backward "\\<\\(function\\|task\\|class\\)\\>" nil t))
-        (if (string= (match-string-no-properties 0) "class")
-            (when (not (verilog-ext-class-declaration-is-typedef-p))
-              (setq found t))
-          ;; Functions and tasks
-          (setq found t))))
-    (setq type (match-string-no-properties 0))
-    (if (string= type "class")
-        (progn
-          (setq data (verilog-ext-find-class-bwd))
-          (setq pos (alist-get 'pos data))
-          (setq name (alist-get 'name data))
-          (setq modifiers (alist-get 'modifier data)))
-      (setq data (verilog-ext-find-function-task-bwd))
-      (setq pos (alist-get 'pos data))
-      (setq name (alist-get 'name data))
-      (setq modifiers (alist-get 'modifiers data)))
-    (when (and pos type name)
-      `((pos       . ,pos)
-        (type      . ,type)
-        (name      . ,name)
-        (modifiers . ,modifiers)))))
-
 (defun verilog-ext-imenu--format-class-item-label (type name modifiers)
   "Return Imenu label for single node using TYPE, NAME and MODIFIERS."
   (let* ((prop-name (propertize name 'face '(:foreground "goldenrod" :weight bold)))
@@ -144,7 +114,7 @@ Find recursively tasks and functions inside classes."
     (let* ((data (progn
                    (verilog-ext-find-class-bwd)
                    (verilog-forward-sexp)
-                   (verilog-ext-imenu-find-task-function-class-bwd)))
+                   (verilog-ext-find-function-task-class-bwd)))
            (pos (when data
                   (save-excursion
                     (goto-char (alist-get 'pos data))
