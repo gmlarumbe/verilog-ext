@@ -50,22 +50,26 @@ Optional ARG sets number of words to kill."
 
 ;;;; Indentation
 (defun verilog-ext-indent-block-at-point ()
-  "Indent current block at point."
+  "Indent current block at point.
+Prevents indentation issues with compiler directives with a modified syntax
+table."
   (interactive)
-  (save-excursion
-    (let ((data (verilog-ext-block-at-point))
-          start-pos end-pos block name)
+  (let ((table (make-syntax-table verilog-mode-syntax-table))
+        (data (verilog-ext-block-at-point))
+        start-pos end-pos block name)
+    (modify-syntax-entry ?` "w" table)
+    (with-syntax-table table
       (unless data
         (user-error "Not inside a block"))
-      (setq block (car data))
-      (setq name (nth 1 data))
-      (goto-char (nth 2 data))
-      (setq start-pos (line-beginning-position))
-      (goto-char (nth 3 data))
-      (setq end-pos (line-end-position))
-      (indent-region start-pos end-pos)
-      (message "Indented %s : %s" block name))))
-
+      (save-excursion
+        (setq block (alist-get 'type data))
+        (setq name (alist-get 'name data))
+        (goto-char (alist-get 'beg-point data))
+        (setq start-pos (line-beginning-position))
+        (goto-char (alist-get 'end-point data))
+        (setq end-pos (line-end-position))
+        (indent-region start-pos end-pos)
+        (message "Indented %s : %s" block name)))))
 
 ;;;; Misc
 (defun verilog-ext-clean-port-blanks ()
