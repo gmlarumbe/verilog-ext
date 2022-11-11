@@ -82,7 +82,7 @@ table."
       (setq start-pos (match-beginning 0))
       (setq end-pos (match-end 0))
       (setq module-name (car data))
-      (setq instance-name (car (cdr data)))
+      (setq instance-name (cadr data))
       (save-excursion
         (goto-char start-pos)
         (while (re-search-forward old-re end-pos :noerror)
