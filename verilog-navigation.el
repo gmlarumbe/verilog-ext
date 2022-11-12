@@ -204,7 +204,7 @@ it was interactive."
   (interactive)
   (let ((found)
         name name-pos-start name-pos-end
-        modifier start-pos end-pos
+        modifier start-pos end-pos class-kwd-pos
         parent-class parent-class-start-pos parent-class-end-pos
         param-begin param-end param-string)
     (save-excursion
@@ -214,14 +214,17 @@ it was interactive."
                         (verilog-re-search-backward verilog-ext-class-re limit 'move)
                       (verilog-re-search-forward verilog-ext-class-re limit 'move)))
           (when (save-excursion
-                  (goto-char (match-beginning 1)) ; Dirty workaround to make `verilog-ext-class-declaration-is-typedef-p' work properly ...
+                  (setq class-kwd-pos (goto-char (match-beginning 1))) ; Dirty workaround to make `verilog-ext-class-declaration-is-typedef-p' work properly ...
                   (not (verilog-ext-class-declaration-is-typedef-p))) ; ... moving point to the beginning of 'class keyword
             (setq found t)
             (setq name (match-string-no-properties 3))
             (setq name-pos-start (match-beginning 3))
             (setq name-pos-end (match-end 3))
             (setq start-pos (point))
-            (setq end-pos (verilog-pos-at-end-of-statement))
+            (setq end-pos (or (verilog-pos-at-end-of-statement) ; Dirty workaround when searching forwards ...
+                              (progn                            ; ... point might be at the end of the statement ...
+                                (goto-char class-kwd-pos)       ; ... and `verilog-pos-at-end-of-statement' might return nil
+                                (verilog-pos-at-end-of-statement))))
             ;; Find modifiers (virtual/interface)
             (save-excursion
               (verilog-backward-syntactic-ws)
@@ -229,7 +232,8 @@ it was interactive."
               (when (looking-at "\\<\\(virtual\\|interface\\)\\>")
                 (setq modifier (list (match-string-no-properties 0)))))
             ;; Find parameters, if any
-            (when (and (verilog-re-search-forward "#" end-pos t)
+            (when (and end-pos
+                       (verilog-re-search-forward "#" end-pos t)
                        (verilog-ext-forward-syntactic-ws)
                        (setq param-begin (1+ (point)))
                        (verilog-ext-forward-sexp)
@@ -342,6 +346,41 @@ Bound search to LIMIT in case optional argument is non-nil."
   (interactive)
   (let ((interactive-p (called-interactively-p 'interactive)))
     (verilog-ext-find-function-task-class limit :bwd interactive-p)))
+
+
+;;;; Blocks
+(defun verilog-ext-find-block (&optional bwd interactive-p)
+  "Search for a Verilog block regexp.
+If BWD is non-nil, search backwards.  INTERACTIVE-P specifies whether function
+call should be treated as if it was interactive."
+  (let ((block-re verilog-ext-block-re)
+        (case-fold-search verilog-case-fold)
+        found pos)
+    (save-excursion
+      (unless bwd
+        (forward-char)) ; Avoid getting stuck
+      (if bwd
+          (verilog-re-search-backward block-re nil t)
+        (verilog-re-search-forward block-re nil t))
+      (if interactive-p
+          (setq pos (match-beginning 1))
+        (setq pos (point))))
+    (when interactive-p
+      (message (match-string 1)))
+    (when pos
+      (goto-char pos))))
+
+(defun verilog-ext-find-block-fwd ()
+  "Search forward for a Verilog block regexp."
+  (interactive)
+  (let ((interactive-p (called-interactively-p 'interactive)))
+    (verilog-ext-find-block nil interactive-p)))
+
+(defun verilog-ext-find-block-bwd ()
+  "Search backwards for a Verilog block regexp."
+  (interactive)
+  (let ((interactive-p (called-interactively-p 'interactive)))
+    (verilog-ext-find-block :bwd interactive-p)))
 
 
 ;;;; Module/instance
@@ -667,26 +706,41 @@ Kill the buffer if there is only one match."
   "Move up one defun-level.
 Return alist with defun data if point moved to a higher block."
   (interactive)
-  (let ((data (verilog-ext-block-at-point)))
+  (let ((data (verilog-ext-block-at-point))
+        beg-pos name)
     (when data
-      (goto-char (alist-get 'beg-point data))
-      (backward-char)
-      (verilog-beg-of-statement)
+      (setq beg-pos (alist-get 'beg-point data))
+      (if (and (or (equal (alist-get 'type data) "function")
+                   (equal (alist-get 'type data) "task"))
+               (verilog-re-search-backward "\\<begin\\>" beg-pos t))
+          (progn
+            (setq name (match-string-no-properties 0))
+            (goto-char (match-beginning 0)))
+        (setq name (alist-get 'name data))
+        (goto-char (alist-get 'beg-point data))
+        (backward-char)
+        (verilog-beg-of-statement))
       (if (called-interactively-p 'any)
-          (message "%s" (alist-get 'name data))
+          (message "%s" name)
         data))))
 
 (defun verilog-ext-defun-level-down ()
   "Move down one defun-level.
 Return alist with defun data if point moved to a lower block."
   (interactive)
-  (let* ((data (verilog-ext-block-at-point))
+  (let* ((data (save-excursion ; Workaround to properly detect current block boundaries
+                 (verilog-re-search-forward ";" (line-end-position) t)
+                 (verilog-ext-block-at-point)))
          (block-type (alist-get 'type data))
          (end-pos (alist-get 'end-point data)))
     (when data
       (cond ((or (equal block-type "function")
                  (equal block-type "task"))
-             nil)
+             (verilog-re-search-forward "\\<begin\\>" end-pos t)
+             (setq name (match-string-no-properties 0))
+             (when (and name
+                        (called-interactively-p 'any))
+               (message "%s" name)))
             ((equal block-type "class")
              (verilog-ext-find-function-task-fwd end-pos))
             ((equal block-type "package")
@@ -704,21 +758,36 @@ Return alist with defun data if point moved to a lower block."
 If in a module/interface look for instantiations.
 Otherwise look for functions/tasks."
   (interactive)
-  (cond ((verilog-ext-scan-buffer-modules)
-         (call-interactively #'verilog-ext-find-module-instance-fwd))
-        (t
-         (call-interactively #'verilog-ext-find-function-task-fwd))))
+  (if (verilog-ext-scan-buffer-modules)
+      (call-interactively #'verilog-ext-find-module-instance-fwd)
+    (call-interactively #'verilog-ext-defun-level-down)))
 
 (defun verilog-ext-nav-up-dwim ()
   "Context based search upwards.
 If in a module/interface look for instantiations.
 Otherwise look for functions/tasks."
   (interactive)
-  (cond ((verilog-ext-scan-buffer-modules)
-         (call-interactively #'verilog-ext-find-module-instance-bwd-2))
-        (t
-         (call-interactively #'verilog-ext-find-function-task-bwd))))
+  (if (verilog-ext-scan-buffer-modules)
+      (call-interactively #'verilog-ext-find-module-instance-bwd-2)
+    (call-interactively #'verilog-ext-defun-level-up)))
 
+(defun verilog-ext-nav-beg-of-defun-dwim ()
+  "Context based search upwards.
+If in a module/interface look for instantiations.
+Otherwise look for functions/tasks."
+  (interactive)
+  (if (verilog-ext-scan-buffer-modules)
+      (call-interactively #'verilog-ext-find-block-bwd)
+    (call-interactively #'verilog-ext-find-function-task-class-bwd)))
+
+(defun verilog-ext-nav-end-of-defun-dwim ()
+  "Context based search upwards.
+If in a module/interface look for instantiations.
+Otherwise look for functions/tasks."
+  (interactive)
+  (if (verilog-ext-scan-buffer-modules)
+      (call-interactively #'verilog-ext-find-block-fwd)
+    (call-interactively #'verilog-ext-find-function-task-class-fwd)))
 
 
 ;;; Setup

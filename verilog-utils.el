@@ -33,6 +33,13 @@
 (defconst verilog-ext-keywords-re
   (eval-when-compile
     (regexp-opt verilog-keywords 'symbols)))
+(defconst verilog-ext-block-re
+  (eval-when-compile
+    (regexp-opt
+     '("module" "interface" "program" "package" "class" "function" "task"
+       "initial" "always" "always_ff" "always_comb" "generate" "property"
+       "sequence" "`define")
+     'symbols)))
 
 (defconst verilog-ext-top-instantiable-re
   (concat "\\<\\(?1:module\\|interface\\)\\>\\(\\s-+\\<automatic\\>\\)?\\s-+\\(?3:" verilog-identifier-sym-re "\\)"))
