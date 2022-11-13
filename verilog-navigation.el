@@ -94,6 +94,7 @@ the function call."
         (tf-re "\\<\\(function\\|task\\)\\>")
         (tf-modifiers-re "\\<\\(extern\\|static\\|pure\\|virtual\\|local\\|protected\\)\\>")
         tf-type tf-kwd-pos-end
+        tf-args tf-args-pos-beg tf-args-pos-end
         tf-name tf-name-pos-beg tf-name-pos-end tf-beg-of-statement-pos tf-end-of-statement-pos tf-modifiers
         func-return-type func-return-type-pos-beg func-return-type-pos-end
         class-name class-beg-pos class-end-pos
@@ -110,7 +111,11 @@ the function call."
              (verilog-ext-backward-char)
              (verilog-ext-backward-syntactic-ws)
              (verilog-ext-when-t (eq (preceding-char) ?\))
-               (verilog-ext-backward-sexp))
+               (setq tf-args-pos-end (1- (point)))
+               (verilog-ext-backward-sexp)
+               (setq tf-args-pos-beg (1+ (point)))
+               (setq tf-args (split-string (buffer-substring-no-properties tf-args-pos-beg tf-args-pos-end) ","))
+               (setq tf-args (mapcar #'string-trim tf-args)))
              (backward-word)
              ;; Func/task name
              (when (looking-at verilog-identifier-re)
@@ -162,7 +167,8 @@ the function call."
             (name        . ,tf-name)
             (modifiers   . ,tf-modifiers)
             (return-type . ,func-return-type)
-            (class-name  . ,class-name)))
+            (class-name  . ,class-name)
+            (args        . ,tf-args)))
       ;; Not found interactive reporting
       (when interactive-p
         (if bwd
