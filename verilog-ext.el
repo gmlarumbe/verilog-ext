@@ -42,6 +42,7 @@
 (require 'verilog-utils)
 (require 'verilog-editing)
 (require 'verilog-navigation)
+(require 'verilog-typedef)
 (require 'verilog-compile)
 (require 'verilog-which-func)
 (require 'verilog-hideshow)
