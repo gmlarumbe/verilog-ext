@@ -115,9 +115,10 @@
 (defmacro verilog-ext-while-t (cond &rest body)
   "Same function `while' but returning t after last condition for use in ands."
   (declare (indent 1) (debug t))
-  `(when ,cond
-     ,@body)
-  t)
+  `(progn
+     (while ,cond
+       ,@body)
+     t))
 
 (defun verilog-ext-path-join (arg1 arg2)
   "Join path of ARG1 and ARG2."
@@ -277,7 +278,9 @@ Return alist with block type, name and boundaries."
               ;; Procedural: always, initial and final
               ((member block '(always initial final))
                (and (verilog-re-search-backward re nil t)
-                    (setq block-type (match-string-no-properties 1))
+                    (if (equal block 'always)
+                        (setq block-type "always")
+                      (setq block-type (match-string-no-properties 1)))
                     (verilog-ext-skip-identifier-forward)
                     (verilog-ext-forward-syntactic-ws)
                     (setq block-beg-point (point))
@@ -340,12 +343,29 @@ Return alist with block type, name and boundaries."
       (verilog-ext-point-inside-block-p 'program)))
 
 (defun verilog-ext-inside-procedural ()
-  "Return cons cell with begin/end positions if point is inside a procedural block."
-  (let ((data (verilog-ext-point-inside-block-p 'begin-end)))
-    (when (or (and data
-                   (not (verilog-ext-point-inside-block-p 'generate)))
-              (verilog-ext-point-inside-block-p 'always))
-      (cons (alist-get 'beg-point data) (alist-get 'end-point data)))))
+  "Return cons cell with start/end positions if point is inside a procedural block.
+If point is inside a begin-end block inside a procedural, return begin-end positions."
+  (save-match-data
+    (save-excursion
+      (let* ((block-data (verilog-ext-block-at-point))
+             (block-type (alist-get 'type block-data))
+             (beg-end-data (verilog-ext-point-inside-block-p 'begin-end)))
+        (cond (beg-end-data ; If on a begin-end block outside a generate, it will always be procedural
+               (unless (string= block-type "generate") ; Relies on `verilog-ext-block-at-point' having higher precedence ...
+                 (cons (alist-get 'beg-point beg-end-data) (alist-get 'end-point beg-end-data)))) ; ... for always than for generate
+              ;; If outside a begin-end, look for
+              ((or (string= block-type "function")
+                   (string= block-type "task")
+                   (string= block-type "class")
+                   (string= block-type "package")
+                   (string= block-type "initial")
+                   (string= block-type "final")
+                   (string= block-type "program"))
+               (cons (alist-get 'beg-point block-data) (alist-get 'end-point block-data)))
+              ;; Default, not in a procedural block
+              (t
+               nil))))))
+
 
 
 (provide 'verilog-utils)

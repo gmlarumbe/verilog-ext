@@ -729,6 +729,20 @@ Kill the buffer if there is only one match."
 
 
 ;;; Defun movement
+(defun verilog-ext-goto-begin-up ()
+  "Move point to start position of current begin."
+  (save-match-data
+    (let ((data (verilog-ext-point-inside-block-p 'begin-end)))
+      (when data
+        (goto-char (alist-get 'beg-point data))))))
+
+(defun verilog-ext-goto-begin-down ()
+  "Move point to start position of next nested begin."
+  (save-match-data
+    (let ((data (verilog-ext-point-inside-block-p 'begin-end)))
+      (when data
+        (verilog-re-search-forward "\\<begin\\>" (alist-get 'end-point data) t)))))
+
 (defun verilog-ext-defun-level-up ()
   "Move up one defun-level.
 Return alist with defun data if point moved to a higher block."
@@ -739,10 +753,10 @@ Return alist with defun data if point moved to a higher block."
       (setq beg-pos (alist-get 'beg-point data))
       (if (and (or (equal (alist-get 'type data) "function")
                    (equal (alist-get 'type data) "task"))
-               (verilog-re-search-backward "\\<begin\\>" beg-pos t))
+               (verilog-ext-point-inside-block-p 'begin-end))
           (progn
-            (setq name (match-string-no-properties 0))
-            (goto-char (match-beginning 0)))
+            (verilog-ext-goto-begin-up)
+            (setq name "begin"))
         (setq name (alist-get 'name data))
         (goto-char (alist-get 'beg-point data))
         (backward-char)
@@ -762,7 +776,10 @@ Return alist with defun data if point moved to a lower block."
          (end-pos (alist-get 'end-point data))
          name)
     (when data
-      (cond ((or (equal block-type "function")
+      (cond ((verilog-ext-point-inside-block-p 'begin-end)
+             (when (verilog-ext-goto-begin-down)
+               (message "begin")))
+            ((or (equal block-type "function")
                  (equal block-type "task"))
              (verilog-re-search-forward "\\<begin\\>" end-pos t)
              (setq name (match-string-no-properties 0))
