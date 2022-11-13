@@ -163,6 +163,12 @@ obj.method();
   "Face for interface modports."
   :group 'verilog-ext-font-lock-faces)
 
+(defvar verilog-ext-font-lock-direction-face 'verilog-ext-font-lock-direction-face)
+(defface verilog-ext-font-lock-direction-face
+  '((t (:foreground "RosyBrown3")))
+  "Face for direction of ports/functions/tasks args."
+  :group 'verilog-ext-font-lock-faces)
+
 (defvar verilog-ext-font-lock-typedef-face 'verilog-ext-font-lock-typedef-face)
 (defface verilog-ext-font-lock-typedef-face
   '((t (:foreground "light blue")))
@@ -203,238 +209,258 @@ obj.method();
 (defconst verilog-ext-font-lock-time-unit-re "[0-9]+\\(\\.[0-9]+\\)?\\(?2:[umnpf]s\\)")
 (defconst verilog-ext-font-lock-interface-modport-re (concat "\\(?1:^\\s-*\\(?2:" verilog-identifier-re "\\)\\.\\(?3:" verilog-identifier-re "\\)\\s-+\\)"))
 (defconst verilog-ext-font-lock-typedef-struct-re "^\\s-*\\(typedef\\s-+\\)?\\(struct\\|union\\)\\s-+\\(packed\\|\\(un\\)?signed\\)?")
-(defconst verilog-ext-font-lock-range-optional-re "\\s-*\\(\\[[^]]*\\]\\s-*\\)*")
 
-;; Obtained with:
-;; (dolist (word (cl-set-difference verilog-keywords verilog-type-keywords :test #'equal))
-;;   (insert "\"" word "\" "))
-(defconst verilog-ext-font-lock-keywords-no-types
-  '("`__FILE__" "`__LINE" "`begin_keywords" "`celldefine" "`default_nettype"
-    "`define" "`else" "`elsif" "`end_keywords" "`endcelldefine" "`endif"
-    "`ifdef" "`ifndef" "`include" "`line" "`nounconnected_drive" "`pragma"
-    "`resetall" "`timescale" "`unconnected_drive" "`undef" "`undefineall"
-    "`case" "`default" "`endfor" "`endprotect" "`endswitch" "`endwhile" "`for"
-    "`format" "`if" "`let" "`protect" "`switch" "`timescale" "`time_scale"
-    "`while" "after" "alias" "always" "always_comb" "always_ff" "always_latch"
-    "assert" "assign" "assume" "automatic" "before" "begin" "bind" "bins"
-    "binsof" "bit" "break" "byte" "case" "casex" "casez" "cell" "chandle"
-    "class" "clocking" "config" "const" "constraint" "context" "continue"
-    "cover" "covergroup" "coverpoint" "cross" "deassign" "default" "design"
-    "disable" "dist" "do" "edge" "else" "end" "endcase" "endclass" "endclocking"
-    "endconfig" "endfunction" "endgenerate" "endgroup" "endinterface"
-    "endmodule" "endpackage" "endprimitive" "endprogram" "endproperty"
-    "endspecify" "endsequence" "endtable" "endtask" "enum" "event" "expect"
-    "export" "extends" "extern" "final" "first_match" "for" "force" "foreach"
-    "forever" "fork" "forkjoin" "function" "generate" "genvar" "highz0" "highz1"
-    "if" "iff" "ifnone" "ignore_bins" "illegal_bins" "import" "incdir" "include"
-    "initial" "inside" "instance" "int" "interface" "intersect" "join"
-    "join_any" "join_none" "large" "liblist" "library" "local" "longint"
-    "macromodule" "matches" "medium" "modport" "module" "negedge" "new"
-    "noshowcancelled" "null" "package" "packed" "posedge" "primitive" "priority"
-    "program" "property" "protected" "pulsestyle_onevent" "pulsestyle_ondetect"
-    "pure" "rand" "randc" "randcase" "randsequence" "ref" "release" "repeat"
-    "return" "scalared" "sequence" "shortint" "shortreal" "showcancelled"
-    "signed" "small" "solve" "specify" "specparam" "static" "string" "strong0"
-    "strong1" "struct" "super" "supply0" "supply1" "table" "tagged" "task"
-    "this" "throughout" "timeprecision" "timeunit" "type" "typedef" "union"
-    "unique" "unsigned" "use" "uwire" "var" "vectored" "virtual" "void" "wait"
-    "wait_order" "weak0" "weak1" "while" "wildcard" "with" "within" "accept_on"
-    "checker" "endchecker" "eventually" "global" "implies" "let" "nexttime"
-    "reject_on" "restrict" "s_always" "s_eventually" "s_nexttime" "s_until"
-    "s_until_with" "strong" "sync_accept_on" "sync_reject_on" "unique0" "until"
-    "until_with" "untyped" "weak" "implements" "interconnect" "nettype" "soft"))
-(defconst verilog-ext-font-lock-keywords-no-types-re
-  (verilog-regexp-words verilog-ext-font-lock-keywords-no-types))
 
 (defconst verilog-ext-font-lock-type-font-keywords
-  (verilog-regexp-words
-   '("and" "buf" "bufif0" "bufif1" "cmos" "defparam" "event" "genvar" "highz0"
-   "highz1" "inout" "input" "integer" "localparam" "mailbox" "nand" "nmos" "nor"
-   "not" "notif0" "notif1" "or" "output" "parameter" "pmos" "pull0" "pull1"
-   "pulldown" "pullup" "rcmos" "real" "realtime" "reg" "rnmos" "specparam"
-   "strong0" "strong1" "supply" "supply0" "supply1" "time" "tran" "tranif0"
-   "tranif1" "tri" "tri0" "tri1" "triand" "trior" "trireg" "unsigned" "uwire"
-   "vectored" "wand" "weak0" "weak1" "wire" "wor" "xnor" "xor" "signed"
-   ;; 1800-2005
-   "bit" "byte" "chandle" "const" "enum" "int" "logic" "longint" "packed" "ref"
-   "shortint" "shortreal" "static" "string" "struct" "type" "typedef" "union"
-   "var"
-   ;; 1800-2009
-   ;; 1800-2012
-   "interconnect" "nettype"
-   )))
+  (eval-when-compile
+    (verilog-regexp-words
+     '("and" "buf" "bufif0" "bufif1" "cmos" "defparam" "event" "genvar" "highz0"
+       "highz1" "integer" "localparam" "mailbox" "nand" "nmos" "nor" "not" "notif0"
+       "notif1" "or" "parameter" "pmos" "pull0" "pull1" "pulldown" "pullup" "rcmos"
+       "real" "realtime" "reg" "rnmos" "specparam" "strong0" "strong1" "supply"
+       "supply0" "supply1" "time" "tran" "tranif0" "tranif1" "tri" "tri0" "tri1"
+       "triand" "trior" "trireg" "unsigned" "uwire" "vectored" "wand" "weak0"
+       "weak1" "wire" "wor" "xnor" "xor" "signed"
+       ;; 1800-2005
+       "bit" "byte" "chandle" "int" "logic" "longint" "packed" "shortint"
+       "shortreal" "string" "type" "union" "var"
+       ;; 1800-2009
+       ;; 1800-2012
+       "interconnect" "nettype"
+       ))))
+
+(defconst verilog-ext-font-lock-direction-keywords
+  (eval-when-compile
+    (verilog-regexp-words
+     '("inout" "input" "output" "ref"))))
 
 (defconst verilog-ext-font-lock-general-keywords
-  (verilog-regexp-opt
-   '("always" "assign" "automatic" "case" "casex" "casez" "cell" "config"
-     "deassign" "default" "design" "disable" "edge" "else" "endcase" "endconfig"
-     "endfunction" "endgenerate" "endmodule" "endprimitive" "endspecify"
-     "endtable" "endtask" "for" "force" "forever" "fork" "function" "generate"
-     "if" "ifnone" "incdir" "include" "initial" "instance" "join" "large"
-     "liblist" "library" "macromodule" "medium" "module" "negedge"
-     "noshowcancelled" "posedge" "primitive" "pulsestyle_ondetect"
-     "pulsestyle_onevent" "release" "repeat" "scalared" "showcancelled" "small"
-     "specify" "strength" "table" "task" "use" "wait" "while"
-     ;; 1800-2005
-     "alias" "always_comb" "always_ff" "always_latch" "assert" "assume" "analog"
-     "before" "bind" "bins" "binsof" "break" "class" "clocking" "constraint"
-     "context" "continue" "cover" "covergroup" "coverpoint" "cross" "dist" "do"
-     "endclass" "endclocking" "endgroup" "endinterface" "endpackage"
-     "endprogram" "endproperty" "endsequence" "expect" "export" "extends"
-     "extern" "final" "first_match" "foreach" "forkjoin" "iff" "ignore_bins"
-     "illegal_bins" "import" "inside" "interface" "intersect" "join_any"
-     "join_none" "local" "matches" "modport" "new" "null" "package" "priority"
-     "program" "property" "protected" "pure" "rand" "randc" "randcase"
-     "randsequence" "return" "sequence" "solve" "super" "tagged" "this"
-     "throughout" "timeprecision" "timeunit" "unique" "virtual" "void"
-     "wait_order" "wildcard" "with" "within"
-     ;; 1800-2009
-     "accept_on" "checker" "endchecker" "eventually" "global" "implies" "let"
-     "nexttime" "reject_on" "restrict" "s_always" "s_eventually" "s_nexttime"
-     "s_until" "s_until_with" "strong" "sync_accept_on" "sync_reject_on"
-     "unique0" "until" "until_with" "untyped" "weak"
-     ;; 1800-2012
-     "implements" "soft")))
+  (eval-when-compile
+    (verilog-regexp-opt
+     '("always" "assign" "automatic" "case" "casex" "casez" "cell" "config"
+       "deassign" "default" "design" "disable" "edge" "else" "endcase" "endconfig"
+       "endfunction" "endgenerate" "endmodule" "endprimitive" "endspecify"
+       "endtable" "endtask" "for" "force" "forever" "fork" "function" "generate"
+       "if" "ifnone" "incdir" "include" "initial" "instance" "join" "large"
+       "liblist" "library" "macromodule" "medium" "module" "negedge"
+       "noshowcancelled" "posedge" "primitive" "pulsestyle_ondetect"
+       "pulsestyle_onevent" "release" "repeat" "scalared" "showcancelled" "small"
+       "specify" "strength" "table" "task" "use" "wait" "while"
+       ;; 1800-2005
+       "alias" "always_comb" "always_ff" "always_latch" "assert" "assume"
+       "analog" "before" "bind" "bins" "binsof" "break" "class" "clocking"
+       "constraint" "context" "continue" "cover" "covergroup" "coverpoint"
+       "cross" "dist" "do" "endclass" "endclocking" "endgroup" "endinterface"
+       "endpackage" "endprogram" "endproperty" "endsequence" "expect" "export"
+       "extends" "extern" "final" "first_match" "foreach" "forkjoin" "iff"
+       "ignore_bins" "illegal_bins" "import" "inside" "interface" "intersect"
+       "join_any" "join_none" "local" "matches" "modport" "new" "null" "package"
+       "priority" "program" "property" "protected" "pure" "rand" "randc"
+       "randcase" "randsequence" "return" "sequence" "solve" "static" "super"
+       "tagged" "this" "throughout" "timeprecision" "timeunit" "typedef"
+       "unique" "virtual" "void" "wait_order" "wildcard" "with" "within" "const"
+       "enum" "struct"
+       ;; 1800-2009
+       "accept_on" "checker" "endchecker" "eventually" "global" "implies" "let"
+       "nexttime" "reject_on" "restrict" "s_always" "s_eventually" "s_nexttime"
+       "s_until" "s_until_with" "strong" "sync_accept_on" "sync_reject_on"
+       "unique0" "until" "until_with" "untyped" "weak"
+       ;; 1800-2012
+       "implements" "soft"))))
 
 (defconst verilog-ext-font-lock-grouping-plus-this-keywords
-  (verilog-regexp-words
-   '("begin" "end" "this")))
+  (eval-when-compile
+    (verilog-regexp-words
+     '("begin" "end" "this"))))
 
-;; Obtained via grep -R of classes starting with uvm_* and some processing.
-;; Does not include internal classes (such as m_uvm_*), nor enums, nor non-class
-;; typedefs such as vector derived.
+;; Once UVM dir has been set, obtained through:
+;;   (verilog-ext-typedef-batch-update verilog-ext-align-typedef-uvm-dir)
 (defconst verilog-ext-font-lock-uvm-classes
-  (verilog-regexp-words
-   '("uvm_agent" "uvm_algorithmic_comparator" "uvm_analysis_export"
-     "uvm_analysis_imp" "uvm_analysis_port" "uvm_barrier" "uvm_bit_rsrc"
-     "uvm_blocking_get_export" "uvm_blocking_get_imp"
-     "uvm_blocking_get_peek_export" "uvm_blocking_get_peek_imp"
-     "uvm_blocking_get_peek_port" "uvm_blocking_get_port"
-     "uvm_blocking_master_export" "uvm_blocking_master_imp"
-     "uvm_blocking_master_port" "uvm_blocking_peek_export"
-     "uvm_blocking_peek_imp" "uvm_blocking_peek_port" "uvm_blocking_put_export"
-     "uvm_blocking_put_imp" "uvm_blocking_put_port" "uvm_blocking_slave_export"
-     "uvm_blocking_slave_imp" "uvm_blocking_slave_port"
-     "uvm_blocking_transport_export" "uvm_blocking_transport_imp"
-     "uvm_blocking_transport_port" "uvm_bogus_class" "uvm_bottomup_phase"
-     "uvm_build_phase" "uvm_built_in_clone" "uvm_built_in_comp"
-     "uvm_built_in_converter" "uvm_built_in_pair" "uvm_byte_rsrc" "uvm_callback"
-     "uvm_callback_iter" "uvm_callbacks" "uvm_callbacks_base"
-     "uvm_callbacks_objection" "uvm_check_phase" "uvm_class_clone"
-     "uvm_class_comp" "uvm_class_converter" "uvm_class_pair" "uvm_cmd_line_verb"
-     "uvm_cmdline_processor" "uvm_comparer" "uvm_component"
-     "uvm_component_registry" "uvm_config_db" "uvm_config_db_options"
-     "uvm_config_object_wrapper" "uvm_configure_phase" "uvm_connect_phase"
-     "uvm_copy_map" "uvm_derived_callbacks" "uvm_domain" "uvm_driver"
-     "uvm_end_of_elaboration_phase" "uvm_env" "uvm_event" "uvm_event_callback"
-     "uvm_event_pool" "uvm_exhaustive_sequence" "uvm_external_connector"
-     "uvm_extract_phase" "uvm_factory" "uvm_factory_override"
-     "uvm_factory_queue_class" "uvm_final_phase" "uvm_get_export" "uvm_get_imp"
-     "uvm_get_peek_export" "uvm_get_peek_imp" "uvm_get_peek_port" "uvm_get_port"
-     "uvm_hdl_path_concat" "uvm_heartbeat" "uvm_heartbeat_callback"
-     "uvm_if_base_abstract" "uvm_in_order_built_in_comparator"
-     "uvm_in_order_class_comparator" "uvm_in_order_comparator" "uvm_int_rsrc"
-     "uvm_line_printer" "uvm_main_phase" "uvm_master_export" "uvm_master_imp"
-     "uvm_master_port" "uvm_mem" "uvm_mem_access_seq" "uvm_mem_mam"
-     "uvm_mem_mam_cfg" "uvm_mem_mam_policy" "uvm_mem_region"
-     "uvm_mem_shared_access_seq" "uvm_mem_single_access_seq"
-     "uvm_mem_single_walk_seq" "uvm_mem_walk_seq" "uvm_monitor"
-     "uvm_nonblocking_get_export" "uvm_nonblocking_get_imp"
-     "uvm_nonblocking_get_peek_export" "uvm_nonblocking_get_peek_imp"
-     "uvm_nonblocking_get_peek_port" "uvm_nonblocking_get_port"
-     "uvm_nonblocking_master_export" "uvm_nonblocking_master_imp"
-     "uvm_nonblocking_master_port" "uvm_nonblocking_peek_export"
-     "uvm_nonblocking_peek_imp" "uvm_nonblocking_peek_port"
-     "uvm_nonblocking_put_export" "uvm_nonblocking_put_imp"
-     "uvm_nonblocking_put_port" "uvm_nonblocking_slave_export"
-     "uvm_nonblocking_slave_imp" "uvm_nonblocking_slave_port"
-     "uvm_nonblocking_transport_export" "uvm_nonblocking_transport_imp"
-     "uvm_nonblocking_transport_port" "uvm_obj_rsrc" "uvm_object"
-     "uvm_object_registry" "uvm_object_string_pool" "uvm_object_wrapper"
-     "uvm_objection" "uvm_objection_callback" "uvm_objection_context_object"
-     "uvm_objection_events" "uvm_packer" "uvm_peek_export" "uvm_peek_imp"
-     "uvm_peek_port" "uvm_phase" "uvm_pool" "uvm_port_base" "uvm_port_component"
-     "uvm_port_component_base" "uvm_post_configure_phase" "uvm_post_main_phase"
-     "uvm_post_reset_phase" "uvm_post_shutdown_phase" "uvm_pre_configure_phase"
-     "uvm_pre_main_phase" "uvm_pre_reset_phase" "uvm_pre_shutdown_phase"
-     "uvm_predict_s" "uvm_printer" "uvm_printer_knobs" "uvm_push_driver"
-     "uvm_push_sequencer" "uvm_put_export" "uvm_put_imp" "uvm_put_port"
-     "uvm_queue" "uvm_random_sequence" "uvm_random_stimulus" "uvm_recorder"
-     "uvm_reg" "uvm_reg_access_seq" "uvm_reg_adapter" "uvm_reg_backdoor"
-     "uvm_reg_bit_bash_seq" "uvm_reg_block" "uvm_reg_cbs" "uvm_reg_field"
-     "uvm_reg_fifo" "uvm_reg_file" "uvm_reg_frontdoor" "uvm_reg_hw_reset_seq"
-     "uvm_reg_indirect_data" "uvm_reg_indirect_ftdr_seq" "uvm_reg_item"
-     "uvm_reg_map" "uvm_reg_map_info" "uvm_reg_mem_access_seq"
-     "uvm_reg_mem_built_in_seq" "uvm_reg_mem_hdl_paths_seq"
-     "uvm_reg_mem_shared_access_seq" "uvm_reg_predictor" "uvm_reg_read_only_cbs"
-     "uvm_reg_sequence" "uvm_reg_shared_access_seq" "uvm_reg_single_access_seq"
-     "uvm_reg_single_bit_bash_seq" "uvm_reg_tlm_adapter"
-     "uvm_reg_write_only_cbs" "uvm_report_catcher" "uvm_report_global_server"
-     "uvm_report_handler" "uvm_report_object" "uvm_report_phase"
-     "uvm_report_server" "uvm_reset_phase" "uvm_resource" "uvm_resource_base"
-     "uvm_resource_db" "uvm_resource_db_options" "uvm_resource_options"
-     "uvm_resource_pool" "uvm_resource_types" "uvm_root"
-     "uvm_root_report_handler" "uvm_run_phase" "uvm_scope_stack"
-     "uvm_scoreboard" "uvm_seed_map" "uvm_seq_item_pull_export"
-     "uvm_seq_item_pull_imp" "uvm_seq_item_pull_port" "uvm_sequence"
-     "uvm_sequence_base" "uvm_sequence_item" "uvm_sequence_library"
-     "uvm_sequence_library_cfg" "uvm_sequence_request" "uvm_sequencer"
-     "uvm_sequencer_analysis_fifo" "uvm_sequencer_base"
-     "uvm_sequencer_param_base" "uvm_shutdown_phase" "uvm_simple_sequence"
-     "uvm_slave_export" "uvm_slave_imp" "uvm_slave_port" "uvm_spell_chkr"
-     "uvm_sqr_if_base" "uvm_start_of_simulation_phase" "uvm_status_container"
-     "uvm_string_rsrc" "uvm_subscriber" "uvm_table_printer" "uvm_task_phase"
-     "uvm_test" "uvm_test_done_objection" "uvm_tlm_analysis_fifo"
-     "uvm_tlm_b_initiator_socket" "uvm_tlm_b_initiator_socket_base"
-     "uvm_tlm_b_passthrough_initiator_socket"
-     "uvm_tlm_b_passthrough_initiator_socket_base"
-     "uvm_tlm_b_passthrough_target_socket"
-     "uvm_tlm_b_passthrough_target_socket_base" "uvm_tlm_b_target_socket"
-     "uvm_tlm_b_target_socket_base" "uvm_tlm_b_transport_export"
-     "uvm_tlm_b_transport_imp" "uvm_tlm_b_transport_port" "uvm_tlm_event"
-     "uvm_tlm_extension" "uvm_tlm_extension_base" "uvm_tlm_fifo"
-     "uvm_tlm_fifo_base" "uvm_tlm_generic_payload" "uvm_tlm_if"
-     "uvm_tlm_if_base" "uvm_tlm_nb_initiator_socket"
-     "uvm_tlm_nb_initiator_socket_base"
-     "uvm_tlm_nb_passthrough_initiator_socket"
-     "uvm_tlm_nb_passthrough_initiator_socket_base"
-     "uvm_tlm_nb_passthrough_target_socket"
-     "uvm_tlm_nb_passthrough_target_socket_base" "uvm_tlm_nb_target_socket"
-     "uvm_tlm_nb_target_socket_base" "uvm_tlm_nb_transport_bw_export"
-     "uvm_tlm_nb_transport_bw_imp" "uvm_tlm_nb_transport_bw_port"
-     "uvm_tlm_nb_transport_fw_export" "uvm_tlm_nb_transport_fw_imp"
-     "uvm_tlm_nb_transport_fw_port" "uvm_tlm_req_rsp_channel" "uvm_tlm_time"
-     "uvm_tlm_transport_channel" "uvm_topdown_phase" "uvm_transaction"
-     "uvm_transport_export" "uvm_transport_imp" "uvm_transport_port"
-     "uvm_tree_printer" "uvm_typed_callbacks" "uvm_typeid" "uvm_typeid_base"
-     "uvm_utils" "uvm_void" "uvm_vreg" "uvm_vreg_cbs" "uvm_vreg_field"
-     "uvm_vreg_field_cbs")))
+  (eval-when-compile
+    (verilog-regexp-words
+     '("uvm_tlm_nb_initiator_socket_base" "uvm_tlm_b_initiator_socket_base"
+       "uvm_tlm_nb_passthrough_target_socket"
+       "uvm_tlm_nb_passthrough_initiator_socket"
+       "uvm_tlm_b_passthrough_target_socket"
+       "uvm_tlm_b_passthrough_initiator_socket" "uvm_tlm_nb_target_socket"
+       "uvm_tlm_nb_initiator_socket" "uvm_tlm_b_target_socket"
+       "uvm_tlm_b_initiator_socket" "uvm_tlm_nb_target_socket_base"
+       "uvm_tlm_nb_passthrough_target_socket_base"
+       "uvm_tlm_nb_passthrough_initiator_socket_base"
+       "uvm_tlm_b_target_socket_base" "uvm_tlm_b_passthrough_target_socket_base"
+       "uvm_tlm_b_passthrough_initiator_socket_base"
+       "uvm_tlm_nb_transport_bw_port" "uvm_tlm_nb_transport_fw_port"
+       "uvm_tlm_b_transport_port" "uvm_tlm_nb_transport_bw_imp"
+       "uvm_tlm_nb_transport_fw_imp" "uvm_tlm_b_transport_imp" "uvm_time"
+       "uvm_tlm_if" "uvm_tlm_time" "uvm_tlm_extension" "uvm_tlm_generic_payload"
+       "uvm_tlm_extension_base" "uvm_tlm_response_status_e" "uvm_tlm_command_e"
+       "uvm_tlm_nb_transport_bw_export" "uvm_tlm_nb_transport_fw_export"
+       "uvm_tlm_b_transport_export" "uvm_tlm_transport_channel"
+       "uvm_tlm_req_rsp_channel" "uvm_tlm_event" "uvm_tlm_fifo_base"
+       "uvm_sqr_if_base" "uvm_seq_item_pull_export" "uvm_transport_port"
+       "uvm_nonblocking_transport_port" "uvm_blocking_transport_port"
+       "uvm_slave_port" "uvm_nonblocking_slave_port" "uvm_blocking_slave_port"
+       "uvm_master_port" "uvm_nonblocking_master_port" "uvm_blocking_master_port"
+       "uvm_get_peek_port" "uvm_nonblocking_get_peek_port"
+       "uvm_blocking_get_peek_port" "uvm_peek_port" "uvm_nonblocking_peek_port"
+       "uvm_blocking_peek_port" "uvm_get_port" "uvm_nonblocking_get_port"
+       "uvm_blocking_get_port" "uvm_put_port" "uvm_nonblocking_put_port"
+       "uvm_transport_export" "uvm_nonblocking_transport_export"
+       "uvm_blocking_transport_export" "uvm_slave_export"
+       "uvm_nonblocking_slave_export" "uvm_blocking_slave_export"
+       "uvm_master_export" "uvm_nonblocking_master_export"
+       "uvm_blocking_master_export" "uvm_get_peek_export"
+       "uvm_nonblocking_get_peek_export" "uvm_blocking_get_peek_export"
+       "uvm_peek_export" "uvm_nonblocking_peek_export" "uvm_blocking_peek_export"
+       "uvm_get_export" "uvm_nonblocking_get_export" "uvm_blocking_get_export"
+       "uvm_put_export" "uvm_nonblocking_put_export" "uvm_blocking_put_export"
+       "uvm_tlm_if_base" "rsp_type" "req_type" "uvm_tlm_fifo" "uvm_config_seq"
+       "seq_req_t" "m_uvm_sqr_seq_base" "uvm_sequence_process_wrapper"
+       "uvm_sequence_request" "uvm_sequencer_analysis_fifo"
+       "uvm_virtual_sequencer" "uvm_seq_item_pull_imp" "uvm_sequence_library_cfg"
+       "uvm_sequence_library" "uvm_sequence_lib_mode" "sequencer_t"
+       "uvm_default_sequencer_param_type" "uvm_default_driver_type"
+       "uvm_default_sequencer_type" "uvm_default_sequence_type"
+       "uvm_sequencer_param_base" "uvm_sequence" "uvm_push_sequencer"
+       "uvm_vreg_field_cb" "uvm_vreg_field_cbs" "uvm_vreg_cb" "uvm_vreg_cbs"
+       "uvm_vreg_field_cb_iter" "uvm_vreg_cb_iter" "seq_parent_e" "uvm_sequencer"
+       "uvm_reg_predictor" "uvm_predict_s" "uvm_reg_cvr_rsrc_db"
+       "uvm_reg_sequence" "bit_q_t" "uvm_reg_data_logic_t" "uvm_reg_seq_base"
+       "uvm_reg_transaction_order_policy" "uvm_reg_map_addr_range" "uvm_access_e"
+       "uvm_elem_kind_e" "uvm_reg_indirect_data" "uvm_reg_indirect_ftdr_seq"
+       "uvm_reg_fifo" "uvm_reg_byte_en_t" "uvm_reg_field_cb" "uvm_mem_cb"
+       "uvm_reg_bd_cb_iter" "uvm_reg_bd_cb" "uvm_reg_cb" "uvm_predict_e"
+       "uvm_reg_write_only_cbs" "uvm_reg_read_only_cbs" "uvm_hier_e"
+       "uvm_reg_tlm_adapter" "uvm_reg_adapter" "uvm_reg_bus_op" "uvm_tlm_gp"
+       "uvm_reg_cbs" "uvm_reg_field_cb_iter" "uvm_reg_cb_iter" "uvm_reg_file"
+       "locality_e" "alloc_mode_e" "uvm_mem_region" "uvm_mem_mam_policy"
+       "uvm_reg_cvr_t" "uvm_hdl_path_slice" "uvm_door_e" "uvm_endianness_e"
+       "uvm_reg_frontdoor" "uvm_mem_cb_iter" "uvm_reg_item" "uvm_reg_addr_t"
+       "uvm_vreg_field" "uvm_vreg" "uvm_reg_map_info" "uvm_mem_mam_cfg"
+       "uvm_mem_mam" "uvm_reg_backdoor" "uvm_mem_shared_access_seq"
+       "uvm_reg_shared_access_seq" "uvm_reg_mem_hdl_paths_seq"
+       "uvm_hdl_path_concat" "uvm_reg_mem_built_in_seq"
+       "uvm_reg_mem_shared_access_seq" "uvm_reg_hw_reset_seq" "uvm_check_e"
+       "uvm_reg_bit_bash_seq" "uvm_reg_single_bit_bash_seq"
+       "uvm_reg_mem_access_seq" "uvm_reg_access_seq" "uvm_reg_single_access_seq"
+       "uvm_reg_field" "uvm_reg" "uvm_mem_walk_seq" "uvm_mem_single_walk_seq"
+       "uvm_mem_access_seq" "uvm_reg_data_t" "uvm_reg_block"
+       "uvm_mem_single_access_seq" "uvm_status_e" "uvm_reg_map" "uvm_reg_randval"
+       "uvm_mem" "this_rsp_type" "this_req_type" "this_imp_type"
+       "uvm_transport_imp" "uvm_nonblocking_transport_imp"
+       "uvm_blocking_transport_imp" "uvm_slave_imp" "uvm_nonblocking_slave_imp"
+       "uvm_blocking_slave_imp" "uvm_master_imp" "uvm_nonblocking_master_imp"
+       "uvm_blocking_master_imp" "uvm_get_peek_imp" "uvm_nonblocking_get_peek_imp"
+       "uvm_blocking_get_peek_imp" "uvm_peek_imp" "uvm_nonblocking_peek_imp"
+       "uvm_blocking_peek_imp" "uvm_get_imp" "uvm_nonblocking_get_imp"
+       "uvm_blocking_get_imp" "uvm_put_imp" "uvm_nonblocking_put_imp"
+       "uvm_blocking_put_imp" "__tmp_int_t__" "_phase" "uvm_hdl_data_t"
+       "__local_type__" "uvm_set_get_dap_base" "uvm_get_to_lock_dap" "uvm_test"
+       "uvm_subscriber" "uvm_scoreboard" "uvm_blocking_put_port"
+       "uvm_random_stimulus" "uvm_push_driver" "uvm_class_clone"
+       "uvm_class_converter" "uvm_class_comp" "uvm_built_in_clone"
+       "uvm_built_in_converter" "uvm_built_in_comp" "uvm_built_in_pair"
+       "uvm_class_pair" "uvm_monitor" "uvm_in_order_built_in_comparator"
+       "pair_type" "uvm_tlm_analysis_fifo" "uvm_in_order_comparator" "uvm_driver"
+       "uvm_analysis_port" "uvm_seq_item_pull_port"
+       "uvm_in_order_class_comparator" "uvm_analysis_export" "uvm_analysis_imp"
+       "uvm_algorithmic_comparator" "uvm_agent" "uvm_active_passive_enum"
+       "uvm_by_level_visitor_adapter" "uvm_bottom_up_visitor_adapter"
+       "uvm_visitor_adapter" "uvm_structure_proxy#(STRUCTURE)" "uvm_transaction"
+       "m_uvm_tr_stream_cfg" "uvm_topdown_phase" "uvm_simple_lock_dap" "tab_t"
+       "uvm_spell_chkr" "uvm_run_test_callback" "uvm_top_down_visitor_adapter"
+       "uvm_component_proxy" "uvm_byte_rsrc" "uvm_bit_rsrc" "uvm_obj_rsrc"
+       "uvm_string_rsrc" "uvm_int_rsrc" "this_subtype" "uvm_resource_db_options"
+       "uvm_resource_db" "rsrc_t" "override_t" "uvm_resource_options"
+       "uvm_resource_types" "access_t" "get_t" "rsrc_info_t" "uvm_env"
+       "queue_of_element" "uvm_report_message_element_container"
+       "uvm_report_message_element_base" "uvm_report_message_object_element"
+       "uvm_report_message_string_element" "uvm_report_message_int_element"
+       "uvm_id_file_array" "uvm_sev_override_array" "uvm_id_actions_array"
+       "uvm_id_verbosities_array" "uvm_report_cb" "sev_id_struct" "action_e"
+       "uvm_report_cb_iter" "uvm_report_catcher" "uvm_report_handler"
+       "uvm_registry_object_creator" "uvm_registry_component_creator" "Tregistry"
+       "uvm_abstract_object_registry" "common_type" "uvm_registry_common"
+       "uvm_component_registry" "uvm_text_recorder" "uvm_text_tr_stream"
+       "uvm_set_before_get_dap" "uvm_structure_proxy" "uvm_printer_element_proxy"
+       "uvm_line_printer" "uvm_tree_printer" "uvm_printer_element"
+       "m_uvm_printer_knobs" "uvm_port_list" "uvm_port_type_e"
+       "uvm_port_component" "uvm_port_base" "uvm_port_component_base"
+       "uvm_barrier_pool" "uvm_object_string_pool" "uvm_pool" "uvm_phase_cb_pool"
+       "uvm_sequencer_base" "uvm_phase_cb" "uvm_wait_op" "uvm_phase_state_change"
+       "uvm_task_phase" "uvm_phase_type" "uvm_pack_bitstream_t"
+       "uvm_callbacks_objection" "uvm_objection_cbs_t" "uvm_objection_event"
+       "uvm_object_registry" "uvm_objection_context_object" "uvm_objection_events"
+       "uvm_sequence_state_enum" "uvm_core_state" "uvm_sequence_state"
+       "uvm_sequencer_arb_mode" "m_uvm_config_obj_misc" "process_container_c"
+       "uvm_void" "uvm_seed_map" "uvm_related_link" "uvm_cause_effect_link"
+       "uvm_parent_child_link" "uvm_link_base" "uvm_heartbeat_cbs_t"
+       "uvm_objection_callback" "uvm_heartbeat" "uvm_event#(uvm_object)"
+       "uvm_heartbeat_modes" "uvm_heartbeat_callback" "uvm_report_message"
+       "uvm_enum_wrapper" "uvm_field_flag_t" "uvm_policy"
+       "uvm_factory_queue_class" "m_inst_typename_alias_t"
+       "m_uvm_factory_type_pair_t" "uvm_factory_override" "uvm_event#(T)"
+       "cbs_type" "cb_type" "uvm_event_callback" "uvm_event_base"
+       "uvm_post_shutdown_phase" "uvm_shutdown_phase" "uvm_pre_shutdown_phase"
+       "uvm_post_main_phase" "uvm_main_phase" "uvm_pre_main_phase"
+       "uvm_post_configure_phase" "uvm_configure_phase" "uvm_pre_configure_phase"
+       "uvm_post_reset_phase" "uvm_reset_phase" "uvm_pre_reset_phase"
+       "uvm_table_printer" "uvm_default_coreservice_t"
+       "uvm_visitor#(uvm_component)" "uvm_packer"
+       "uvm_component_name_check_visitor" "uvm_visitor"
+       "uvm_default_report_server" "uvm_report_server" "uvm_text_tr_database"
+       "uvm_default_factory" "uvm_copier" "uvm_config_wrapper" "uvm_config_object"
+       "uvm_config_string" "uvm_config_int" "uvm_config_db_options"
+       "uvm_config_db" "m_uvm_waiter" "rsrc_q_t" "uvm_resource" "type_id"
+       "uvm_object_wrapper" "uvm_objection" "uvm_resource_pool"
+       "uvm_sequence_base" "uvm_sequence_item" "uvm_factory" "uvm_resource_base"
+       "uvm_event_pool" "uvm_abstract_component_registry" "uvm_recorder"
+       "uvm_tr_stream" "uvm_tr_database" "uvm_integral_t" "uvm_radix_enum"
+       "uvm_comparer" "uvm_field_op" "uvm_bitstream_t" "uvm_recursion_policy_enum"
+       "state_info_t" "recursion_state_e" "uvm_final_phase" "uvm_report_phase"
+       "uvm_check_phase" "uvm_extract_phase" "uvm_run_phase"
+       "uvm_start_of_simulation_phase" "uvm_end_of_elaboration_phase"
+       "uvm_connect_phase" "uvm_build_phase" "uvm_cmdline_setting_base"
+       "uvm_cmdline_set_severity" "uvm_cmdline_set_action" "uvm_action"
+       "uvm_severity" "uvm_cmdline_set_verbosity" "uvm_cmdline_verbosity"
+       "uvm_cmd_line_verb" "uvm_verbosity" "uvm_callback_iter"
+       "uvm_queue#(uvm_callback)" "uvm_apprepend" "this_super_type"
+       "this_user_type" "uvm_derived_callbacks" "uvm_coreservice_t" "uvm_root"
+       "uvm_report_object" "uvm_callbacks" "uvm_callback" "super_type"
+       "uvm_typed_callbacks" "uvm_queue" "this_type" "uvm_typeid"
+       "uvm_typeid_base" "uvm_callbacks_base" "uvm_bottomup_phase"
+       "uvm_phase_state" "uvm_component" "process" "uvm_phase" "uvm_domain"
+       "uvm_cmdline_processor" "uvm_object" "uvm_printer" "uvm_barrier"
+       "uvm_event"))))
+
 
 (defconst verilog-ext-font-lock-pragma-keywords
-  (verilog-regexp-words
-   '("surefire" "0in" "auto" "leda" "rtl_synthesis" "verilint"
-     ;; Recognized by Vivado (check Xilinx attribute 'translate_off/translate_on'):
-     "synthesis" "synopsys" "pragma")))
+  (eval-when-compile
+    (verilog-regexp-words
+     '("surefire" "0in" "auto" "leda" "rtl_synthesis" "verilint"
+       ;; Recognized by Vivado (check Xilinx attribute 'translate_off/translate_on'):
+       "synthesis" "synopsys" "pragma"))))
 
 ;;   Xilinx attributes extracted from UG901:
 ;; - https://www.xilinx.com/support/documentation/sw_manuals/xilinx2017_3/ug901-vivado-synthesis.pdf
 ;; - Chapter 2 (some of them are also supported at XDC).
 (defconst verilog-ext-font-lock-xilinx-attributes
-  (verilog-regexp-words
-   '("async_reg" "black_box" "cascade_height" "clock_buffer_type"
-     "direct_enable" "direct_reset" "dont_touch" "extract_enable"
-     "extract_reset" "fsm_encoding" "fsm_safe_state" "full_case" "gated_clock"
-     "iob" "io_buffer_type" "keep" "keep_hierarchy" "mark_debug" "max_fanout"
-     "parallel_case" "ram_decomp" "ram_style" "retiming_backward"
-     "retiming_forward" "rom_style" "shreg_extract" "srl_style" "translate_off"
-     "translate_on" "use_dsp"
-     ;; uppercase "async_reg" "BLACK_BOX"
-     "CASCADE_HEIGHT" "CLOCK_BUFFER_TYPE" "DIRECT_ENABLE" "DIRECT_RESET"
-     "DONT_TOUCH" "EXTRACT_ENABLE" "EXTRACT_RESET" "FSM_ENCODING"
-     "FSM_SAFE_STATE" "FULL_CASE" "GATED_CLOCK" "IOB" "IO_BUFFER_TYPE" "KEEP"
-     "KEEP_HIERARCHY" "MARK_DEBUG" "MAX_FANOUT" "PARALLEL_CASE" "RAM_DECOMP"
-     "RAM_STYLE" "RETIMING_BACKWARD" "RETIMING_FORWARD" "ROM_STYLE"
-     "SHREG_EXTRACT" "SRL_STYLE" "TRANSLATE_OFF" "TRANSLATE_ON" "USE_DSP")))
+  (eval-when-compile
+    (verilog-regexp-words
+     '("async_reg" "black_box" "cascade_height" "clock_buffer_type"
+       "direct_enable" "direct_reset" "dont_touch" "extract_enable"
+       "extract_reset" "fsm_encoding" "fsm_safe_state" "full_case" "gated_clock"
+       "iob" "io_buffer_type" "keep" "keep_hierarchy" "mark_debug" "max_fanout"
+       "parallel_case" "ram_decomp" "ram_style" "retiming_backward"
+       "retiming_forward" "rom_style" "shreg_extract" "srl_style" "translate_off"
+       "translate_on" "use_dsp"
+       ;; uppercase "async_reg" "BLACK_BOX"
+       "CASCADE_HEIGHT" "CLOCK_BUFFER_TYPE" "DIRECT_ENABLE" "DIRECT_RESET"
+       "DONT_TOUCH" "EXTRACT_ENABLE" "EXTRACT_RESET" "FSM_ENCODING"
+       "FSM_SAFE_STATE" "FULL_CASE" "GATED_CLOCK" "IOB" "IO_BUFFER_TYPE" "KEEP"
+       "KEEP_HIERARCHY" "MARK_DEBUG" "MAX_FANOUT" "PARALLEL_CASE" "RAM_DECOMP"
+       "RAM_STYLE" "RETIMING_BACKWARD" "RETIMING_FORWARD" "ROM_STYLE"
+       "SHREG_EXTRACT" "SRL_STYLE" "TRANSLATE_OFF" "TRANSLATE_ON" "USE_DSP"))))
 
 
 ;;;; Functions
@@ -477,8 +503,8 @@ Bound search by LIMIT."
       (set-match-data (list if-start if-end mp-start mp-end var-start var-end))
       (point))))
 
-(defun verilog-ext-font-lock-typedef-decl-fontify (limit)
-  "Fontify typedef declarations."
+(defun verilog-ext-font-lock-var-decl-typedef-fontify (limit)
+  "Fontify variable declarations of user defined types."
   (let* ((decl-typedef-re (verilog-get-declaration-typedef-re))
          start end found)
     (when (verilog-align-typedef-enabled-p)
@@ -543,7 +569,6 @@ Similar to `verilog-match-translate-off' but including
           (goto-char end))))))
 
 
-
 ;;;; Font-lock keywords
 (defvar verilog-ext-font-lock-keywords
   (list
@@ -555,8 +580,9 @@ Similar to `verilog-match-translate-off' but including
    (concat "\\<\\(" verilog-ext-font-lock-general-keywords "\\)\\>") ; Default 'font-lock-keyword-face
    ;; User/System tasks and functions
    (cons (concat "\\<\\(" verilog-ext-font-lock-system-task-re "\\)\\>") 'font-lock-builtin-face)
-   ;; Types
+   ;; Types & directions
    (cons (concat "\\<\\(" verilog-ext-font-lock-type-font-keywords "\\)\\>") 'font-lock-type-face)
+   (cons (concat "\\<\\(" verilog-ext-font-lock-direction-keywords "\\)\\>") 'verilog-ext-font-lock-direction-face)
    ;; Punctuation
    (list verilog-ext-font-lock-time-unit-re          2 verilog-ext-font-lock-time-unit-face)
    (list verilog-ext-font-lock-time-event-re         0 verilog-ext-font-lock-time-event-face)
@@ -584,12 +610,12 @@ Similar to `verilog-match-translate-off' but including
     ;; Class names and parent
     '(verilog-ext-find-class-fwd
       (1 'font-lock-function-name-face)
-      (2 'font-lock-type-face nil t)) ; Parent class, if any
+      (2 'verilog-ext-font-lock-typedef-face nil t)) ; Parent class, if any
     ;; Functions/tasks
     '(verilog-ext-font-lock-task-function-fontify
       (1 'font-lock-function-name-face)
-      (2 'verilog-ext-font-lock-dot-name-face nil t)
-      (3 'font-lock-type-face nil t))
+      (2 'verilog-ext-font-lock-dot-name-face nil t) ; Class name if defined externally
+      (3 'font-lock-type-face nil t))                ; Function return type
     ;; Modport interfaces in port lists
     '(verilog-ext-font-lock-modport-fontify
       (0 'verilog-ext-font-lock-modport-face)
@@ -598,15 +624,28 @@ Similar to `verilog-match-translate-off' but including
     '(verilog-ext-font-lock-module-instance-fontify
       (1 'verilog-ext-font-lock-module-face)
       (2 'verilog-ext-font-lock-instance-face))
-    ;; User types declarations
-    '(verilog-ext-font-lock-typedef-decl-fontify
-      (0 'verilog-ext-font-lock-typedef-face))
+    ;; Variable declarations of user defined types
+    '(verilog-ext-font-lock-var-decl-typedef-fontify
+      (0 'font-lock-type-face))
     ;; (Typedef) enums
     '(verilog-ext-font-lock-enum-fontify
       (0 'verilog-ext-font-lock-typedef-face))
     ;; (Typedef) structs
     '(verilog-ext-font-lock-struct-fontify
       (0 'verilog-ext-font-lock-typedef-face))
+    ;; Typedef declarations
+    (list verilog-ext-typedef-class-re
+          '(2 font-lock-function-name-face))
+    (list verilog-ext-typedef-generic-re
+          '(2 font-lock-type-face))
+    ;; Fallback to `verilog-ext-font-lock-var-decl-typedef-fontify'.
+    ;; Try to fontify with a similar font those variable declarations whose regexps have not
+    ;; been added to `verilog-align-typedef-regexp' (it won't be possible to align those)
+    ;; To do so, check `verilog-ext-typedef-project-update'.
+    (list verilog-ext-typedef-var-decl-single-re
+          '(1 verilog-ext-font-lock-typedef-face))
+    (list verilog-ext-typedef-var-decl-multiple-re
+          '(1 verilog-ext-font-lock-typedef-face))
     )))
 
 (defvar verilog-ext-font-lock-keywords-2

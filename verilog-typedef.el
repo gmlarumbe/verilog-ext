@@ -78,8 +78,11 @@
           "\\(?3:\\(" verilog-identifier-re "\\s-*,\\s-*\\)+\\(" verilog-identifier-re "\\s-*\\)\\)"                ; Var names
           ";")
   "type_t foo1, foo2 , foo4, foo6[], foo7 [25], foo8 ;")
+(defconst verilog-ext-typedef-class-params-optional-re "\\(\\s-*#([^)]*)\\)?")
 (defconst verilog-ext-typedef-class-re (concat "^\\s-*typedef\\s-+\\(?1:\\<class\\>\\)\\s-+\\(?2:\\<" verilog-identifier-re "\\>\\)"))
-(defconst verilog-ext-typedef-generic-re (concat "^\\s-*typedef\\s-+\\(?1:\\<" verilog-identifier-re "\\>\\)\\(\\s-*#([^)]*)\\)?\\s-*\\(?2:\\<" verilog-identifier-re "\\>\\)"))
+(defconst verilog-ext-typedef-generic-re (concat "^\\s-*typedef\\s-+\\(?1:\\<" verilog-identifier-re "\\>\\)"
+                                                 "\\(" verilog-ext-typedef-class-params-optional-re "\\|" verilog-ext-range-optional-re "\\)"
+                                                 "\\s-*\\(?2:\\<" verilog-identifier-re "\\>\\)"))
 
 
 (defvar verilog-ext-align-typedef-words nil)
