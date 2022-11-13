@@ -282,7 +282,7 @@ Return alist with block type, name and boundaries."
                     (verilog-ext-forward-syntactic-ws)
                     (setq block-beg-point (point))
                     (setq block-name (buffer-substring-no-properties (point) (line-end-position)))
-                    (verilog-re-search-forward "begin" nil t)
+                    (verilog-re-search-forward "begin" (line-end-position) t)
                     (verilog-ext-forward-sexp)
                     (backward-word)
                     (setq block-end-point (point))))
@@ -338,6 +338,14 @@ Return alist with block type, name and boundaries."
       (verilog-ext-point-inside-block-p 'module)
       (verilog-ext-point-inside-block-p 'interface)
       (verilog-ext-point-inside-block-p 'program)))
+
+(defun verilog-ext-inside-procedural ()
+  "Return cons cell with begin/end positions if point is inside a procedural block."
+  (let ((data (verilog-ext-point-inside-block-p 'begin-end)))
+    (when (or (and data
+                   (not (verilog-ext-point-inside-block-p 'generate)))
+              (verilog-ext-point-inside-block-p 'always))
+      (cons (alist-get 'beg-point data) (alist-get 'end-point data)))))
 
 
 (provide 'verilog-utils)

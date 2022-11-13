@@ -384,6 +384,30 @@ call should be treated as if it was interactive."
 
 
 ;;;; Module/instance
+(defun verilog-ext-find-module-instance--legal-p ()
+  "Return non-nil if it point position would be legal for an instantiation."
+  (and (not (verilog-parenthesis-depth))
+       (not (verilog-ext-inside-procedural))))
+
+(defun verilog-ext-find-module-instance--continue (&optional bwd)
+  "Auxiliary function for find module and instance functions.
+(In theory) speeds up the search by skipping sections of code where instances
+are not legal."
+  (let (data)
+    (cond ((verilog-parenthesis-depth)
+           (if bwd
+               (verilog-backward-up-list 1)
+             (verilog-backward-up-list -1)))
+          ((setq data (verilog-ext-inside-procedural))
+           (if bwd
+               (goto-char (car data))
+             (goto-char (cdr data)))
+           (forward-line))
+          (t
+           (if bwd
+               (beginning-of-line)
+             (forward-line))))))
+
 (defun verilog-ext-find-module-instance-fwd (&optional limit)
   "Search forwards for a Verilog module/instance.
 
@@ -419,8 +443,8 @@ Bound search to LIMIT in case optional argument is non-nil."
                       (verilog-ext-when-t limit
                         (> limit (point)))
                       (not (and (verilog-re-search-forward (concat "\\s-*" identifier-re) limit 'move) ; Module name
-                                (not (verilog-parenthesis-depth)) ; Optimize search by avoiding looking for identifiers in parenthesized expressions
-                                (unless (member (match-string-no-properties 1) verilog-keywords)
+                                (unless (or (member (match-string-no-properties 1) verilog-keywords)
+                                            (not (verilog-ext-find-module-instance--legal-p)))
                                   (setq module-name (match-string-no-properties 1))
                                   (setq module-pos (match-beginning 1))
                                   (setq module-match-data (match-data)))
@@ -454,9 +478,7 @@ Bound search to LIMIT in case optional argument is non-nil."
                                       (setq pos module-pos)
                                       (message "%s : %s" module-name instance-name))
                                   (setq pos (point))))))
-            (if (verilog-parenthesis-depth)
-                (verilog-backward-up-list -1)
-              (forward-line)))))
+            (verilog-ext-find-module-instance--continue nil))))
       (if found
           (progn
             (set-match-data (list (nth 0 module-match-data)
@@ -505,7 +527,7 @@ Bound search to LIMIT in case it is non-nil."
                       (verilog-ext-when-t limit
                         (< limit (point)))
                       (not (and (set-marker module-end (verilog-re-search-backward ";" limit 'move))
-                                (not (verilog-parenthesis-depth))
+                                (verilog-ext-find-module-instance--legal-p)
                                 (verilog-ext-backward-syntactic-ws)
                                 (= (preceding-char) ?\))
                                 (verilog-ext-backward-sexp)
@@ -538,9 +560,8 @@ Bound search to LIMIT in case it is non-nil."
                                 (if (called-interactively-p 'interactive)
                                     (setq pos module-pos)
                                   (setq pos (point))))))
-            (if (verilog-parenthesis-depth)
-                (verilog-backward-up-list 1)
-              (beginning-of-line)))))
+            ;; Continue searching
+            (verilog-ext-find-module-instance--continue :bwd))))
       (if found
           (progn
             (set-match-data (list (nth 0 module-match-data)
