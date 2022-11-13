@@ -115,7 +115,7 @@
 (defmacro verilog-ext-while-t (cond &rest body)
   "Same function `while' but returning t after last condition for use in ands."
   (declare (indent 1) (debug t))
-  `(when cond
+  `(when ,cond
      ,@body)
   t)
 

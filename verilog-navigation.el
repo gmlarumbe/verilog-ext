@@ -361,7 +361,7 @@ If BWD is non-nil, search backwards.  INTERACTIVE-P specifies whether function
 call should be treated as if it was interactive."
   (let ((block-re verilog-ext-block-re)
         (case-fold-search verilog-case-fold)
-        found pos)
+        pos)
     (save-excursion
       (unless bwd
         (forward-char)) ; Avoid getting stuck
@@ -759,7 +759,8 @@ Return alist with defun data if point moved to a lower block."
                  (verilog-re-search-forward ";" (line-end-position) t)
                  (verilog-ext-block-at-point)))
          (block-type (alist-get 'type data))
-         (end-pos (alist-get 'end-point data)))
+         (end-pos (alist-get 'end-point data))
+         name)
     (when data
       (cond ((or (equal block-type "function")
                  (equal block-type "task"))
