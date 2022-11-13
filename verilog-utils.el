@@ -56,6 +56,10 @@
 (defconst verilog-ext-top-re (concat "\\<\\(?1:package\\|program\\|module\\|interface\\)\\>\\(\\s-+\\<automatic\\>\\)?\\s-+\\(?3:" verilog-identifier-sym-re "\\)"))
 
 
+(defvar verilog-ext-buffer-list nil)
+(defvar verilog-ext-dir-list nil)
+
+
 ;;;; Utility
 (defun verilog-ext-forward-syntactic-ws ()
   "Wrap `verilog-forward-syntactic-ws' and return point."
@@ -367,6 +371,32 @@ positions."
               (t
                nil))))))
 
+(defun verilog-ext-update-buffer-and-dir-list ()
+  "Update Verilog-mode opened buffers and directories lists."
+  (let (verilog-buffers verilog-dirs)
+    (dolist (buf (buffer-list (current-buffer)))
+      (with-current-buffer buf
+        (when (string-equal major-mode "verilog-mode")
+          (push buf verilog-buffers)
+          (unless (member default-directory verilog-dirs)
+            (push default-directory verilog-dirs)))))
+    (setq verilog-ext-buffer-list verilog-buffers)
+    (setq verilog-ext-dir-list verilog-dirs)))
+
+
+;;;; Hooks
+(defun verilog-ext-open-buffer-hook ()
+  "Verilog hook to run when opening a file."
+  (verilog-ext-update-buffer-and-dir-list)
+  (setq verilog-library-directories verilog-ext-dir-list)
+  (setq verilog-ext-flycheck-verilator-include-path verilog-ext-dir-list))
+
+(defun verilog-ext-kill-buffer-hook ()
+  "Verilog hook to run when killing a buffer."
+  (setq verilog-ext-buffer-list (remove (current-buffer) verilog-ext-buffer-list)))
+
+(add-hook 'verilog-mode-hook #'verilog-ext-open-buffer-hook)
+(add-hook 'kill-buffer-hook #'verilog-ext-kill-buffer-hook nil :local)
 
 
 (provide 'verilog-utils)
