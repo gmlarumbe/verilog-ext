@@ -343,8 +343,9 @@ Return alist with block type, name and boundaries."
       (verilog-ext-point-inside-block-p 'program)))
 
 (defun verilog-ext-inside-procedural ()
-  "Return cons cell with start/end positions if point is inside a procedural block.
-If point is inside a begin-end block inside a procedural, return begin-end positions."
+  "Return cons cell with start/end pos if point is inside a procedural block.
+If point is inside a begin-end block inside a procedural, return begin-end
+positions."
   (save-match-data
     (save-excursion
       (let* ((block-data (verilog-ext-block-at-point))

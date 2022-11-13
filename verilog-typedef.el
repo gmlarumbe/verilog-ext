@@ -192,7 +192,7 @@ user typedefs."
           (verilog-mode)
           (verilog-ext-typedef--var-decl-update))))
     ;; Postprocess obtained results (remove keywords and generic types that were uppercase)
-    (mapcar #'(lambda (elm)
+    (mapc #'(lambda (elm)
                 (when (member elm verilog-keywords)
                   (delete elm verilog-ext-align-typedef-words)))
             verilog-ext-align-typedef-words)

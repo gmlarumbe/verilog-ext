@@ -747,8 +747,8 @@ Kill the buffer if there is only one match."
   "Move up one defun-level.
 Return alist with defun data if point moved to a higher block."
   (interactive)
-  (let ((data (verilog-ext-block-at-point))
-        beg-pos name)
+  (let* ((data (verilog-ext-block-at-point))
+         beg-pos name)
     (when data
       (setq beg-pos (alist-get 'beg-point data))
       (if (and (or (equal (alist-get 'type data) "function")
@@ -758,7 +758,7 @@ Return alist with defun data if point moved to a higher block."
             (verilog-ext-goto-begin-up)
             (setq name "begin"))
         (setq name (alist-get 'name data))
-        (goto-char (alist-get 'beg-point data))
+        (goto-char beg-pos)
         (backward-char)
         (verilog-beg-of-statement))
       (if (called-interactively-p 'any)
