@@ -112,6 +112,13 @@
   (declare (indent 1) (debug t))
   (list 'if cond (cons 'progn body) t))
 
+(defmacro verilog-ext-while-t (cond &rest body)
+  "Same function `while' but returning t after last condition for use in ands."
+  (declare (indent 1) (debug t))
+  `(when cond
+     ,@body)
+  t)
+
 (defun verilog-ext-path-join (arg1 arg2)
   "Join path of ARG1 and ARG2."
   (if (and arg1 arg2)
@@ -226,6 +233,7 @@ Return alist with block type, name and boundaries."
                   ((eq block 'initial)   "\\<\\(initial\\)\\>")
                   ((eq block 'final)     "\\<\\(final\\)\\>")
                   ((eq block 'generate)  "\\<\\(generate\\)\\>")
+                  ((eq block 'begin-end) "\\<\\(begin\\|end\\)\\>")
                   (t (error "Incorrect block argument"))))
         temp-pos block-beg-point block-end-point block-type block-name)
     (save-match-data
@@ -290,6 +298,22 @@ Return alist with block type, name and boundaries."
                     (verilog-ext-forward-sexp)
                     (backward-word)
                     (setq block-end-point (point))))
+              ;; Procedural block (begin-end)
+              ((equal block 'begin-end)
+               (and (verilog-re-search-backward re nil t)
+                    (verilog-ext-while-t (string= (match-string-no-properties 0) "end")
+                      (verilog-ext-backward-sexp)
+                      (verilog-re-search-backward re nil t))
+                    ;; Cover the whole 'begin word to account for nested begin/ends
+                    (setq block-beg-point (match-beginning 0))
+                    (verilog-ext-forward-sexp)
+                    (backward-word)
+                    (looking-at "\\<end\\>")
+                    ;; Cover the whole 'end word to account for nested begin/ends
+                    (setq block-end-point (match-end 0))
+                    (setq block-type "begin-end")
+                    (setq block-name nil)))
+              ;; Default invalid condition
               (t
                (error "Invalid condition")))
         (if (and block-beg-point block-end-point
