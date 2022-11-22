@@ -618,8 +618,8 @@ Similar to `verilog-match-translate-off' but including
       (3 'font-lock-type-face nil t))                ; Function return type
     ;; Modport interfaces in port lists
     '(verilog-ext-font-lock-modport-fontify
-      (0 'verilog-ext-font-lock-modport-face)
-      (1 'verilog-ext-font-lock-dot-name-face))
+      (0 'verilog-ext-font-lock-dot-name-face)
+      (1 'verilog-ext-font-lock-modport-face))
     ;; Modules/instances
     '(verilog-ext-font-lock-module-instance-fontify
       (1 'verilog-ext-font-lock-module-face)
