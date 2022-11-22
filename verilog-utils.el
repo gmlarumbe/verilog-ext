@@ -332,6 +332,11 @@ Return alist with block type, name and boundaries."
               (end-point . ,block-end-point))
           nil)))))
 
+;; TODO: Still gives very poor performance for `which-func' and `verilog-ext-inside-procedural'.
+;; `which-func' somehow manages to hide it running while in idle, but it takes a long time anyway.
+;; The calls to `verilog-ext-point-inside-block-p' result in many  `verilog-backward-sexp' and
+;; `verilog-forward-sexp' which are somehow expensive.
+;; This will be way easier with tree-sitter or with a different implementation.
 (defun verilog-ext-block-at-point ()
   "Return current block and name at point."
   (or (verilog-ext-point-inside-block-p 'function)
