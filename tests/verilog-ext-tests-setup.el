@@ -80,14 +80,6 @@
   :straight (:host github :repo "gmlarumbe/verilog-ext"))
 
 
-;;;; Test environment
-(message "Setting up test environment")
-(setq print-level nil)
-(setq print-length nil)
-(setq eval-expression-print-level nil)
-(setq eval-expression-print-length nil)
-
-
 (provide 'verilog-ext-tests-setup)
 
 ;;; verilog-ext-tests-setup.el ends here

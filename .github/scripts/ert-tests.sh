@@ -3,12 +3,17 @@
 # Copyright (c) 2022 Gonzalo Larumbe
 # All rights reserved.
 
+RC=
 echo "Running ERT tests..."
-emacs -batch \
+emacs -nw -batch \
+      -L $HOME/.emacs.d/straight/repos/verilog-ext/tests \
       -l ert \
-      -l $HOME/.emacs.d/straight/repos/verilog-ext/tests/verilog-ext-tests-setup.el \
-      -l $HOME/.emacs.d/straight/repos/verilog-ext/verilog-ext.el \
-      -l $HOME/.emacs.d/straight/repos/verilog-ext/tests/verilog-ext-tests-imenu.el \
-      -l $HOME/.emacs.d/straight/repos/verilog-ext/tests/verilog-ext-tests.el \
+      -l verilog-ext-tests-setup \
+      -l verilog-ext-tests \
       -f ert-run-tests-batch-and-exit
-echo "Ran tests!"
+
+RC=$?
+echo "Exiting with return code $RC"
+exit $RC
+
+

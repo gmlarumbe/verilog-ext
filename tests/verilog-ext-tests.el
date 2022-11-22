@@ -44,7 +44,23 @@
 
 
 ;;;; Tests
+(unless (featurep 'verilog-ext)
+  (error "verilog-ext has not been loaded. Cannot run tests!"))
+(require 'verilog-ext)
+
+(defvar verilog-ext-tests-root-dir (file-name-directory (locate-library "verilog-ext")))
+(defvar verilog-ext-tests-test-dir (if (string-prefix-p (expand-file-name straight-base-dir) verilog-ext-tests-root-dir)
+                                       (verilog-ext-path-join (expand-file-name straight-base-dir) "straight/repos/verilog-ext/tests")
+                                     (verilog-ext-path-join verilog-ext-tests-root-dir "tests")))
+(defvar verilog-ext-tests-examples-dir (verilog-ext-path-join verilog-ext-tests-test-dir "examples"))
+
+
 (require 'verilog-ext-tests-imenu)
+;; (require 'verilog-ext-tests-utils)
+;; (require 'verilog-ext-tests-navigation)
+;; (require 'verilog-ext-tests-font-lock)
+;; (require 'verilog-ext-tests-beautify)
+;; (require 'verilog-ext-tests-vhier)
 
 
 
