@@ -505,8 +505,8 @@ Bound search by LIMIT."
 
 (defun verilog-ext-font-lock-var-decl-typedef-fontify (limit)
   "Fontify variable declarations of user defined types."
-  (let* ((decl-typedef-re (verilog-get-declaration-typedef-re))
-         start end found)
+  (let ((decl-typedef-re (verilog-get-declaration-typedef-re))
+        start end found)
     (when (verilog-align-typedef-enabled-p)
       (while (and (not found)
                   (verilog-re-search-forward decl-typedef-re limit t))

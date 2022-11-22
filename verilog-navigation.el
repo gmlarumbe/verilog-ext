@@ -391,7 +391,8 @@ call should be treated as if it was interactive."
 
 ;;;; Module/instance
 (defun verilog-ext-find-module-instance--legal-p ()
-  "Return non-nil if it point position would be legal for an instantiation."
+  "Return non-nil if it point position would be legal for an instantiation.
+DANGER: Still very inefficient, removed funcall in `verilog-ext-find-module-instance-fwd'."
   (and (not (verilog-parenthesis-depth))
        (not (verilog-ext-inside-procedural))))
 
@@ -404,15 +405,11 @@ are not legal."
            (if bwd
                (verilog-backward-up-list 1)
              (verilog-backward-up-list -1)))
-          ((setq data (verilog-ext-inside-procedural))
-           (if bwd
-               (goto-char (car data))
-             (goto-char (cdr data)))
-           (forward-line))
           (t
            (if bwd
-               (beginning-of-line)
-             (forward-line))))))
+               (verilog-backward-syntactic-ws)
+             (forward-line)
+             (verilog-forward-syntactic-ws))))))
 
 (defun verilog-ext-find-module-instance-fwd (&optional limit)
   "Search forwards for a Verilog module/instance.
@@ -437,7 +434,7 @@ Bound search to LIMIT in case optional argument is non-nil."
         instance-name instance-match-data
         pos found)
     ;; Limit the search to files that can instantiate blocks (modules/interfaces)
-    (if (not (verilog-ext-scan-buffer-modules))
+    (if (not verilog-ext-file-allows-instances)
         (when (called-interactively-p 'interactive)
           (user-error "Not inside a module/interface file"))
       ;; Else do the search
@@ -449,8 +446,8 @@ Bound search to LIMIT in case optional argument is non-nil."
                       (verilog-ext-when-t limit
                         (> limit (point)))
                       (not (and (verilog-re-search-forward (concat "\\s-*" identifier-re) limit 'move) ; Module name
-                                (unless (or (member (match-string-no-properties 1) verilog-keywords)
-                                            (not (verilog-ext-find-module-instance--legal-p)))
+                                (not (verilog-parenthesis-depth))
+                                (unless (member (match-string-no-properties 1) verilog-keywords)
                                   (setq module-name (match-string-no-properties 1))
                                   (setq module-pos (match-beginning 1))
                                   (setq module-match-data (match-data)))
@@ -523,7 +520,7 @@ Bound search to LIMIT in case it is non-nil."
         instance-name instance-match-data
         pos found)
     ;; Limit the search to files that can instantiate blocks (modules/interfaces)
-    (if (not (verilog-ext-scan-buffer-modules))
+    (if (not verilog-ext-file-allows-instances)
         (when (called-interactively-p 'interactive)
           (user-error "Not inside a module/interface file"))
       ;; Else do the search
@@ -533,7 +530,6 @@ Bound search to LIMIT in case it is non-nil."
                       (verilog-ext-when-t limit
                         (< limit (point)))
                       (not (and (set-marker module-end (verilog-re-search-backward ";" limit 'move))
-                                (verilog-ext-find-module-instance--legal-p)
                                 (verilog-ext-backward-syntactic-ws)
                                 (= (preceding-char) ?\))
                                 (verilog-ext-backward-sexp)
