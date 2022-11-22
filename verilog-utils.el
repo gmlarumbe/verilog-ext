@@ -59,7 +59,7 @@
 (defvar verilog-ext-buffer-list nil)
 (defvar verilog-ext-dir-list nil)
 (defvar-local verilog-ext-file-allows-instances nil
-  "Non nil if current file includes a module/endmodule or interface/endinterface block.")
+  "Non nil if current file includes a module or interface block.")
 
 
 ;;;; Utility

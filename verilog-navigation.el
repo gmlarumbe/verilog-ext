@@ -392,7 +392,8 @@ call should be treated as if it was interactive."
 ;;;; Module/instance
 (defun verilog-ext-find-module-instance--legal-p ()
   "Return non-nil if it point position would be legal for an instantiation.
-DANGER: Still very inefficient, removed funcall in `verilog-ext-find-module-instance-fwd'."
+DANGER: Still very inefficient, removed funcall in
+`verilog-ext-find-module-instance-fwd'."
   (and (not (verilog-parenthesis-depth))
        (not (verilog-ext-inside-procedural))))
 
@@ -400,16 +401,15 @@ DANGER: Still very inefficient, removed funcall in `verilog-ext-find-module-inst
   "Auxiliary function for find module and instance functions.
 (In theory) speeds up the search by skipping sections of code where instances
 are not legal."
-  (let (data)
-    (cond ((verilog-parenthesis-depth)
-           (if bwd
-               (verilog-backward-up-list 1)
-             (verilog-backward-up-list -1)))
-          (t
-           (if bwd
-               (verilog-backward-syntactic-ws)
-             (forward-line)
-             (verilog-forward-syntactic-ws))))))
+  (cond ((verilog-parenthesis-depth)
+         (if bwd
+             (verilog-backward-up-list 1)
+           (verilog-backward-up-list -1)))
+        (t
+         (if bwd
+             (verilog-backward-syntactic-ws)
+           (forward-line)
+           (verilog-forward-syntactic-ws)))))
 
 (defun verilog-ext-find-module-instance-fwd (&optional limit)
   "Search forwards for a Verilog module/instance.

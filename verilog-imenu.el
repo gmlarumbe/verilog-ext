@@ -60,7 +60,7 @@ Placing this outside of `imenu--generic-function' avoids running it if
 building if file cannot contain instances."
   (save-excursion
     (goto-char (point-max))
-    (let ((group-name "*Instances")
+    (let ((group-name "*Instances*")
           index)
       (when verilog-ext-file-allows-instances
         (while (verilog-ext-find-module-instance-bwd)
@@ -158,7 +158,7 @@ Find recursively tasks and functions inside classes."
       (while (setq tree (verilog-ext-imenu--build-class-tree))
         (setq index (cons tree index)))
       (when index
-        (list (cons "Classes" index))))))
+        (list (cons "*Classes*" index))))))
 
 (defun verilog-ext-imenu-index ()
   "Index builder function for Verilog Imenu.

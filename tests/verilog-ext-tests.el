@@ -26,6 +26,8 @@
 
 
 ;;;; Performance utils
+(require 'profiler)
+
 (defun verilog-ext-profile-file (file)
   "Use Emacs profiler in FILE."
   (profiler-start 'cpu+mem)
