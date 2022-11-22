@@ -58,6 +58,8 @@
 
 (defvar verilog-ext-buffer-list nil)
 (defvar verilog-ext-dir-list nil)
+(defvar-local verilog-ext-file-allows-instances nil
+  "Non nil if current file includes a module/endmodule or interface/endinterface block.")
 
 
 ;;;; Utility
@@ -160,12 +162,17 @@ the replacement text (see `replace-match' for more info)."
 
 (defun verilog-ext-scan-buffer-modules ()
   "Find modules in current buffer.
-Return list with found modules or nil if not found."
+Return list with found modules or nil if not found.
+Update the value of buffer-local variable `verilog-ext-file-allows-instances'
+to be used in optimization of font-lock and imenu."
   (let (modules)
     (save-excursion
       (goto-char (point-min))
       (while (verilog-re-search-forward verilog-ext-top-instantiable-re nil t)
         (push (match-string-no-properties 3) modules)))
+    (if modules
+        (setq verilog-ext-file-allows-instances t)
+      (setq verilog-ext-file-allows-instances nil))
     (delete-dups modules)))
 
 (defun verilog-ext-read-file-modules (&optional file)
@@ -392,6 +399,7 @@ positions."
 ;;;; Hooks
 (defun verilog-ext-open-buffer-hook ()
   "Verilog hook to run when opening a file."
+  (verilog-ext-scan-buffer-modules)
   (verilog-ext-update-buffer-and-dir-list)
   (setq verilog-library-directories verilog-ext-dir-list)
   (setq verilog-ext-flycheck-verilator-include-path verilog-ext-dir-list))

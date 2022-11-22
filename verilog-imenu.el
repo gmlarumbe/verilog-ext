@@ -49,12 +49,26 @@
     ("*Assigns*"        ,verilog-ext-imenu-assign-re 1)
     ("*Generates*"      ,verilog-ext-imenu-generate-re 1)
     ("*Always blocks*"  ,verilog-ext-imenu-always-re 4)
-    ("*Initial blocks*" ,verilog-ext-imenu-initial-re 3)
-    ;; Search by function
-    ("*Instances*" verilog-ext-find-module-instance-bwd 1))) ; Use capture group index 3 to get instance name
+    ("*Initial blocks*" ,verilog-ext-imenu-initial-re 3)))
 
 
 ;;;; Tree
+(defun verilog-ext-imenu-find-module-instance-index ()
+  "Create imenu entries of modules and instances.
+Placing this outside of `imenu--generic-function' avoids running it if
+`which-func' is enabled.  It also allows to conditionally disable the index
+building if file cannot contain instances."
+  (save-excursion
+    (goto-char (point-max))
+    (let ((group-name "*Instances")
+          index)
+      (when verilog-ext-file-allows-instances
+        (while (verilog-ext-find-module-instance-bwd)
+          ;; Use capture group index 3 to get instance name
+          (push (cons (match-string-no-properties 1) (line-beginning-position)) index))
+        (when index
+          (list (cons group-name index)))))))
+
 (defun verilog-ext-imenu-find-tf-outside-class-index ()
   "Create entries of tasks and functions outside classes.
 Group the ones that belong to same external method definitions."
@@ -150,7 +164,8 @@ Find recursively tasks and functions inside classes."
   "Index builder function for Verilog Imenu.
 Makes use of `verilog-ext-imenu-generic-expression' for everything but classes
 and methods.  These are collected with `verilog-ext-imenu-classes-index'."
-  (append (verilog-ext-imenu-classes-index)
+  (append (verilog-ext-imenu-find-module-instance-index)
+          (verilog-ext-imenu-classes-index)
           (verilog-ext-imenu-find-tf-outside-class-index)
           (imenu--generic-function verilog-ext-imenu-generic-expression)))
 
@@ -167,7 +182,9 @@ and methods.  These are collected with `verilog-ext-imenu-classes-index'."
 (defun verilog-ext-imenu-hide-all (&optional first)
   "Hide all the blocks at `imenu-list' buffer.
 If optional arg FIRST is non-nil show first Imenu block
-which by default corresponds to *instances*."
+which by default corresponds to *instances*.
+INFO: It is meant to be run after `verilog-ext-imenu-list', however
+it could cause sluggish behaviour as it's not every efficient."
   (if (string-equal major-mode "imenu-list-major-mode")
       (progn
         (goto-char (point-min))
@@ -184,7 +201,7 @@ which by default corresponds to *instances*."
   "Wrapper for `imenu-list' for Verilog mode with `verilog-ext'."
   (interactive)
   (imenu-list)
-  (verilog-ext-imenu-hide-all t))
+  (goto-char (point-min)))
 
 
 
