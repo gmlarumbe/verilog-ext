@@ -25,6 +25,23 @@
 ;;; Code:
 
 
+;;;; Performance utils
+(defun verilog-ext-profile-file (file)
+  "Use Emacs profiler in FILE."
+  (profiler-start 'cpu+mem)
+  (find-file file)
+  (profiler-stop)
+  (profiler-report))
+
+(defun verilog-ext-profile-imenu ()
+  "Use Emacs profiler on `verilog-ext-imenu-list'."
+  (profiler-start 'cpu+mem)
+  (verilog-ext-imenu-list)
+  (profiler-stop)
+  (profiler-report))
+
+
+;;;; Tests
 (require 'verilog-ext-tests-imenu)
 
 
