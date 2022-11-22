@@ -25,8 +25,48 @@
 ;;; Code:
 
 
+;;;; Straight bootstrap
+(message "Bootstraping straight")
+
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+
+(message "Bootstraped straight")
+
+(message "Installing use-package")
+(straight-use-package 'use-package)
+(setq straight-use-package-by-default t)
 
 
+(use-package projectile)
+(use-package ggtags)
+(use-package ag)
+(use-package ripgrep)
+(use-package company)
+(use-package yasnippet)
+(use-package hydra)
+(use-package outshine)
+(use-package flycheck)
+(use-package verilog-mode
+  :straight (:repo "veripool/verilog-mode"))
+(use-package verilog-ext
+  :straight (:host github :repo "gmlarumbe/verilog-ext"))
+
+
+(setq print-level nil)
+(setq print-length nil)
+(setq eval-expression-print-level nil)
+(setq eval-expression-print-length nil)
 
 (provide 'verilog-ext-tests-setup)
 

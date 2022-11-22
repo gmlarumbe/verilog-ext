@@ -4,7 +4,8 @@
 # All rights reserved.
 
 echo "Running ERT tests..."
-emacs -batch -l ert \
+emacs -batch \
+      -l ert \
       -l $HOME/.emacs.d/straight/repos/verilog-ext/tests/verilog-ext-tests-setup.el \
       -l $HOME/.emacs.d/straight/repos/verilog-ext/verilog-ext.el \
       -l $HOME/.emacs.d/straight/repos/verilog-ext/tests/verilog-ext-tests-imenu.el \
