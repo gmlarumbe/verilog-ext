@@ -6,7 +6,7 @@
 RC=
 echo "Running ERT tests..."
 emacs -nw -batch \
-      -L $HOME/.emacs.d/straight/repos/verilog-ext/tests \
+      -L $PWD/tests \
       -l ert \
       -l verilog-ext-tests-setup \
       -l verilog-ext-tests \
