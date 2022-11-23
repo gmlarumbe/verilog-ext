@@ -55,22 +55,27 @@
     (reverse var)))
 
 (defun verilog-ext-test-navigation-instances-fwd-interactive ()
-  (interactive)
+  "Hack to emulate the point position when using interactive forward navigation.
+For some reason, using `call-interactively' did not work with ERT in Emacs batch mode.
+It did work locally though."
   (let (var)
     (save-excursion
       (goto-char (point-min))
-      (while (not (string= (call-interactively #'verilog-ext-find-module-instance-fwd)
-                           "Could not find any instance forward"))
-        (push (point) var)))
+      (while (and (verilog-ext-find-module-instance-fwd)
+                  (goto-char (match-beginning 1)))
+        (push (point) var)
+        (forward-char)))
     (reverse var)))
 
 (defun verilog-ext-test-navigation-instances-bwd-interactive ()
-  (interactive)
+  "Hack to emulate the point position when using interactive forward navigation.
+For some reason, using `call-interactively' did not work with ERT in Emacs batch mode.
+It did work locally though."
   (let (var)
     (save-excursion
       (goto-char (point-max))
-      (while (not (string= (call-interactively #'verilog-ext-find-module-instance-bwd)
-                           "Could not find any instance backwards"))
+      (while (and (verilog-ext-find-module-instance-bwd)
+                  (goto-char (match-beginning 1)))
         (push (point) var)))
     (reverse var)))
 
@@ -132,24 +137,24 @@
 
 (ert-deftest navigation::instances-fwd-interactive ()
   (verilog-ext-test-navigation-file "instances.sv"
-    (should (equal (call-interactively #'verilog-ext-test-navigation-instances-fwd-interactive)
+    (should (equal (verilog-ext-test-navigation-instances-fwd-interactive)
                    '(864 1035 1172 1427 1705 2021 2072 2173 2291 2405 2522))))
   (verilog-ext-test-navigation-file "ucontroller.sv"
-    (should (equal (call-interactively #'verilog-ext-test-navigation-instances-fwd-interactive)
+    (should (equal (verilog-ext-test-navigation-instances-fwd-interactive)
                    '(2335 3007 3209 3759 4127 4597))))
   (verilog-ext-test-navigation-file "axi_demux.sv"
-    (should (equal (call-interactively #'verilog-ext-test-navigation-instances-fwd-interactive)
+    (should (equal (verilog-ext-test-navigation-instances-fwd-interactive)
                    '(3693 4165 4626 5081 5553 9167 9672 13917 15379 16160 16718 17186 17883 18328 21525 23007 23475 31768 35420)))))
 
 (ert-deftest navigation::instances-bwd-interactive ()
   (verilog-ext-test-navigation-file "instances.sv"
-    (should (equal (call-interactively #'verilog-ext-test-navigation-instances-bwd-interactive)
+    (should (equal (verilog-ext-test-navigation-instances-bwd-interactive)
                    '(2522 2405 2291 2173 2072 2021 1705 1427 1172 1035 864))))
   (verilog-ext-test-navigation-file "ucontroller.sv"
-    (should (equal (call-interactively #'verilog-ext-test-navigation-instances-bwd-interactive)
+    (should (equal (verilog-ext-test-navigation-instances-bwd-interactive)
                    '(4597 4127 3759 3209 3007 2335))))
   (verilog-ext-test-navigation-file "axi_demux.sv"
-    (should (equal (call-interactively #'verilog-ext-test-navigation-instances-bwd-interactive)
+    (should (equal (verilog-ext-test-navigation-instances-bwd-interactive)
                    '(35420 31768 23475 23007 21525 18328 17883 17186 16718 16160 15379 13917 9672 9167 5553 5081 4626 4165 3693)))))
 
 (ert-deftest navigation::classes-fwd ()
