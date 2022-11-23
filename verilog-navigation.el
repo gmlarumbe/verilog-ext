@@ -35,9 +35,12 @@
 (require 'ripgrep)
 
 
-(defvar verilog-ext-jump-to-parent-module-engine "ag"
+(defcustom verilog-ext-jump-to-parent-module-engine "ag"
   "Default program to find parent module instantiations.
-Either `rg' or `ag' are implemented.")
+Either `rg' or `ag' are implemented."
+  :type '(choice (const :tag "silver searcher" "ag")
+                 (const :tag "ripgrep"         "rg"))
+  :group 'verilog-ext)
 
 
 ;;;; Syntax table override functions
