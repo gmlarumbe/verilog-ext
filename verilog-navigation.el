@@ -558,6 +558,7 @@ Bound search to LIMIT in case it is non-nil."
                                   (setq module-name (match-string-no-properties 1))
                                   (setq module-pos (match-beginning 1))
                                   (setq module-match-data (match-data)))
+                                (looking-back "^\\s-*" (line-beginning-position))
                                 (setq found t)
                                 (if (called-interactively-p 'interactive)
                                     (setq pos module-pos)

@@ -1,4 +1,4 @@
-;;; verilog-ext-tests-imenu.el --- Verilog-Ext ERT tests  -*- lexical-binding: t -*-
+;;; verilog-ext-tests-imenu.el --- Verilog-Ext ERT Imenu tests  -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2022 Gonzalo Larumbe
 
@@ -766,9 +766,7 @@
                     ("m_apply_verbosity_settings" . 99925)
                     ("m_do_pre_abort" . 100736)))))
   (should (equal (verilog-ext-test-imenu-file "axi_test.sv")
-                 '(("*Instances*"
-                    ("ax_beat_t" . 23761))
-                   ("*Classes*"
+                 '(("*Classes*"
                     (#("axi_lite_driver" 0 15
                        (face
                         (:foreground "goldenrod" :weight bold)))
@@ -1301,27 +1299,7 @@
                    ("*Generates*"
                     ("for (genvar i=0; i<VALUE; i++) begin : gen_test" . 1636))
                    ("*Top*"
-                    ("instances" . 820))))))
-
-(ert-deftest imenu::generic ()
-  (should (equal (verilog-ext-test-imenu-file "tb_program.sv")
-                 '(("*Task/Func*"
-                    ("init_rom" . 1876)
-                    ("init_values" . 3482)
-                    ("reset_system" . 3552)
-                    ("serial_rx" . 3804))
-                   ("*Initial blocks*"
-                    ("$dumpfile(\"tb_top.lx2\");  // iverilog, vpp & gtkwave" . 1619)
-                    ("init_rom;" . 4325)
-                    ("#10ms;" . 4541))
-                   ("*Assigns*"
-                    ("ROM_Data" . 1829))
-                   ("*Localparams*"
-                    ("FREQ_CLK" . 1190)
-                    ("TX_SPEED" . 1240)
-                    ("BIT_CYCLES" . 1287))
-                   ("*Top*"
-                    ("tb_program" . 856)))))
+                    ("instances" . 820)))))
   (should (equal (verilog-ext-test-imenu-file "axi_demux.sv")
                  '(("*Instances*"
                     ("spill_register" . 3689)
@@ -1386,6 +1364,26 @@
                     ("axi_demux" . 1869)
                     ("axi_demux_id_counters" . 28710)
                     ("axi_demux_intf" . 32905))))))
+
+(ert-deftest imenu::generic ()
+  (should (equal (verilog-ext-test-imenu-file "tb_program.sv")
+                 '(("*Task/Func*"
+                    ("init_rom" . 1876)
+                    ("init_values" . 3482)
+                    ("reset_system" . 3552)
+                    ("serial_rx" . 3804))
+                   ("*Initial blocks*"
+                    ("$dumpfile(\"tb_top.lx2\");  // iverilog, vpp & gtkwave" . 1619)
+                    ("init_rom;" . 4325)
+                    ("#10ms;" . 4541))
+                   ("*Assigns*"
+                    ("ROM_Data" . 1829))
+                   ("*Localparams*"
+                    ("FREQ_CLK" . 1190)
+                    ("TX_SPEED" . 1240)
+                    ("BIT_CYCLES" . 1287))
+                   ("*Top*"
+                    ("tb_program" . 856))))))
 
 
 
