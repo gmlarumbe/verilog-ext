@@ -69,6 +69,8 @@
 (use-package outshine)
 (message "Installing flycheck")
 (use-package flycheck)
+(message "Installing faceup for font-lock ERT regressions")
+(use-package faceup)
 (message "Overwriting verilog-mode with latest version")
 (use-package verilog-mode
   :straight (:repo "veripool/verilog-mode"))
