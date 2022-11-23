@@ -56,8 +56,8 @@
 
 
 (require 'verilog-ext-tests-imenu)
+(require 'verilog-ext-tests-navigation)
 ;; (require 'verilog-ext-tests-utils)
-;; (require 'verilog-ext-tests-navigation)
 ;; (require 'verilog-ext-tests-font-lock)
 ;; (require 'verilog-ext-tests-beautify)
 ;; (require 'verilog-ext-tests-vhier)
