@@ -254,6 +254,20 @@ It did work locally though."
                             6110 5845 5379 5172 4962 4758 4157 4057 3945 3561 3194 2563)))))
 
 
+;; (ert-deftest navigation::jump-to-parent-module ()
+;;   (should (equal (verilog-ext-test-imenu-file "tb_program.sv")
+;;                  nil)))
+
+;; (ert-deftest navigation::defun-level-up ()
+;;   (should (equal (verilog-ext-test-imenu-file "tb_program.sv")
+;;                  nil)))
+
+;; (ert-deftest navigation::defun-level-down ()
+;;   (should (equal (verilog-ext-test-imenu-file "tb_program.sv")
+;;                  nil)))
+
+
+
 (provide 'verilog-ext-tests-navigation)
 
 ;;; verilog-ext-tests-navigation.el ends here

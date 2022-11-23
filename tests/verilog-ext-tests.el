@@ -55,13 +55,16 @@
 (defvar verilog-ext-tests-examples-dir (verilog-ext-path-join verilog-ext-tests-test-dir "examples"))
 (defvar verilog-ext-tests-faceup-dir (verilog-ext-path-join verilog-ext-tests-test-dir "examples/faceup"))
 
+(unless (member verilog-ext-tests-test-dir load-path)
+  (add-to-list 'load-path verilog-ext-tests-test-dir))
 
 (require 'verilog-ext-tests-imenu)
 (require 'verilog-ext-tests-navigation)
 (require 'verilog-ext-tests-font-lock)
-;; (require 'verilog-ext-tests-utils)
-;; (require 'verilog-ext-tests-beautify)
-;; (require 'verilog-ext-tests-vhier)
+(require 'verilog-ext-tests-utils)
+(require 'verilog-ext-tests-beautify)
+(require 'verilog-ext-tests-editing)
+(require 'verilog-ext-tests-which-func)
 
 
 
