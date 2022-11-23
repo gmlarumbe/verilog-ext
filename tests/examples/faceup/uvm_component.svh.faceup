@@ -922,7 +922,7 @@
 »
   «k:extern» «k:static» «k:function» «k:void» «f:set_type_override_by_type»
                                              «:verilog-ext-font-lock-brackets-face:(»«:verilog-ext-font-lock-uvm-classes-face:uvm_object_wrapper» original_type«:verilog-ext-font-lock-punctuation-face:,»
-                                              «t:uvm_object_wrapper» override_type«:verilog-ext-font-lock-punctuation-face:,»
+                                              «:verilog-ext-font-lock-uvm-classes-face:uvm_object_wrapper» override_type«:verilog-ext-font-lock-punctuation-face:,»
                                               «t:bit» replace«:verilog-ext-font-lock-punctuation-face:=»1«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
 
 
@@ -978,8 +978,8 @@
 »  «m://»«x:|  endclass
 »
   «k:extern» «k:function» «k:void» «f:set_inst_override_by_type»«:verilog-ext-font-lock-brackets-face:(»«t:string» relative_inst_path«:verilog-ext-font-lock-punctuation-face:,»
-                                                 «t:uvm_object_wrapper» original_type«:verilog-ext-font-lock-punctuation-face:,»
-                                                 «t:uvm_object_wrapper» override_type«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+                                                 «:verilog-ext-font-lock-uvm-classes-face:uvm_object_wrapper» original_type«:verilog-ext-font-lock-punctuation-face:,»
+                                                 «:verilog-ext-font-lock-uvm-classes-face:uvm_object_wrapper» override_type«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
 
 
   «m:// »«x:Function -- NODOCS -- set_type_override
@@ -1074,13 +1074,13 @@
   «m:// »«x:Function -- NODOCS -- set_report_severity_action_hier
 »
   «k:extern» «k:function» «k:void» «f:set_report_severity_action_hier» «:verilog-ext-font-lock-brackets-face:(»«:verilog-ext-font-lock-uvm-classes-face:uvm_severity» severity«:verilog-ext-font-lock-punctuation-face:,»
-                                                        «t:uvm_action» action«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+                                                        «:verilog-ext-font-lock-uvm-classes-face:uvm_action» action«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
 
 
   «m:// »«x:Function -- NODOCS -- set_report_id_action_hier
 »
   «k:extern» «k:function» «k:void» «f:set_report_id_action_hier» «:verilog-ext-font-lock-brackets-face:(»«t:string» id«:verilog-ext-font-lock-punctuation-face:,»
-                                                  «t:uvm_action» action«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+                                                  «:verilog-ext-font-lock-uvm-classes-face:uvm_action» action«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
 
   «m:// »«x:Function -- NODOCS -- set_report_severity_id_action_hier
 »  «m://»«x:
@@ -1095,7 +1095,7 @@
 »
   «k:extern» «k:function» «k:void» «f:set_report_severity_id_action_hier»«:verilog-ext-font-lock-brackets-face:(»«:verilog-ext-font-lock-uvm-classes-face:uvm_severity» severity«:verilog-ext-font-lock-punctuation-face:,»
                                                           «t:string» id«:verilog-ext-font-lock-punctuation-face:,»
-                                                          «t:uvm_action» action«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+                                                          «:verilog-ext-font-lock-uvm-classes-face:uvm_action» action«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
 
 
 
@@ -1294,7 +1294,7 @@
 »
   «m:// »«x:@uvm-ieee 1800.2-2020 auto 13.1.7.7
 »  «k:extern» «k:function» «t:int» «f:record_error_tr» «:verilog-ext-font-lock-brackets-face:(»«t:string» stream_name«:verilog-ext-font-lock-punctuation-face:=»«s:"main"»«:verilog-ext-font-lock-punctuation-face:,»
-                                           «t:uvm_object» info«:verilog-ext-font-lock-punctuation-face:=»«k:null»«:verilog-ext-font-lock-punctuation-face:,»
+                                           «:verilog-ext-font-lock-uvm-classes-face:uvm_object» info«:verilog-ext-font-lock-punctuation-face:=»«k:null»«:verilog-ext-font-lock-punctuation-face:,»
                                            «t:string» label«:verilog-ext-font-lock-punctuation-face:=»«s:"error_tr"»«:verilog-ext-font-lock-punctuation-face:,»
                                            «t:string» desc«:verilog-ext-font-lock-punctuation-face:=»«s:""»«:verilog-ext-font-lock-punctuation-face:,»
                                            «t:time»   error_time«:verilog-ext-font-lock-punctuation-face:=»0«:verilog-ext-font-lock-punctuation-face:,»
@@ -1315,7 +1315,7 @@
 »
   «m:// »«x:@uvm-ieee 1800.2-2020 auto 13.1.7.8
 »  «k:extern» «k:function» «t:int» «f:record_event_tr» «:verilog-ext-font-lock-brackets-face:(»«t:string» stream_name«:verilog-ext-font-lock-punctuation-face:=»«s:"main"»«:verilog-ext-font-lock-punctuation-face:,»
-                                           «t:uvm_object» info«:verilog-ext-font-lock-punctuation-face:=»«k:null»«:verilog-ext-font-lock-punctuation-face:,»
+                                           «:verilog-ext-font-lock-uvm-classes-face:uvm_object» info«:verilog-ext-font-lock-punctuation-face:=»«k:null»«:verilog-ext-font-lock-punctuation-face:,»
                                            «t:string» label«:verilog-ext-font-lock-punctuation-face:=»«s:"event_tr"»«:verilog-ext-font-lock-punctuation-face:,»
                                            «t:string» desc«:verilog-ext-font-lock-punctuation-face:=»«s:""»«:verilog-ext-font-lock-punctuation-face:,»
                                            «t:time»   event_time«:verilog-ext-font-lock-punctuation-face:=»0«:verilog-ext-font-lock-punctuation-face:,»
@@ -1372,13 +1372,13 @@
 »  «m:// »«x:tions are freely available via the open-source license.
 »  «m://»«x:----------------------------------------------------------------------------
 »
-  «k:protected» «t:uvm_domain» m_domain«:verilog-ext-font-lock-punctuation-face:;»    «m:// »«x:set_domain stores our domain handle
+  «k:protected» «:verilog-ext-font-lock-typedef-face:uvm_domain» m_domain«:verilog-ext-font-lock-punctuation-face:;»    «m:// »«x:set_domain stores our domain handle
 »
   «m:/*»«x:protected*/» «:verilog-ext-font-lock-typedef-face:uvm_phase»  m_phase_imps«:verilog-ext-font-lock-braces-face:[»«:verilog-ext-font-lock-braces-content-face:uvm_phase»«:verilog-ext-font-lock-braces-face:]»«:verilog-ext-font-lock-punctuation-face:;»    «m:// »«x:functors to override ovm_root defaults
 »
   «m://»«x:TND review protected, provide read-only accessor.
-»  «t:uvm_phase»            m_current_phase«:verilog-ext-font-lock-punctuation-face:;»            «m:// »«x:the most recently executed phase
-»  «k:protected» «t:process»    m_phase_process«:verilog-ext-font-lock-punctuation-face:;»
+»  «:verilog-ext-font-lock-typedef-face:uvm_phase»            m_current_phase«:verilog-ext-font-lock-punctuation-face:;»            «m:// »«x:the most recently executed phase
+»  «k:protected» «:verilog-ext-font-lock-typedef-face:process»    m_phase_process«:verilog-ext-font-lock-punctuation-face:;»
 
   «m:/*»«x:protected*/» «t:bit»  m_build_done«:verilog-ext-font-lock-punctuation-face:;»
   «m:/*»«x:protected*/» «t:int»  m_phasing_active«:verilog-ext-font-lock-punctuation-face:;»
@@ -1386,8 +1386,8 @@
   «k:extern»                   «k:function» «k:void» «f:set_local»«:verilog-ext-font-lock-brackets-face:(»«:verilog-ext-font-lock-uvm-classes-face:uvm_resource_base» rsrc«:verilog-ext-font-lock-brackets-face:)» «:verilog-ext-font-lock-punctuation-face:;»
 
   «m:/*»«x:protected*/» «:verilog-ext-font-lock-typedef-face:uvm_component» m_parent«:verilog-ext-font-lock-punctuation-face:;»
-  «k:protected»     «t:uvm_component» m_children«:verilog-ext-font-lock-braces-face:[»«t:string»«:verilog-ext-font-lock-braces-face:]»«:verilog-ext-font-lock-punctuation-face:;»
-  «k:protected»     «t:uvm_component» m_children_by_handle«:verilog-ext-font-lock-braces-face:[»«:verilog-ext-font-lock-braces-content-face:uvm_component»«:verilog-ext-font-lock-braces-face:]»«:verilog-ext-font-lock-punctuation-face:;»
+  «k:protected»     «:verilog-ext-font-lock-typedef-face:uvm_component» m_children«:verilog-ext-font-lock-braces-face:[»«t:string»«:verilog-ext-font-lock-braces-face:]»«:verilog-ext-font-lock-punctuation-face:;»
+  «k:protected»     «:verilog-ext-font-lock-typedef-face:uvm_component» m_children_by_handle«:verilog-ext-font-lock-braces-face:[»«:verilog-ext-font-lock-braces-content-face:uvm_component»«:verilog-ext-font-lock-braces-face:]»«:verilog-ext-font-lock-punctuation-face:;»
   «k:extern» «k:protected» «k:virtual» «k:function» «t:bit»  «f:m_add_child»«:verilog-ext-font-lock-brackets-face:(»«:verilog-ext-font-lock-uvm-classes-face:uvm_component» child«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
   «k:extern» «k:local»     «k:virtual» «k:function» «k:void» «f:m_set_full_name»«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
 
@@ -1405,7 +1405,7 @@
   «k:extern» «k:virtual» «k:function» «t:uvm_object» «f:clone»  «:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
 
   «k:local» «:verilog-ext-font-lock-typedef-face:uvm_tr_stream» m_streams«:verilog-ext-font-lock-braces-face:[»«t:string»«:verilog-ext-font-lock-braces-face:][»«t:string»«:verilog-ext-font-lock-braces-face:]»«:verilog-ext-font-lock-punctuation-face:;»
-  «k:local» «t:uvm_recorder» m_tr_h«:verilog-ext-font-lock-braces-face:[»«:verilog-ext-font-lock-braces-content-face:uvm_transaction»«:verilog-ext-font-lock-braces-face:]»«:verilog-ext-font-lock-punctuation-face:;»
+  «k:local» «:verilog-ext-font-lock-typedef-face:uvm_recorder» m_tr_h«:verilog-ext-font-lock-braces-face:[»«:verilog-ext-font-lock-braces-content-face:uvm_transaction»«:verilog-ext-font-lock-braces-face:]»«:verilog-ext-font-lock-punctuation-face:;»
   «k:extern» «k:protected» «k:function» «t:int» «f:m_begin_tr» «:verilog-ext-font-lock-brackets-face:(»«:verilog-ext-font-lock-uvm-classes-face:uvm_transaction» tr«:verilog-ext-font-lock-punctuation-face:,»
                                                 «t:int» parent_handle«:verilog-ext-font-lock-punctuation-face:=»0«:verilog-ext-font-lock-punctuation-face:,»
                                                 «t:string» stream_name«:verilog-ext-font-lock-punctuation-face:=»«s:"main"»«:verilog-ext-font-lock-punctuation-face:,» «t:string» label«:verilog-ext-font-lock-punctuation-face:=»«s:""»«:verilog-ext-font-lock-punctuation-face:,»
@@ -1416,7 +1416,7 @@
   «k:typedef» «:verilog-ext-font-lock-typedef-face:uvm_abstract_component_registry»«:verilog-ext-font-lock-time-event-face:#»«:verilog-ext-font-lock-brackets-face:(»«:verilog-ext-font-lock-uvm-classes-face:uvm_component»«:verilog-ext-font-lock-punctuation-face:,» «s:"uvm_component"»«:verilog-ext-font-lock-brackets-face:)» «t:type_id»«:verilog-ext-font-lock-punctuation-face:;»
   «:verilog-ext-font-lock-preprocessor-face:`uvm_type_name_decl»«:verilog-ext-font-lock-brackets-face:(»«s:"uvm_component"»«:verilog-ext-font-lock-brackets-face:)»
 
-  «k:protected» «t:uvm_event_pool» event_pool«:verilog-ext-font-lock-punctuation-face:;»
+  «k:protected» «:verilog-ext-font-lock-typedef-face:uvm_event_pool» event_pool«:verilog-ext-font-lock-punctuation-face:;»
 
   «t:int» «t:unsigned» recording_detail «:verilog-ext-font-lock-punctuation-face:=» UVM_NONE«:verilog-ext-font-lock-punctuation-face:;»
 
@@ -1455,7 +1455,7 @@
 »  «k:extern» «m:/*»«x:local*/» «k:function» «k:void» «f:m_do_pre_abort»«:verilog-ext-font-lock-punctuation-face:;»
 
   «m:// »«x:produce message for unsupported types from apply_config_settings
-»  «t:uvm_resource_base» m_unsupported_resource_base «:verilog-ext-font-lock-punctuation-face:=» «k:null»«:verilog-ext-font-lock-punctuation-face:;»
+»  «:verilog-ext-font-lock-typedef-face:uvm_resource_base» m_unsupported_resource_base «:verilog-ext-font-lock-punctuation-face:=» «k:null»«:verilog-ext-font-lock-punctuation-face:;»
   «k:extern» «k:function» «k:void» «f:m_unsupported_set_local»«:verilog-ext-font-lock-brackets-face:(»«:verilog-ext-font-lock-uvm-classes-face:uvm_resource_base» rsrc«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
 
 «k:endclass» «:verilog-ext-font-lock-punctuation-face::» «:verilog-ext-font-lock-uvm-classes-face:uvm_component»
@@ -1479,14 +1479,14 @@
 »
 «k:function»«t: »«:verilog-ext-font-lock-dot-name-face:uvm_component»«:verilog-ext-font-lock-punctuation-face:::»«k:new» «:verilog-ext-font-lock-brackets-face:(»«t:string» name«:verilog-ext-font-lock-punctuation-face:,» «:verilog-ext-font-lock-uvm-classes-face:uvm_component» parent«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
   «t:string» error_str«:verilog-ext-font-lock-punctuation-face:;»
-  «t:uvm_root» top«:verilog-ext-font-lock-punctuation-face:;»
-  «t:uvm_coreservice_t» cs«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_root» top«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_coreservice_t» cs«:verilog-ext-font-lock-punctuation-face:;»
 
   «k:super»«:verilog-ext-font-lock-punctuation-bold-face:.»«k:new»«:verilog-ext-font-lock-brackets-face:(»name«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
 
   «m:// »«x:If uvm_top, reset name to "" so it doesn't show in full paths then return
 »  «k:if» «:verilog-ext-font-lock-brackets-face:(»parent«:verilog-ext-font-lock-punctuation-face:==»«k:null» «:verilog-ext-font-lock-punctuation-bold-face:&&» name «:verilog-ext-font-lock-punctuation-face:==» «s:"__top__"»«:verilog-ext-font-lock-brackets-face:)» «:verilog-ext-font-lock-grouping-keywords-face:begin»
-    set_name«:verilog-ext-font-lock-brackets-face:(»«s:""»«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;» «m:// »«x:*** »«:outshine-level-3:VIRTUAL»«x:
+    set_name«:verilog-ext-font-lock-brackets-face:(»«s:""»«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;» «m:// »«x:*** VIRTUAL
 »    «k:return»«:verilog-ext-font-lock-punctuation-face:;»
   «:verilog-ext-font-lock-grouping-keywords-face:end»
 
@@ -1495,8 +1495,8 @@
 
   «m:// »«x:Check that we're not in or past end_of_elaboration
 »  «:verilog-ext-font-lock-grouping-keywords-face:begin»
-    «t:uvm_phase» bld«:verilog-ext-font-lock-punctuation-face:;»
-    «t:uvm_domain» common«:verilog-ext-font-lock-punctuation-face:;»
+    «:verilog-ext-font-lock-typedef-face:uvm_phase» bld«:verilog-ext-font-lock-punctuation-face:;»
+    «:verilog-ext-font-lock-typedef-face:uvm_domain» common«:verilog-ext-font-lock-punctuation-face:;»
     common «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_domain»«:verilog-ext-font-lock-punctuation-face:::»get_common_domain«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
     bld «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-dot-name-face:common»«:verilog-ext-font-lock-punctuation-bold-face:.»find«:verilog-ext-font-lock-brackets-face:(»«:verilog-ext-font-lock-uvm-classes-face:uvm_build_phase»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:())»«:verilog-ext-font-lock-punctuation-face:;»
     «k:if» «:verilog-ext-font-lock-brackets-face:(»bld «:verilog-ext-font-lock-punctuation-face:==» «k:null»«:verilog-ext-font-lock-brackets-face:)»
@@ -1544,7 +1544,7 @@
 
   m_parent «:verilog-ext-font-lock-punctuation-face:=» parent«:verilog-ext-font-lock-punctuation-face:;»
 
-  set_name«:verilog-ext-font-lock-brackets-face:(»name«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;» «m:// »«x:*** »«:outshine-level-3:VIRTUAL»«x:
+  set_name«:verilog-ext-font-lock-brackets-face:(»name«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;» «m:// »«x:*** VIRTUAL
 »
   «k:if» «:verilog-ext-font-lock-brackets-face:(»«:verilog-ext-font-lock-punctuation-face:!»«:verilog-ext-font-lock-dot-name-face:m_parent»«:verilog-ext-font-lock-punctuation-bold-face:.»m_add_child«:verilog-ext-font-lock-brackets-face:(»«:verilog-ext-font-lock-grouping-keywords-face:this»«:verilog-ext-font-lock-brackets-face:))»
     m_parent «:verilog-ext-font-lock-punctuation-face:=» «k:null»«:verilog-ext-font-lock-punctuation-face:;»
@@ -1696,14 +1696,14 @@
 »«m:// »«x:---------------
 »
 «k:function» «k:void» «:verilog-ext-font-lock-dot-name-face:uvm_component»«:verilog-ext-font-lock-punctuation-face:::»«f:m_set_full_name»«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
-  «t:uvm_root» top«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_root» top«:verilog-ext-font-lock-punctuation-face:;»
   «k:if» «:verilog-ext-font-lock-brackets-face:(»«b:$cast»«:verilog-ext-font-lock-brackets-face:(»top«:verilog-ext-font-lock-punctuation-face:,» m_parent«:verilog-ext-font-lock-brackets-face:)» «:verilog-ext-font-lock-punctuation-bold-face:||» m_parent«:verilog-ext-font-lock-punctuation-face:==»«k:null»«:verilog-ext-font-lock-brackets-face:)»
     m_name «:verilog-ext-font-lock-punctuation-face:=» get_name«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
   «k:else»
     m_name «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-curly-brackets-face:{»«:verilog-ext-font-lock-dot-name-face:m_parent»«:verilog-ext-font-lock-punctuation-bold-face:.»get_full_name«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:,» «s:"."»«:verilog-ext-font-lock-punctuation-face:,» get_name«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-curly-brackets-face:}»«:verilog-ext-font-lock-punctuation-face:;»
 
   «k:foreach» «:verilog-ext-font-lock-brackets-face:(»m_children«:verilog-ext-font-lock-braces-face:[»«:verilog-ext-font-lock-braces-content-face:c»«:verilog-ext-font-lock-braces-face:]»«:verilog-ext-font-lock-brackets-face:)» «:verilog-ext-font-lock-grouping-keywords-face:begin»
-    «t:uvm_component» tmp«:verilog-ext-font-lock-punctuation-face:;»
+    «:verilog-ext-font-lock-typedef-face:uvm_component» tmp«:verilog-ext-font-lock-punctuation-face:;»
     tmp «:verilog-ext-font-lock-punctuation-face:=» m_children«:verilog-ext-font-lock-braces-face:[»«:verilog-ext-font-lock-braces-content-face:c»«:verilog-ext-font-lock-braces-face:]»«:verilog-ext-font-lock-punctuation-face:;»
     «:verilog-ext-font-lock-dot-name-face:tmp»«:verilog-ext-font-lock-punctuation-bold-face:.»m_set_full_name«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
   «:verilog-ext-font-lock-grouping-keywords-face:end»
@@ -1717,9 +1717,9 @@
 «k:function» «t:uvm_component» «:verilog-ext-font-lock-dot-name-face:uvm_component»«:verilog-ext-font-lock-punctuation-face:::»«f:lookup»«:verilog-ext-font-lock-brackets-face:(» «t:string» name «:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
 
   «t:string» leaf «:verilog-ext-font-lock-punctuation-face:,» remainder«:verilog-ext-font-lock-punctuation-face:;»
-  «t:uvm_component» comp«:verilog-ext-font-lock-punctuation-face:;»
-  «t:uvm_root» top«:verilog-ext-font-lock-punctuation-face:;»
-  «t:uvm_coreservice_t» cs«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_component» comp«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_root» top«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_coreservice_t» cs«:verilog-ext-font-lock-punctuation-face:;»
   «t:int» name_length«:verilog-ext-font-lock-punctuation-face:;»
 
   cs «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_coreservice_t»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
@@ -1846,8 +1846,8 @@
 »
 «k:function» «k:void»  «:verilog-ext-font-lock-dot-name-face:uvm_component»«:verilog-ext-font-lock-punctuation-face:::»«f:print_override_info» «:verilog-ext-font-lock-brackets-face:(»«t:string» requested_type_name«:verilog-ext-font-lock-punctuation-face:,»
                                                    «t:string» name«:verilog-ext-font-lock-punctuation-face:=»«s:""»«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
-  «t:uvm_coreservice_t» cs «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_coreservice_t»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
-  «t:uvm_factory» factory«:verilog-ext-font-lock-punctuation-face:=»«:verilog-ext-font-lock-dot-name-face:cs»«:verilog-ext-font-lock-punctuation-bold-face:.»get_factory«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_coreservice_t» cs «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_coreservice_t»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_factory» factory«:verilog-ext-font-lock-punctuation-face:=»«:verilog-ext-font-lock-dot-name-face:cs»«:verilog-ext-font-lock-punctuation-bold-face:.»get_factory«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
   «:verilog-ext-font-lock-dot-name-face:factory»«:verilog-ext-font-lock-punctuation-bold-face:.»debug_create_by_name«:verilog-ext-font-lock-brackets-face:(»requested_type_name«:verilog-ext-font-lock-punctuation-face:,» get_full_name«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:,» name«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
 «k:endfunction»
 
@@ -1857,8 +1857,8 @@
 »
 «k:function» «t:uvm_component» «:verilog-ext-font-lock-dot-name-face:uvm_component»«:verilog-ext-font-lock-punctuation-face:::»«f:create_component» «:verilog-ext-font-lock-brackets-face:(»«t:string» requested_type_name«:verilog-ext-font-lock-punctuation-face:,»
                                                         «t:string» name«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
-  «t:uvm_coreservice_t» cs «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_coreservice_t»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
-  «t:uvm_factory» factory«:verilog-ext-font-lock-punctuation-face:=»«:verilog-ext-font-lock-dot-name-face:cs»«:verilog-ext-font-lock-punctuation-bold-face:.»get_factory«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_coreservice_t» cs «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_coreservice_t»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_factory» factory«:verilog-ext-font-lock-punctuation-face:=»«:verilog-ext-font-lock-dot-name-face:cs»«:verilog-ext-font-lock-punctuation-bold-face:.»get_factory«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
   «k:return» «:verilog-ext-font-lock-dot-name-face:factory»«:verilog-ext-font-lock-punctuation-bold-face:.»create_component_by_name«:verilog-ext-font-lock-brackets-face:(»requested_type_name«:verilog-ext-font-lock-punctuation-face:,» get_full_name«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:,»
                                           name«:verilog-ext-font-lock-punctuation-face:,» «:verilog-ext-font-lock-grouping-keywords-face:this»«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
 «k:endfunction»
@@ -1869,8 +1869,8 @@
 »
 «k:function» «t:uvm_object» «:verilog-ext-font-lock-dot-name-face:uvm_component»«:verilog-ext-font-lock-punctuation-face:::»«f:create_object» «:verilog-ext-font-lock-brackets-face:(»«t:string» requested_type_name«:verilog-ext-font-lock-punctuation-face:,»
                                                   «t:string» name«:verilog-ext-font-lock-punctuation-face:=»«s:""»«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
-  «t:uvm_coreservice_t» cs «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_coreservice_t»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
-  «t:uvm_factory» factory«:verilog-ext-font-lock-punctuation-face:=»«:verilog-ext-font-lock-dot-name-face:cs»«:verilog-ext-font-lock-punctuation-bold-face:.»get_factory«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_coreservice_t» cs «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_coreservice_t»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_factory» factory«:verilog-ext-font-lock-punctuation-face:=»«:verilog-ext-font-lock-dot-name-face:cs»«:verilog-ext-font-lock-punctuation-bold-face:.»get_factory«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
   «k:return» «:verilog-ext-font-lock-dot-name-face:factory»«:verilog-ext-font-lock-punctuation-bold-face:.»create_object_by_name«:verilog-ext-font-lock-brackets-face:(»requested_type_name«:verilog-ext-font-lock-punctuation-face:,»
                                        get_full_name«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:,» name«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
 «k:endfunction»
@@ -1882,8 +1882,8 @@
 «k:function» «k:void» «:verilog-ext-font-lock-dot-name-face:uvm_component»«:verilog-ext-font-lock-punctuation-face:::»«f:set_type_override» «:verilog-ext-font-lock-brackets-face:(»«t:string» original_type_name«:verilog-ext-font-lock-punctuation-face:,»
                                                 «t:string» override_type_name«:verilog-ext-font-lock-punctuation-face:,»
                                                 «t:bit»    replace«:verilog-ext-font-lock-punctuation-face:=»1«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
-   «t:uvm_coreservice_t» cs «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_coreservice_t»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
-   «t:uvm_factory» factory«:verilog-ext-font-lock-punctuation-face:=»«:verilog-ext-font-lock-dot-name-face:cs»«:verilog-ext-font-lock-punctuation-bold-face:.»get_factory«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
+   «:verilog-ext-font-lock-typedef-face:uvm_coreservice_t» cs «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_coreservice_t»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
+   «:verilog-ext-font-lock-typedef-face:uvm_factory» factory«:verilog-ext-font-lock-punctuation-face:=»«:verilog-ext-font-lock-dot-name-face:cs»«:verilog-ext-font-lock-punctuation-bold-face:.»get_factory«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
    «:verilog-ext-font-lock-dot-name-face:factory»«:verilog-ext-font-lock-punctuation-bold-face:.»set_type_override_by_name«:verilog-ext-font-lock-brackets-face:(»original_type_name«:verilog-ext-font-lock-punctuation-face:,»override_type_name«:verilog-ext-font-lock-punctuation-face:,» replace«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
 «k:endfunction»
 
@@ -1892,10 +1892,10 @@
 »«m:// »«x:-------------------------
 »
 «k:function» «k:void» «:verilog-ext-font-lock-dot-name-face:uvm_component»«:verilog-ext-font-lock-punctuation-face:::»«f:set_type_override_by_type» «:verilog-ext-font-lock-brackets-face:(»«:verilog-ext-font-lock-uvm-classes-face:uvm_object_wrapper» original_type«:verilog-ext-font-lock-punctuation-face:,»
-                                                        «t:uvm_object_wrapper» override_type«:verilog-ext-font-lock-punctuation-face:,»
+                                                        «:verilog-ext-font-lock-uvm-classes-face:uvm_object_wrapper» override_type«:verilog-ext-font-lock-punctuation-face:,»
                                                         «t:bit»    replace«:verilog-ext-font-lock-punctuation-face:=»1«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
-  «t:uvm_coreservice_t» cs «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_coreservice_t»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
-  «t:uvm_factory» factory«:verilog-ext-font-lock-punctuation-face:=»«:verilog-ext-font-lock-dot-name-face:cs»«:verilog-ext-font-lock-punctuation-bold-face:.»get_factory«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_coreservice_t» cs «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_coreservice_t»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_factory» factory«:verilog-ext-font-lock-punctuation-face:=»«:verilog-ext-font-lock-dot-name-face:cs»«:verilog-ext-font-lock-punctuation-bold-face:.»get_factory«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
    «:verilog-ext-font-lock-dot-name-face:factory»«:verilog-ext-font-lock-punctuation-bold-face:.»set_type_override_by_type«:verilog-ext-font-lock-brackets-face:(»original_type«:verilog-ext-font-lock-punctuation-face:,» override_type«:verilog-ext-font-lock-punctuation-face:,» replace«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
 «k:endfunction»
 
@@ -1907,8 +1907,8 @@
                                                  «t:string» original_type_name«:verilog-ext-font-lock-punctuation-face:,»
                                                  «t:string» override_type_name«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
   «t:string» full_inst_path«:verilog-ext-font-lock-punctuation-face:;»
-  «t:uvm_coreservice_t» cs «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_coreservice_t»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
-  «t:uvm_factory» factory«:verilog-ext-font-lock-punctuation-face:=»«:verilog-ext-font-lock-dot-name-face:cs»«:verilog-ext-font-lock-punctuation-bold-face:.»get_factory«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_coreservice_t» cs «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_coreservice_t»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_factory» factory«:verilog-ext-font-lock-punctuation-face:=»«:verilog-ext-font-lock-dot-name-face:cs»«:verilog-ext-font-lock-punctuation-bold-face:.»get_factory«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
 
   «k:if» «:verilog-ext-font-lock-brackets-face:(»relative_inst_path «:verilog-ext-font-lock-punctuation-face:==» «s:""»«:verilog-ext-font-lock-brackets-face:)»
     full_inst_path «:verilog-ext-font-lock-punctuation-face:=» get_full_name«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
@@ -1926,11 +1926,11 @@
 »«m:// »«x:-------------------------
 »
 «k:function» «k:void» «:verilog-ext-font-lock-dot-name-face:uvm_component»«:verilog-ext-font-lock-punctuation-face:::»«f:set_inst_override_by_type» «:verilog-ext-font-lock-brackets-face:(»«t:string» relative_inst_path«:verilog-ext-font-lock-punctuation-face:,»
-                                                        «t:uvm_object_wrapper» original_type«:verilog-ext-font-lock-punctuation-face:,»
-                                                        «t:uvm_object_wrapper» override_type«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+                                                        «:verilog-ext-font-lock-uvm-classes-face:uvm_object_wrapper» original_type«:verilog-ext-font-lock-punctuation-face:,»
+                                                        «:verilog-ext-font-lock-uvm-classes-face:uvm_object_wrapper» override_type«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
   «t:string» full_inst_path«:verilog-ext-font-lock-punctuation-face:;»
-  «t:uvm_coreservice_t» cs «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_coreservice_t»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
-  «t:uvm_factory» factory«:verilog-ext-font-lock-punctuation-face:=»«:verilog-ext-font-lock-dot-name-face:cs»«:verilog-ext-font-lock-punctuation-bold-face:.»get_factory«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_coreservice_t» cs «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_coreservice_t»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_factory» factory«:verilog-ext-font-lock-punctuation-face:=»«:verilog-ext-font-lock-dot-name-face:cs»«:verilog-ext-font-lock-punctuation-bold-face:.»get_factory«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
 
   «k:if» «:verilog-ext-font-lock-brackets-face:(»relative_inst_path «:verilog-ext-font-lock-punctuation-face:==» «s:""»«:verilog-ext-font-lock-brackets-face:)»
     full_inst_path «:verilog-ext-font-lock-punctuation-face:=» get_full_name«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
@@ -1975,7 +1975,7 @@
 »«m:// »«x:-------------------------
 »
 «k:function» «k:void» «:verilog-ext-font-lock-dot-name-face:uvm_component»«:verilog-ext-font-lock-punctuation-face:::»«f:set_report_severity_action_hier»«:verilog-ext-font-lock-brackets-face:(» «:verilog-ext-font-lock-uvm-classes-face:uvm_severity» severity«:verilog-ext-font-lock-punctuation-face:,»
-                                                           «t:uvm_action» action«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+                                                           «:verilog-ext-font-lock-uvm-classes-face:uvm_action» action«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
   set_report_severity_action«:verilog-ext-font-lock-brackets-face:(»severity«:verilog-ext-font-lock-punctuation-face:,» action«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
   «k:foreach»«:verilog-ext-font-lock-brackets-face:(» m_children«:verilog-ext-font-lock-braces-face:[»«:verilog-ext-font-lock-braces-content-face:c»«:verilog-ext-font-lock-braces-face:]» «:verilog-ext-font-lock-brackets-face:)»
     m_children«:verilog-ext-font-lock-braces-face:[»«:verilog-ext-font-lock-braces-content-face:c»«:verilog-ext-font-lock-braces-face:]»«:verilog-ext-font-lock-punctuation-bold-face:.»set_report_severity_action_hier«:verilog-ext-font-lock-brackets-face:(»severity«:verilog-ext-font-lock-punctuation-face:,» action«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
@@ -1997,7 +1997,7 @@
 »
 «k:function» «k:void» «:verilog-ext-font-lock-dot-name-face:uvm_component»«:verilog-ext-font-lock-punctuation-face:::»«f:set_report_severity_id_action_hier»«:verilog-ext-font-lock-brackets-face:(» «:verilog-ext-font-lock-uvm-classes-face:uvm_severity» severity«:verilog-ext-font-lock-punctuation-face:,»
                                                                  «t:string» id«:verilog-ext-font-lock-punctuation-face:,»
-                                                                 «t:uvm_action» action«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+                                                                 «:verilog-ext-font-lock-uvm-classes-face:uvm_action» action«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
   set_report_severity_id_action«:verilog-ext-font-lock-brackets-face:(»severity«:verilog-ext-font-lock-punctuation-face:,» id«:verilog-ext-font-lock-punctuation-face:,» action«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
   «k:foreach»«:verilog-ext-font-lock-brackets-face:(» m_children«:verilog-ext-font-lock-braces-face:[»«:verilog-ext-font-lock-braces-content-face:c»«:verilog-ext-font-lock-braces-face:]» «:verilog-ext-font-lock-brackets-face:)»
     m_children«:verilog-ext-font-lock-braces-face:[»«:verilog-ext-font-lock-braces-content-face:c»«:verilog-ext-font-lock-braces-face:]»«:verilog-ext-font-lock-punctuation-bold-face:.»set_report_severity_id_action_hier«:verilog-ext-font-lock-brackets-face:(»severity«:verilog-ext-font-lock-punctuation-face:,» id«:verilog-ext-font-lock-punctuation-face:,» action«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
@@ -2166,11 +2166,11 @@
 »«m:// »«x:-------------
 »
 «k:function» «k:void» «:verilog-ext-font-lock-dot-name-face:uvm_component»«:verilog-ext-font-lock-punctuation-face:::»«f:define_domain»«:verilog-ext-font-lock-brackets-face:(»«:verilog-ext-font-lock-uvm-classes-face:uvm_domain» domain«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
-  «t:uvm_phase» schedule«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_phase» schedule«:verilog-ext-font-lock-punctuation-face:;»
   «m://»«x:schedule = domain.find(uvm_domain::get_uvm_schedule());
 »  schedule «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-dot-name-face:domain»«:verilog-ext-font-lock-punctuation-bold-face:.»find_by_name«:verilog-ext-font-lock-brackets-face:(»«s:"uvm_sched"»«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
   «k:if» «:verilog-ext-font-lock-brackets-face:(»schedule «:verilog-ext-font-lock-punctuation-face:==» «k:null»«:verilog-ext-font-lock-brackets-face:)» «:verilog-ext-font-lock-grouping-keywords-face:begin»
-    «t:uvm_domain» common«:verilog-ext-font-lock-punctuation-face:;»
+    «:verilog-ext-font-lock-typedef-face:uvm_domain» common«:verilog-ext-font-lock-punctuation-face:;»
     schedule «:verilog-ext-font-lock-punctuation-face:=» «k:new»«:verilog-ext-font-lock-brackets-face:(»«s:"uvm_sched"»«:verilog-ext-font-lock-punctuation-face:,» UVM_PHASE_SCHEDULE«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
     «:verilog-ext-font-lock-uvm-classes-face:uvm_domain»«:verilog-ext-font-lock-punctuation-face:::»add_uvm_phases«:verilog-ext-font-lock-brackets-face:(»schedule«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
     «:verilog-ext-font-lock-dot-name-face:domain»«:verilog-ext-font-lock-punctuation-bold-face:.»add«:verilog-ext-font-lock-brackets-face:(»schedule«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
@@ -2284,7 +2284,7 @@
 »«m:// »«x:---------------------
 »   «k:function» «t:uvm_tr_database» «:verilog-ext-font-lock-dot-name-face:uvm_component»«:verilog-ext-font-lock-punctuation-face:::»«f:get_tr_database»«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
      «k:if» «:verilog-ext-font-lock-brackets-face:(»tr_database «:verilog-ext-font-lock-punctuation-face:==» «k:null»«:verilog-ext-font-lock-brackets-face:)» «:verilog-ext-font-lock-grouping-keywords-face:begin»
-       «t:uvm_coreservice_t» cs «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_coreservice_t»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
+       «:verilog-ext-font-lock-typedef-face:uvm_coreservice_t» cs «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_coreservice_t»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
        tr_database «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-dot-name-face:cs»«:verilog-ext-font-lock-punctuation-bold-face:.»get_default_tr_database«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
      «:verilog-ext-font-lock-grouping-keywords-face:end»
      «k:return» tr_database«:verilog-ext-font-lock-punctuation-face:;»
@@ -2349,7 +2349,7 @@
    «:verilog-ext-font-lock-typedef-face:uvm_tr_database» db«:verilog-ext-font-lock-punctuation-face:;»
    «t:int»   handle«:verilog-ext-font-lock-punctuation-face:,» link_handle«:verilog-ext-font-lock-punctuation-face:;»
    «:verilog-ext-font-lock-typedef-face:uvm_tr_stream» stream«:verilog-ext-font-lock-punctuation-face:;»
-   «t:uvm_recorder» recorder«:verilog-ext-font-lock-punctuation-face:,» parent_recorder«:verilog-ext-font-lock-punctuation-face:,» link_recorder«:verilog-ext-font-lock-punctuation-face:;»
+   «:verilog-ext-font-lock-typedef-face:uvm_recorder» recorder«:verilog-ext-font-lock-punctuation-face:,» parent_recorder«:verilog-ext-font-lock-punctuation-face:,» link_recorder«:verilog-ext-font-lock-punctuation-face:;»
 
    «k:if» «:verilog-ext-font-lock-brackets-face:(»tr «:verilog-ext-font-lock-punctuation-face:==» «k:null»«:verilog-ext-font-lock-brackets-face:)»
      «k:return» 0«:verilog-ext-font-lock-punctuation-face:;»
@@ -2362,9 +2362,9 @@
    «:verilog-ext-font-lock-grouping-keywords-face:end»
 
    «k:else» «:verilog-ext-font-lock-grouping-keywords-face:begin»
-      «t:uvm_sequence_item» seq«:verilog-ext-font-lock-punctuation-face:;»
+      «:verilog-ext-font-lock-typedef-face:uvm_sequence_item» seq«:verilog-ext-font-lock-punctuation-face:;»
       «k:if» «:verilog-ext-font-lock-brackets-face:(»«b:$cast»«:verilog-ext-font-lock-brackets-face:(»seq«:verilog-ext-font-lock-punctuation-face:,»tr«:verilog-ext-font-lock-brackets-face:))» «:verilog-ext-font-lock-grouping-keywords-face:begin»
-         «t:uvm_sequence_base» parent_seq «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-dot-name-face:seq»«:verilog-ext-font-lock-punctuation-bold-face:.»get_parent_sequence«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
+         «:verilog-ext-font-lock-typedef-face:uvm_sequence_base» parent_seq «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-dot-name-face:seq»«:verilog-ext-font-lock-punctuation-bold-face:.»get_parent_sequence«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
          «k:if» «:verilog-ext-font-lock-brackets-face:(»parent_seq «:verilog-ext-font-lock-punctuation-face:!=» «k:null»«:verilog-ext-font-lock-brackets-face:)» «:verilog-ext-font-lock-grouping-keywords-face:begin»
             parent_recorder «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-dot-name-face:parent_seq»«:verilog-ext-font-lock-punctuation-bold-face:.»m_tr_recorder«:verilog-ext-font-lock-punctuation-face:;»
          «:verilog-ext-font-lock-grouping-keywords-face:end»
@@ -2438,7 +2438,7 @@
                                      «t:time» end_time«:verilog-ext-font-lock-punctuation-face:=»0«:verilog-ext-font-lock-punctuation-face:,»
                                      «t:bit» free_handle«:verilog-ext-font-lock-punctuation-face:=»1«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
    «:verilog-ext-font-lock-typedef-face:uvm_event»«:verilog-ext-font-lock-time-event-face:#»«:verilog-ext-font-lock-brackets-face:(»«:verilog-ext-font-lock-uvm-classes-face:uvm_object»«:verilog-ext-font-lock-brackets-face:)» e«:verilog-ext-font-lock-punctuation-face:;»
-   «t:uvm_recorder» recorder«:verilog-ext-font-lock-punctuation-face:;»
+   «:verilog-ext-font-lock-typedef-face:uvm_recorder» recorder«:verilog-ext-font-lock-punctuation-face:;»
 
    «k:if» «:verilog-ext-font-lock-brackets-face:(»tr «:verilog-ext-font-lock-punctuation-face:==» «k:null»«:verilog-ext-font-lock-brackets-face:)»
      «k:return»«:verilog-ext-font-lock-punctuation-face:;»
@@ -2475,12 +2475,12 @@
 »«m:// »«x:---------------
 »
 «k:function» «t:int» «:verilog-ext-font-lock-dot-name-face:uvm_component»«:verilog-ext-font-lock-punctuation-face:::»«f:record_error_tr» «:verilog-ext-font-lock-brackets-face:(»«t:string» stream_name«:verilog-ext-font-lock-punctuation-face:=»«s:"main"»«:verilog-ext-font-lock-punctuation-face:,»
-                                                 «t:uvm_object» info«:verilog-ext-font-lock-punctuation-face:=»«k:null»«:verilog-ext-font-lock-punctuation-face:,»
+                                                 «:verilog-ext-font-lock-uvm-classes-face:uvm_object» info«:verilog-ext-font-lock-punctuation-face:=»«k:null»«:verilog-ext-font-lock-punctuation-face:,»
                                                  «t:string» label«:verilog-ext-font-lock-punctuation-face:=»«s:"error_tr"»«:verilog-ext-font-lock-punctuation-face:,»
                                                  «t:string» desc«:verilog-ext-font-lock-punctuation-face:=»«s:""»«:verilog-ext-font-lock-punctuation-face:,»
                                                  «t:time»   error_time«:verilog-ext-font-lock-punctuation-face:=»0«:verilog-ext-font-lock-punctuation-face:,»
                                                  «t:bit»    keep_active«:verilog-ext-font-lock-punctuation-face:=»0«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
-   «t:uvm_recorder» recorder«:verilog-ext-font-lock-punctuation-face:;»
+   «:verilog-ext-font-lock-typedef-face:uvm_recorder» recorder«:verilog-ext-font-lock-punctuation-face:;»
    «t:string» etype«:verilog-ext-font-lock-punctuation-face:;»
    «:verilog-ext-font-lock-typedef-face:uvm_tr_stream» stream«:verilog-ext-font-lock-punctuation-face:;»
    «t:int» handle«:verilog-ext-font-lock-punctuation-face:;»
@@ -2529,12 +2529,12 @@
 »«m:// »«x:---------------
 »
 «k:function» «t:int» «:verilog-ext-font-lock-dot-name-face:uvm_component»«:verilog-ext-font-lock-punctuation-face:::»«f:record_event_tr» «:verilog-ext-font-lock-brackets-face:(»«t:string» stream_name«:verilog-ext-font-lock-punctuation-face:=»«s:"main"»«:verilog-ext-font-lock-punctuation-face:,»
-                                                 «t:uvm_object» info«:verilog-ext-font-lock-punctuation-face:=»«k:null»«:verilog-ext-font-lock-punctuation-face:,»
+                                                 «:verilog-ext-font-lock-uvm-classes-face:uvm_object» info«:verilog-ext-font-lock-punctuation-face:=»«k:null»«:verilog-ext-font-lock-punctuation-face:,»
                                                  «t:string» label«:verilog-ext-font-lock-punctuation-face:=»«s:"event_tr"»«:verilog-ext-font-lock-punctuation-face:,»
                                                  «t:string» desc«:verilog-ext-font-lock-punctuation-face:=»«s:""»«:verilog-ext-font-lock-punctuation-face:,»
                                                  «t:time»   event_time«:verilog-ext-font-lock-punctuation-face:=»0«:verilog-ext-font-lock-punctuation-face:,»
                                                  «t:bit»    keep_active«:verilog-ext-font-lock-punctuation-face:=»0«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
-   «t:uvm_recorder» recorder«:verilog-ext-font-lock-punctuation-face:;»
+   «:verilog-ext-font-lock-typedef-face:uvm_recorder» recorder«:verilog-ext-font-lock-punctuation-face:;»
    «t:string» etype«:verilog-ext-font-lock-punctuation-face:;»
    «t:int» handle«:verilog-ext-font-lock-punctuation-face:;»
    «:verilog-ext-font-lock-typedef-face:uvm_tr_stream» stream«:verilog-ext-font-lock-punctuation-face:;»
@@ -2644,9 +2644,9 @@
 »
 «k:function» «k:void» «:verilog-ext-font-lock-dot-name-face:uvm_component»«:verilog-ext-font-lock-punctuation-face:::»«f:apply_config_settings» «:verilog-ext-font-lock-brackets-face:(»«t:bit» verbose«:verilog-ext-font-lock-punctuation-face:=»0«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
 
-  «t:uvm_resource_pool» rp «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_resource_pool»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_resource_pool» rp «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_resource_pool»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
   «:verilog-ext-font-lock-typedef-face:uvm_queue»«:verilog-ext-font-lock-time-event-face:#»«:verilog-ext-font-lock-brackets-face:(»«:verilog-ext-font-lock-uvm-classes-face:uvm_resource_base»«:verilog-ext-font-lock-brackets-face:)» rq«:verilog-ext-font-lock-punctuation-face:;»
-  «t:uvm_resource_base» r«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_resource_base» r«:verilog-ext-font-lock-punctuation-face:;»
 
   «m:// »«x:The following is VERY expensive. Needs refactoring. Should
 »  «m:// »«x:get config only for the specific field names in 'field_array'.
@@ -2678,13 +2678,13 @@
 »
 «k:function» «k:void» «:verilog-ext-font-lock-dot-name-face:uvm_component»«:verilog-ext-font-lock-punctuation-face:::»«f:print_config»«:verilog-ext-font-lock-brackets-face:(»«t:bit» recurse «:verilog-ext-font-lock-punctuation-face:=» 0«:verilog-ext-font-lock-punctuation-face:,» audit «:verilog-ext-font-lock-punctuation-face:=» 0«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
 
-  «t:uvm_resource_pool» rp «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_resource_pool»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:uvm_resource_pool» rp «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-uvm-classes-face:uvm_resource_pool»«:verilog-ext-font-lock-punctuation-face:::»get«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
 
   uvm_report_info«:verilog-ext-font-lock-brackets-face:(»«s:"CFGPRT"»«:verilog-ext-font-lock-punctuation-face:,»«s:"visible resources:"»«:verilog-ext-font-lock-punctuation-face:,»UVM_INFO«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
   «:verilog-ext-font-lock-dot-name-face:rp»«:verilog-ext-font-lock-punctuation-bold-face:.»print_resources«:verilog-ext-font-lock-brackets-face:(»«:verilog-ext-font-lock-dot-name-face:rp»«:verilog-ext-font-lock-punctuation-bold-face:.»lookup_scope«:verilog-ext-font-lock-brackets-face:(»get_full_name«:verilog-ext-font-lock-brackets-face:())»«:verilog-ext-font-lock-punctuation-face:,» audit«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
 
   «k:if»«:verilog-ext-font-lock-brackets-face:(»recurse«:verilog-ext-font-lock-brackets-face:)» «:verilog-ext-font-lock-grouping-keywords-face:begin»
-    «t:uvm_component» c«:verilog-ext-font-lock-punctuation-face:;»
+    «:verilog-ext-font-lock-typedef-face:uvm_component» c«:verilog-ext-font-lock-punctuation-face:;»
     «k:foreach»«:verilog-ext-font-lock-brackets-face:(»m_children«:verilog-ext-font-lock-braces-face:[»«:verilog-ext-font-lock-braces-content-face:name»«:verilog-ext-font-lock-braces-face:]»«:verilog-ext-font-lock-brackets-face:)» «:verilog-ext-font-lock-grouping-keywords-face:begin»
       c «:verilog-ext-font-lock-punctuation-face:=» m_children«:verilog-ext-font-lock-braces-face:[»«:verilog-ext-font-lock-braces-content-face:name»«:verilog-ext-font-lock-braces-face:]»«:verilog-ext-font-lock-punctuation-face:;»
       «:verilog-ext-font-lock-dot-name-face:c»«:verilog-ext-font-lock-punctuation-bold-face:.»print_config«:verilog-ext-font-lock-brackets-face:(»recurse«:verilog-ext-font-lock-punctuation-face:,» audit«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
@@ -2744,9 +2744,9 @@
 «k:function» «k:void» «:verilog-ext-font-lock-dot-name-face:uvm_component»«:verilog-ext-font-lock-punctuation-face:::»«f:do_execute_op»«:verilog-ext-font-lock-brackets-face:(» «:verilog-ext-font-lock-uvm-classes-face:uvm_field_op» op «:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
     «k:if» «:verilog-ext-font-lock-brackets-face:(»«:verilog-ext-font-lock-dot-name-face:op»«:verilog-ext-font-lock-punctuation-bold-face:.»get_op_type «:verilog-ext-font-lock-punctuation-face:==» UVM_PRINT«:verilog-ext-font-lock-brackets-face:)» «:verilog-ext-font-lock-grouping-keywords-face:begin»
     «m:// »«x:Handle children of the comp
-»      «t:uvm_component» child_comp«:verilog-ext-font-lock-punctuation-face:;»
+»      «:verilog-ext-font-lock-typedef-face:uvm_component» child_comp«:verilog-ext-font-lock-punctuation-face:;»
       «t:string» name«:verilog-ext-font-lock-punctuation-face:;»
-      «t:uvm_printer» printer«:verilog-ext-font-lock-punctuation-face:;»
+      «:verilog-ext-font-lock-typedef-face:uvm_printer» printer«:verilog-ext-font-lock-punctuation-face:;»
       «k:if» «:verilog-ext-font-lock-brackets-face:(»«:verilog-ext-font-lock-punctuation-face:!»«b:$cast»«:verilog-ext-font-lock-brackets-face:(»printer«:verilog-ext-font-lock-punctuation-face:,»«:verilog-ext-font-lock-dot-name-face:op»«:verilog-ext-font-lock-punctuation-bold-face:.»get_policy«:verilog-ext-font-lock-brackets-face:()))»
         «:verilog-ext-font-lock-preprocessor-face:`uvm_error»«:verilog-ext-font-lock-brackets-face:(»«s:"INVPRINTOP"»«:verilog-ext-font-lock-punctuation-face:,»«s:"do_execute_op() called with a field_op that has op_type UVM_PRINT but a policy that does not derive from uvm_printer"»«:verilog-ext-font-lock-brackets-face:)»
       «k:else» «k:if» «:verilog-ext-font-lock-brackets-face:(»get_first_child«:verilog-ext-font-lock-brackets-face:(»name«:verilog-ext-font-lock-brackets-face:))»
@@ -2799,7 +2799,7 @@
 »
 «k:function» «k:void» «:verilog-ext-font-lock-dot-name-face:uvm_component»«:verilog-ext-font-lock-punctuation-face:::»«f:m_set_cl_msg_args»«:verilog-ext-font-lock-punctuation-face:;»
   «t:string» s_«:verilog-ext-font-lock-punctuation-face:;»
-  «t:process» p_«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-typedef-face:process» p_«:verilog-ext-font-lock-punctuation-face:;»
 
   p_«:verilog-ext-font-lock-punctuation-face:=»«:verilog-ext-font-lock-uvm-classes-face:process»«:verilog-ext-font-lock-punctuation-face:::»self«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
   «k:if»«:verilog-ext-font-lock-brackets-face:(»p_«:verilog-ext-font-lock-punctuation-face:!=»«k:null»«:verilog-ext-font-lock-brackets-face:)»

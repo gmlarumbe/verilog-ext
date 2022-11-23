@@ -1033,7 +1033,7 @@
       «:verilog-ext-font-lock-grouping-keywords-face:end»
     «k:endfunction»
 
-    «m:// »«:fic-face:TODO»«x:: The `rand_wait` task exists in `rand_verif_pkg`, but that task cannot be called with
+    «m:// »«x:TODO: The `rand_wait` task exists in `rand_verif_pkg`, but that task cannot be called with
 »    «m:// »«x:`this.drv.axi.clk_i` as `clk` argument. What is the syntax for getting an assignable
 »    «m:// »«x:reference?
 »    «k:task» «k:automatic» «f:rand_wait»«:verilog-ext-font-lock-brackets-face:(»«:verilog-ext-font-lock-direction-face:input» «t:int» «t:unsigned» min«:verilog-ext-font-lock-punctuation-face:,» max«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
@@ -1321,7 +1321,7 @@
       «:verilog-ext-font-lock-grouping-keywords-face:this»«:verilog-ext-font-lock-punctuation-bold-face:.»memory_q«:verilog-ext-font-lock-punctuation-bold-face:.»delete«:verilog-ext-font-lock-brackets-face:()»«:verilog-ext-font-lock-punctuation-face:;»
     «k:endfunction»
 
-    «m:// »«:fic-face:TODO»«x:: The `rand_wait` task exists in `rand_verif_pkg`, but that task cannot be called with
+    «m:// »«x:TODO: The `rand_wait` task exists in `rand_verif_pkg`, but that task cannot be called with
 »    «m:// »«x:`this.drv.axi.clk_i` as `clk` argument.  What is the syntax getting an assignable reference?
 »    «k:task» «k:automatic» «f:rand_wait»«:verilog-ext-font-lock-brackets-face:(»«:verilog-ext-font-lock-direction-face:input» «t:int» «t:unsigned» min«:verilog-ext-font-lock-punctuation-face:,» max«:verilog-ext-font-lock-brackets-face:)»«:verilog-ext-font-lock-punctuation-face:;»
       «t:int» «t:unsigned» rand_success«:verilog-ext-font-lock-punctuation-face:,» cycles«:verilog-ext-font-lock-punctuation-face:;»

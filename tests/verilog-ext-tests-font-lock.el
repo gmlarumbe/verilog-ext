@@ -28,14 +28,40 @@
 
 (require 'faceup)
 
+(defun verilog-ext-test-font-lock-update-dir ()
+  "Update .faceup files.
+INFO: Makes sure that additional settings that might change specific font-lock
+are disabled for the .faceup generation.
+E.g: disables `fic-mode', `untabify-trailing-ws', 'outshine-mode' and the value
+of `verilog-align-typedef-regexp.
+At some point tried with `with-temp-buffer' without success."
+  (let ((verilog-align-typedef-regexp nil))
+    (save-window-excursion
+      (when (fboundp 'untabify-trailing-ws-mode)
+        (untabify-trailing-ws-mode -1)
+        (message "Disabling untabify-trailing-ws-mode..."))
+      (dolist (file (directory-files verilog-ext-tests-examples-dir t ".s?vh?$"))
+        (find-file file)
+        (when (fboundp 'fic-mode)
+          (fic-mode -1)
+          (message "Disabling fic-mode for file %s" file))
+        (when (fboundp 'outshine-mode)
+          (outshine-mode -1)
+          (message "Disabling outshine-mode for file %s" file))
+        (message "Processing %s" file)
+        (faceup-write-file (concat (file-name-directory file)
+                                   "faceup/"
+                                   (file-name-nondirectory file)
+                                   ".faceup"))))))
+
 (defun verilog-ext-test-font-lock-test-file (file)
   "Test that Verilog FILE fontifies as the .faceup file describes."
-  (faceup-test-font-lock-file 'verilog-mode
-                              (verilog-ext-path-join verilog-ext-tests-examples-dir file)
-                              (verilog-ext-path-join verilog-ext-tests-faceup-dir (concat file ".faceup"))))
+  (let ((verilog-align-typedef-regexp nil))
+    (faceup-test-font-lock-file 'verilog-mode
+                                (verilog-ext-path-join verilog-ext-tests-examples-dir file)
+                                (verilog-ext-path-join verilog-ext-tests-faceup-dir (concat file ".faceup")))))
 
 (faceup-defexplainer verilog-ext-test-font-lock-test-file)
-
 
 (ert-deftest font-lock::generic ()
   (should (verilog-ext-test-font-lock-test-file "axi_demux.sv"))
