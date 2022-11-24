@@ -25,10 +25,41 @@
 ;;; Code:
 
 
-;; (ert-deftest beautify::module-at-point ()
-;;   (should (equal (verilog-ext-test-imenu-file "tb_program.sv")
-;;                  nil)))
 
+(defun verilog-ext-test-beautify-gen-expected-files ()
+  (let ((files-raw (directory-files-recursively verilog-ext-tests-beautify-dir "\\.raw$"))
+        files-beauty)
+    (dolist (file files-raw)
+      (copy-file file (concat (file-name-sans-extension file) ".beauty") t))
+    (setq files-beauty (directory-files-recursively verilog-ext-tests-beautify-dir "\\.beauty$"))
+    (verilog-ext-beautify-files files-beauty)))
+
+(defun verilog-ext-test-beautify-file (file)
+  "Requires switching back to the original table since there could be indentation of "
+  (with-temp-buffer
+    (insert-file-contents file)
+    (verilog-mode)
+    (verilog-ext-beautify-current-buffer)
+    (untabify (point-min) (point-max))
+    (delete-trailing-whitespace (point-min) (point-max))
+    (buffer-substring-no-properties (point-min) (point-max))))
+
+(defun verilog-ext-test-beautify-compare (file)
+  "Compare raw and beautified versions of FILE.
+Expects a file.sv.raw and its beautified version file.sv.beauty in beautify dir."
+  (let ((filename-raw (verilog-ext-path-join verilog-ext-tests-beautify-dir (concat file ".raw")))
+        (filename-beauty (verilog-ext-path-join verilog-ext-tests-beautify-dir (concat file ".beauty"))))
+    (equal (verilog-ext-test-beautify-file filename-raw)
+           (with-temp-buffer
+             (insert-file-contents filename-beauty)
+             (buffer-substring-no-properties (point-min) (point-max))))))
+
+
+
+(ert-deftest beautify::module-at-point ()
+  (should (verilog-ext-test-beautify-compare "ucontroller.sv"))
+  (should (verilog-ext-test-beautify-compare "instances.sv"))
+  (should (verilog-ext-test-beautify-compare "axi_demux.sv")))
 
 
 (provide 'verilog-ext-tests-beautify)

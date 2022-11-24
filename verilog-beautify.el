@@ -72,7 +72,8 @@
 (defun verilog-ext-module-at-point-indent ()
   "Indent current module."
   (interactive)
-  (let ((case-fold-search nil)
+  (let ((table (make-syntax-table verilog-mode-syntax-table))
+        (case-fold-search nil)
         (current-ids (verilog-ext-instance-at-point))
         current-module beg end)
     (unless current-ids
@@ -85,7 +86,9 @@
       (goto-char (match-end 0))
       (end-of-line)
       (setq end (point)))
-    (indent-region beg end)
+    (modify-syntax-entry ?` "w" table)
+    (with-syntax-table table
+      (indent-region beg end))
     (message "Indented %s" current-module)))
 
 (defun verilog-ext-module-at-point-beautify ()
@@ -99,16 +102,22 @@
     (verilog-ext-module-at-point-align-ports)
     (verilog-ext-module-at-point-align-params)))
 
-(defun verilog-ext-beautify-current-file ()
+(defun verilog-ext-beautify-current-buffer ()
   "Beautify current buffer:
 - Indent whole buffer
-- Beautify every instantiated module"
+- Beautify every instantiated module
+- Untabify and delete trailing whitespace"
   (interactive)
-  (save-excursion
-    (indent-region (point-min) (point-max))
-    (goto-char (point-min))
-    (while (verilog-ext-find-module-instance-fwd)
-      (verilog-ext-module-at-point-beautify))))
+  (let ((table (make-syntax-table verilog-mode-syntax-table)))
+    (modify-syntax-entry ?` "w" table)
+    (with-syntax-table table
+      (save-excursion
+        (indent-region (point-min) (point-max))
+        (goto-char (point-min))
+        (while (verilog-ext-find-module-instance-fwd)
+          (verilog-ext-module-at-point-beautify))
+        (untabify (point-min) (point-max))
+        (delete-trailing-whitespace (point-min) (point-max))))))
 
 (defun verilog-ext-beautify-files (files)
   "Beautify Verilog FILES.
@@ -116,13 +125,11 @@ FILES is a list of strings containing the filepaths."
   (dolist (file files)
     (unless (file-exists-p file)
       (error "File %s does not exist! Aborting!" file)))
-  (dolist (file files)
-    (with-temp-file file
+  (save-window-excursion
+    (dolist (file files)
+      (find-file file)
       (verilog-mode)
-      (insert-file-contents file)
-      (verilog-ext-beautify-current-file)
-      (untabify (point-min) (point-max))
-      (delete-trailing-whitespace (point-min) (point-max))
+      (verilog-ext-beautify-current-buffer)
       (write-file file))))
 
 (defun verilog-ext-beautify-files-current-dir ()

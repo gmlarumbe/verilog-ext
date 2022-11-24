@@ -54,6 +54,7 @@
                                      (verilog-ext-path-join verilog-ext-tests-root-dir "tests")))
 (defvar verilog-ext-tests-examples-dir (verilog-ext-path-join verilog-ext-tests-test-dir "examples"))
 (defvar verilog-ext-tests-faceup-dir (verilog-ext-path-join verilog-ext-tests-test-dir "examples/faceup"))
+(defvar verilog-ext-tests-beautify-dir (verilog-ext-path-join verilog-ext-tests-test-dir "examples/beautify"))
 
 (unless (member verilog-ext-tests-test-dir load-path)
   (add-to-list 'load-path verilog-ext-tests-test-dir))
