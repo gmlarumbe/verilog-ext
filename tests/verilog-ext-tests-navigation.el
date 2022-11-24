@@ -111,6 +111,8 @@ It did work locally though."
         (push (point) var)))
     (reverse var)))
 
+(defun verilog-ext-test-random-from-range (start end)
+  (+ start (random (+ 1 (- end start)))))
 
 ;;;; Tests
 (ert-deftest navigation::instances-fwd ()
@@ -254,13 +256,40 @@ It did work locally though."
                             6110 5845 5379 5172 4962 4758 4157 4057 3945 3561 3194 2563)))))
 
 
-;; (ert-deftest navigation::jump-to-parent-module ()
-;;   (should (equal (verilog-ext-test-imenu-file "tb_program.sv")
-;;                  nil)))
+;; (defun larumbe/navigation::jump-to-parent-module ()
+;;   (let (filename)
+;;     (verilog-ext-test-navigation-file "jump-parent/block1.sv"
+;;       (verilog-ext-jump-to-parent-module)
+;;       (run-with-idle-timer 1 nil #'(lambda () (setq filename buffer-file-name))))
+;;     (sit-for 2)
+;;     (message filename)
+;;     (string= filename "/home/egonlar/.emacs.d/straight/repos/verilog-ext/tests/examples/instances.sv")))
 
-;; (ert-deftest navigation::defun-level-up ()
-;;   (should (equal (verilog-ext-test-imenu-file "tb_program.sv")
-;;                  nil)))
+
+;; (ert-deftest navigation::jump-to-parent-module ()
+;;   (let (filename)
+;;     (verilog-ext-test-navigation-file "jump-parent/block1.sv"
+;;       (verilog-ext-jump-to-parent-module)
+;;       (run-with-idle-timer 1 nil #'(lambda () (setq filename buffer-file-name))))
+;;     (sit-for 2)
+;;     (should (equal filename "/home/egonlar/.emacs.d/straight/repos/verilog-ext/tests/examples/instances.sv"))))
+
+
+(ert-deftest navigation::defun-level-up ()
+  (let ((var-alist '((954 . "package")
+                     ()
+                     ()
+                     ()
+                     ()
+                     ()))))
+  (verilog-ext-test-navigation-file "axi_test.sv"
+    (goto-char
+    (should (equal (progn
+                       (setq var (verilog-ext-test-random-from-range 1882 58660))  ; uvm_component class boundaries
+                       (goto-char var)
+                       (verilog-ext-defun-level-up)
+                       (point))
+                     1836)))))
 
 ;; (ert-deftest navigation::defun-level-down ()
 ;;   (should (equal (verilog-ext-test-imenu-file "tb_program.sv")
