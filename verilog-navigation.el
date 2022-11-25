@@ -840,6 +840,29 @@ Otherwise look for functions/tasks."
       (call-interactively #'verilog-ext-find-block-fwd)
     (call-interactively #'verilog-ext-find-function-task-class-fwd)))
 
+(defun verilog-ext-nav-next-dwim ()
+  "Context based search next.
+If in a parenthesis, go to closing parenthesis (Elisp like).
+Otherwise move to next paragraph."
+  (interactive)
+  (if (or (member (following-char) '(?\( ?\[ ?\{ ?\) ?\] ?\}))
+          (member (preceding-char) '(?\) ?\] ?\}))
+          (string= (symbol-at-point) "begin"))
+      (verilog-ext-forward-sexp)
+    (forward-paragraph)))
+
+(defun verilog-ext-nav-prev-dwim ()
+  "Context based search previous.
+If in a parenthesis, go to opening parenthesis (Elisp like).
+Otherwise move to previous paragraph."
+  (interactive)
+  (if (or (member (following-char) '(?\( ?\[ ?\{ ?\) ?\] ?\}))
+          (member (preceding-char) '(?\) ?\] ?\}))
+          (string= (symbol-at-point) "end"))
+      (verilog-ext-backward-sexp)
+    (backward-paragraph)))
+
+
 
 ;;; Setup
 (add-hook 'verilog-mode-hook #'verilog-ext-navigation-hook)
