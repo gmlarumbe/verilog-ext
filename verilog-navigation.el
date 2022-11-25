@@ -681,8 +681,8 @@ after the search has been done."
      ((and (string= verilog-ext-jump-to-parent-module-engine "rg")
            (executable-find "rg"))
       (let ((rg-extra-args '("-t" "verilog" "--pcre2" "--multiline" "--stats")))
-        (ripgrep-regexp module-instance-pcre proj-dir rg-extra-args)
-        (setq verilog-ext-jump-to-parent-module-point-marker (point-marker))))
+        (setq verilog-ext-jump-to-parent-module-point-marker (point-marker))
+        (ripgrep-regexp module-instance-pcre proj-dir rg-extra-args)))
      ;; Try ag
      ((and (string= verilog-ext-jump-to-parent-module-engine "ag")
            (executable-find "ag"))
@@ -690,8 +690,8 @@ after the search has been done."
             (extra-ag-args '("--verilog" "--stats")))
         (dolist (extra-ag-arg extra-ag-args)
           (add-to-list 'ag-arguments extra-ag-arg :append))
-        (ag-regexp module-instance-pcre proj-dir)
-        (setq verilog-ext-jump-to-parent-module-point-marker (point-marker))))
+        (setq verilog-ext-jump-to-parent-module-point-marker (point-marker))
+        (ag-regexp module-instance-pcre proj-dir)))
      ;; Fallback
      (t
       (error "Did not find `rg' nor `ag' in $PATH")))))
