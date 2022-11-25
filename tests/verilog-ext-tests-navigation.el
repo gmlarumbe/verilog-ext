@@ -296,6 +296,14 @@ It did work locally though."
 ;;                  nil)))
 
 
+;; (ert-deftest navigation::instance-at-point ()
+;;   (should (equal (verilog-ext-test-imenu-file "tb_program.sv")
+;;                  nil)))
+
+
+
+
+
 
 (provide 'verilog-ext-tests-navigation)
 
