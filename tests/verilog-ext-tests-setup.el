@@ -77,6 +77,8 @@
   :config
   (setq align-default-spacing 1)
   (setq align-to-tab-stop nil))
+(message "Installing apheleia")
+(use-package apheleia)
 (message "Installing lsp-mode")
 (use-package lsp-mode)
 (message "Installing eglot")

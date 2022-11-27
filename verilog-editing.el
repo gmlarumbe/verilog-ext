@@ -170,6 +170,24 @@ See `verilog-ext-block-end-comments-to-names' for an example."
     (message "Disabled verilog-ext-block-end-comments-to-names-mode [current buffer]")))
 
 
+;;;; Code formatting
+(defun verilog-ext-code-formatter-setup ()
+  "Setup `apheleia' with Verible code formatter."
+  (interactive)
+  (require 'apheleia)
+  (unless (and (alist-get 'verilog-mode apheleia-mode-alist)
+               (alist-get 'verible apheleia-formatters))
+    (setq apheleia-mode-alist (assq-delete-all 'verilog-mode apheleia-mode-alist))
+    (push '(verilog-mode . verible) apheleia-mode-alist)
+    (setq apheleia-formatters (assq-delete-all 'verible apheleia-formatters))
+    (push '(verible . ("verible-verilog-format"
+                       "--indentation_spaces" (number-to-string verilog-indent-level)
+                       "-"))
+          apheleia-formatters))
+  (if (called-interactively-p 'any)
+      (message "Configured %s" (alist-get 'verilog-mode apheleia-mode-alist))
+    (alist-get 'verilog-mode apheleia-mode-alist)))
+
 
 
 (provide 'verilog-editing)
