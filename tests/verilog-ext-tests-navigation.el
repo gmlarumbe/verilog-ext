@@ -111,6 +111,31 @@ It did work locally though."
         (push (point) var)))
     (reverse var)))
 
+(defun verilog-ext-test-random-from-range (start end)
+  (+ start (random (+ 1 (- end start)))))
+
+(defmacro verilog-ext-test-with-gtags (file &rest body)
+  (declare (indent 1) (debug t))
+  `(cl-letf (((symbol-function 'message)
+              (lambda (FORMAT-STRING &rest ARGS)
+                nil))) ; Mock `message' to silence all the indentation reporting
+     (let ((default-directory verilog-ext-tests-examples-dir)
+           (process-environment process-environment))
+       ;; Setup environment lexically only for current process
+       (push "GTAGSLABEL=ctags" process-environment)
+       ;; Remove/recreate gtags.file
+       (dolist (file '("gtags.files" "GTAGS" "GPATH" "GRTAGS"))
+         (when (file-exists-p file)
+           (delete-file file)))
+       (with-temp-file "gtags.files"
+         (insert (mapconcat #'identity (directory-files-recursively default-directory "\.s?vh?$" nil nil t) "\n")))
+       (ggtags-create-tags default-directory)
+       ;; Enable ggtags and run body
+       (find-file (verilog-ext-path-join verilog-ext-tests-examples-dir ,file))
+       (ggtags-mode 1)
+       (goto-char (point-min))
+       ,@body)))
+
 
 ;;;; Tests
 (ert-deftest navigation::instances-fwd ()
@@ -253,18 +278,292 @@ It did work locally though."
                             13674 12890 12112 11329 10557 9791 9023 8400 8098 7809 7544
                             6110 5845 5379 5172 4962 4758 4157 4057 3945 3561 3194 2563)))))
 
+(ert-deftest navigation::jump-to-parent-module-ag ()
+  (cl-letf (((symbol-function 'compilation-start)
+             (lambda (command &optional mode name-function highlight-regexp)
+               (butlast (split-string (shell-command-to-string command) "\n") 4))))
+    (let ((verilog-ext-jump-to-parent-module-engine "ag")
+          (ag-arguments '("--smart-case" "--stats" "--nogroup")))
+      ;; block0
+      (verilog-ext-test-navigation-file "jump-parent/block0.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("[1;32mtests/examples/instances.sv[0m[K:[1;33m23[0m[K:5:    [30;43mblock0[0m[K I_BLOCK0 (" "1 matches" "1 files contained matches"))))
+      ;; block1
+      (verilog-ext-test-navigation-file "jump-parent/block1.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("[1;32mtests/examples/instances.sv[0m[K:[1;33m30[0m[K:5:    [30;43mblock1[0m[K I_BLOCK1(" "1 matches" "1 files contained matches"))))
+      ;; block2
+      (verilog-ext-test-navigation-file "jump-parent/block2.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("[1;32mtests/examples/instances.sv[0m[K:[1;33m37[0m[K:5:    [30;43mblock2[0m[K #(" "1 matches" "1 files contained matches"))))
+      ;; block3
+      (verilog-ext-test-navigation-file "jump-parent/block3.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("[1;32mtests/examples/instances.sv[0m[K:[1;33m48[0m[K:5:    [30;43mblock3[0m[K#(" "1 matches" "1 files contained matches"))))
+      ;; block_gen
+      (verilog-ext-test-navigation-file "jump-parent/block_gen.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("[1;32mtests/examples/instances.sv[0m[K:[1;33m62[0m[K:13:            [30;43mblock_gen[0m[K #(" "1 matches" "1 files contained matches"))))
+      ;; test_if
+      (verilog-ext-test-navigation-file "jump-parent/test_if.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("[1;32mtests/examples/instances.sv[0m[K:[1;33m77[0m[K:5:    [30;43mtest_if[0m[K I_TEST_IF (.clk(clk), .rst_n(rst_n));" "1 matches" "1 files contained matches"))))
+      ;; test_if_params
+      (verilog-ext-test-navigation-file "jump-parent/test_if_params.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("[1;32mtests/examples/instances.sv[0m[K:[1;33m79[0m[K:5:    [30;43mtest_if_params[0m[K # (.param1(param1), .param2(param2)) ITEST_IF_PARAMS (.clk(clk), .rst_n(rst_n));" "1 matches" "1 files contained matches"))))
+      ;; test_if_params_array
+      (verilog-ext-test-navigation-file "jump-parent/test_if_params_array.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("[1;32mtests/examples/instances.sv[0m[K:[1;33m81[0m[K:5:    [30;43mtest_if_params_array[0m[K # (.param1(param1), .param2(param2)) ITEST_IF_PARAMS_ARRAY[5:0] (.clk(clk), .rst_n(rst_n));" "1 matches" "1 files contained matches"))))
+      ;; test_if_params_empty
+      (verilog-ext-test-navigation-file "jump-parent/test_if_params_empty.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("[1;32mtests/examples/instances.sv[0m[K:[1;33m83[0m[K:5:    [30;43mtest_if_params_empty[0m[K #() I_TEST_IF_PARAMS_EMPTY (.clk(clk), .rst_n(rst_n));" "1 matches" "1 files contained matches"))))
+      ;; block_ws_0
+      (verilog-ext-test-navigation-file "jump-parent/block_ws_0.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("[1;32mtests/examples/instances.sv[0m[K:[1;33m87[0m[K:5:    [30;43mblock_ws_0[0m[K" "1 matches" "1 files contained matches"))))
+      ;; block_ws_1 (TODO: Referenced in instances.sv:94 but not working with current regexp)
+      (verilog-ext-test-navigation-file "jump-parent/block_ws_1.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("0 matches" "0 files contained matches")))))))
 
-;; (ert-deftest navigation::jump-to-parent-module ()
+(ert-deftest navigation::jump-to-parent-module-rg ()
+  (cl-letf (((symbol-function 'compilation-start)
+             (lambda (command &optional mode name-function highlight-regexp)
+               (butlast (split-string (shell-command-to-string command) "\n") 6))))
+    (let ((verilog-ext-jump-to-parent-module-engine "rg"))
+      ;; block0
+      (verilog-ext-test-navigation-file "jump-parent/block0.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("[0m[35m./tests/examples/instances.sv[0m:[0m[32m23[0m:    [0m[1m[31mblock0[0m I_BLOCK0 (" "" "1 matches" "1 matched lines" "1 files contained matches"))))
+      ;; block1
+      (verilog-ext-test-navigation-file "jump-parent/block1.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("[0m[35m./tests/examples/instances.sv[0m:[0m[32m30[0m:    [0m[1m[31mblock1[0m I_BLOCK1(" "" "1 matches" "1 matched lines" "1 files contained matches"))))
+      ;; block2
+      (verilog-ext-test-navigation-file "jump-parent/block2.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("[0m[35m./tests/examples/instances.sv[0m:[0m[32m37[0m:    [0m[1m[31mblock2[0m #(" "" "1 matches" "1 matched lines" "1 files contained matches"))))
+      ;; block3
+      (verilog-ext-test-navigation-file "jump-parent/block3.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("[0m[35m./tests/examples/instances.sv[0m:[0m[32m48[0m:    [0m[1m[31mblock3[0m#(" "" "1 matches" "1 matched lines" "1 files contained matches"))))
+      ;; block_gen
+      (verilog-ext-test-navigation-file "jump-parent/block_gen.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("[0m[35m./tests/examples/instances.sv[0m:[0m[32m62[0m:            [0m[1m[31mblock_gen[0m #(" "" "1 matches" "1 matched lines" "1 files contained matches"))))
+      ;; test_if
+      (verilog-ext-test-navigation-file "jump-parent/test_if.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("[0m[35m./tests/examples/instances.sv[0m:[0m[32m77[0m:    [0m[1m[31mtest_if[0m I_TEST_IF (.clk(clk), .rst_n(rst_n));" "" "1 matches" "1 matched lines" "1 files contained matches"))))
+      ;; test_if_params
+      (verilog-ext-test-navigation-file "jump-parent/test_if_params.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("[0m[35m./tests/examples/instances.sv[0m:[0m[32m79[0m:    [0m[1m[31mtest_if_params[0m # (.param1(param1), .param2(param2)) ITEST_IF_PARAMS (.clk(clk), .rst_n(rst_n));" "" "1 matches" "1 matched lines" "1 files contained matches"))))
+      ;; test_if_params_array
+      (verilog-ext-test-navigation-file "jump-parent/test_if_params_array.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("[0m[35m./tests/examples/instances.sv[0m:[0m[32m81[0m:    [0m[1m[31mtest_if_params_array[0m # (.param1(param1), .param2(param2)) ITEST_IF_PARAMS_ARRAY[5:0] (.clk(clk), .rst_n(rst_n));" "" "1 matches" "1 matched lines" "1 files contained matches"))))
+      ;; test_if_params_empty
+      (verilog-ext-test-navigation-file "jump-parent/test_if_params_empty.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("[0m[35m./tests/examples/instances.sv[0m:[0m[32m83[0m:    [0m[1m[31mtest_if_params_empty[0m #() I_TEST_IF_PARAMS_EMPTY (.clk(clk), .rst_n(rst_n));" "" "1 matches" "1 matched lines" "1 files contained matches"))))
+      ;; block_ws_0
+      (verilog-ext-test-navigation-file "jump-parent/block_ws_0.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("[0m[35m./tests/examples/instances.sv[0m:[0m[32m87[0m:    [0m[1m[31mblock_ws_0[0m" "" "1 matches" "1 matched lines" "1 files contained matches"))))
+      ;; block_ws_1 (TODO: Referenced in instances.sv:94 but not working with current regexp)
+      (verilog-ext-test-navigation-file "jump-parent/block_ws_1.sv"
+        (should (equal (verilog-ext-jump-to-parent-module)
+                       '("" "0 matches" "0 matched lines" "0 files contained matches")))))))
+
+
+(defvar verilog-ext-test-navigation-defun-level-up
+  '(("tb_program.sv" ((855 . nil)
+                      (1068 . nil)
+                      (1143 . ("tb_program" . 856))
+                      (1684 . ("begin" . 1605))
+                      (1829 . ("tb_program" . 856))
+                      (2589 . ("init_rom" . 1871))
+                      (3495 . ("init_values" . 3477))
+                      (4413 . ("begin" . 4311))
+                      (4635 . ("tb_program" . 856))
+                      (4658 . nil)))
+    ("axi_test.sv" ((883 . nil)
+                    (936 . nil)
+                    (954 . ("axi_test" . 936))
+                    (1074 . ("(" . 1042))
+                    ;; (1218 . ("axi_lite_driver" . 1019)) ; TODO: Known ERROR! due to verilog-beg-of-statement if class/module with parameter list
+                    (1272 . ("(" . 1243))
+                    (1433 . ("new" . 1314))
+                    ;; (1471 . ("axi_lite_driver" . 1019)) ; TODO: Known ERROR! due to verilog-beg-of-statement if class/module with parameter list
+                    (1636 . ("reset_master" . 1476))
+                    (5977 . ("axi_test" . 936))
+                    (21939 . ("(" . 21908))
+                    (22413 . ("begin" . 22407))
+                    (86894 . nil)))
+    ("uvm_component.svh" ((1357 . nil)
+                          (1516 . nil)
+                          (1883 . ("uvm_component" . 1836))
+                          (2595 . ("(" . 2583))
+                          ;; TODO: ERROR: Detects function due to embedded comment in extern function definition,
+                          ;; verilog-beg-of-statement should detect extern, but it doesn't due to the comment
+                          ;; (58464 . ("uvm_component" . 1836))
+                          (58659 . ("uvm_component" . 1836))
+                          (58685 . nil)
+                          (59192 . ("new" . 59107))
+                          (59412 . ("begin" . 59373))
+                          (59984 . ("(" . 59908))
+                          (59908 . ("(" . 59897))
+                          (59897 . ("begin" . 59869))
+                          (59869 . ("begin" . 59546))
+                          (59546 . ("new" . 59107))
+                          (100840 . nil)))))
+
+(ert-deftest navigation::defun-level-up ()
+  (let ((alist verilog-ext-test-navigation-defun-level-up)
+        file data block end-pos)
+    (dolist (elm alist)
+      (setq file (car elm))
+      (setq data (cadr elm))
+      (verilog-ext-test-navigation-file file
+        (dolist (pos-type data)
+          (goto-char (car pos-type))
+          (if (cdr pos-type)
+              (progn
+                (setq block (cadr pos-type))
+                (setq end-pos (cddr pos-type)))
+            (setq block nil))
+          (when block
+            (should (string= (verilog-ext-defun-level-up) block))
+            (should (equal (point) end-pos))))))))
+
+(defvar verilog-ext-test-navigation-defun-level-down
+  '(("tb_program.sv" ((855 . nil)
+                      (1004 . nil)
+                      (1189 . ("init_rom" . 1876))
+                      (1680 . nil) ; Inside initial
+                      (2029 . nil) ; Inside task
+                      (3459 . ("init_values" . 3482))
+                      (3602 . (")" . 3603))
+                      (3885 . ("begin" . 4007))
+                      (4007 . nil)))
+    ;; TODO: If running it over parameterized classes/functions (with parenthesis expr) ...
+    ;; ... running it again will move to next class/function
+    ("axi_test.sv" ((883 . nil)
+                    (936 . nil)
+                    (954 . ("axi_lite_driver" . 1040))
+                    (1074 . (")" . 1074))
+                    (1245 . (")" . 1267))
+                    (1309 . ("new" . 1323))
+                    (1328 . (")" . 1356))
+                    (1356 . (")" . 1381))
+                    (1381 . (")" . 1381))
+                    (1433 . nil)
+                    (1471 . ("reset_master" . 1490))
+                    (1490 . nil)
+                    (2337 . ("begin" . 2456))
+                    (2456 . nil)
+                    (2337 . ("begin" . 2456))
+                    ;; Trying nested begin/ends
+                    (26583 . ("begin" . 26589))
+                    (26589 . ("begin" . 26699))
+                    (26699 . ("begin" . 27501))
+                    (27501 . ("begin" . 27586))
+                    (27586 . nil)
+                    (86894 . nil)))
+    ;; TODO: If running it over extern functions/tasks definitions...
+    ;; ... running it again will move to next class/function declaration
+    ("uvm_component.svh" ((1261 . nil)
+                          (1357 . nil)
+                          (1883 . ("new" . 2579))
+                          (2703 . ("get_parent" . 3232))
+                          (48756 . (")" . 48756))
+                          (59192 . ("begin" . 59378))
+                          (59464 . ("begin" . 59551))
+                          (59551 . ("begin" . 59874))
+                          (59874 . nil)
+                          (60416 . (")" . 60417))
+                          (60417 . (")" . 60436))
+                          (60436 . (")" . 60436))
+                          (100840 . nil)))))
+
+(ert-deftest navigation::defun-level-down ()
+  (let ((alist verilog-ext-test-navigation-defun-level-down)
+        file data block end-pos)
+    (dolist (elm alist)
+      (setq file (car elm))
+      (setq data (cadr elm))
+      (verilog-ext-test-navigation-file file
+        (dolist (pos-type data)
+          (goto-char (car pos-type))
+          (if (cdr pos-type)
+              (progn
+                (setq block (cadr pos-type))
+                (setq end-pos (cddr pos-type)))
+            (setq block nil))
+          (when block
+            (should (string= (verilog-ext-defun-level-down) block))
+            (should (equal (point) end-pos))))))))
+
+(ert-deftest navigation::xref-definition ()
+  (verilog-ext-test-with-gtags "instances.sv"
+    (verilog-ext-find-module-instance-fwd)
+    (goto-char (match-beginning 0))
+    ;; DANGER: At some point, for some unknown reason, ERT got frozen if ran interactive while executing `xref-find-definitions'.
+    ;; Tested many things and changed many others but it seemed to be random and related to xref more than to any other thing
+    ;; It works fine though if run in a subshell
+    (xref-find-definitions (thing-at-point 'symbol :no-props))
+    (should (string= buffer-file-name (verilog-ext-path-join verilog-ext-tests-examples-dir "jump-parent/block0.sv")))
+    (should (equal (point) 15))))
+
+(ert-deftest navigation::jump-to-module-at-point ()
+  (verilog-ext-test-with-gtags "instances.sv"
+    (verilog-ext-find-module-instance-fwd)
+    (goto-char (match-beginning 0))
+    (forward-line)
+    ;; DANGER: At some point, for some unknown reason, ERT got frozen if ran interactive while executing `xref-find-definitions'.
+    ;; Tested many things and changed many others but it seemed to be random and related to xref more than to any other thing
+    ;; It works fine though if run in a subshell
+    (verilog-ext-jump-to-module-at-point)
+    (should (string= buffer-file-name (verilog-ext-path-join verilog-ext-tests-examples-dir "jump-parent/block0.sv")))
+    (should (equal (point) 15))))
+
+
+;; (setq verilog-ext-test-navigation-instance-at-point
+;;   '(("ucontroller.sv" ((1266 . nil)
+;;                        (1267 . "module")
+;;                        (1270 . "module")
+;;                        (4334 . "module")
+;;                        (4865 . nil)))
+;;     ("instances.sv" ((1423 . "module")
+;;                      (1635 . "generate")
+;;                      (1764 . "generate")
+;;                      (1984 . "generate")
+;;                      (1985 . "module")
+;;                      (2632 . "module")
+;;                      (2820 . nil)))
+;;     ("axi_demux.sv" ((954 . "package")
+;;                     (1074 . "package")
+;;                     (1245 . "class")
+;;                     (1386 . "class")
+;;                     (1433 . "function")
+;;                     (77731 . "class")
+;;                     (77760 . "package")
+;;                     (77772 . nil)
+;;                     (78713 . nil)
+;;                     (79365 . "module")
+;;                     (79753 . "always")
+;;                     (82960 . "initial")
+;;                     (86883 . "module")
+;;                     (86893 . nil)))))
+
+;; (ert-deftest navigation::instance-at-point ()
 ;;   (should (equal (verilog-ext-test-imenu-file "tb_program.sv")
 ;;                  nil)))
 
-;; (ert-deftest navigation::defun-level-up ()
-;;   (should (equal (verilog-ext-test-imenu-file "tb_program.sv")
-;;                  nil)))
-
-;; (ert-deftest navigation::defun-level-down ()
-;;   (should (equal (verilog-ext-test-imenu-file "tb_program.sv")
-;;                  nil)))
 
 
 

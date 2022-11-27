@@ -35,14 +35,16 @@
     (verilog-ext-beautify-files files-beauty)))
 
 (defun verilog-ext-test-beautify-file (file)
-  "Requires switching back to the original table since there could be indentation of "
-  (with-temp-buffer
-    (insert-file-contents file)
-    (verilog-mode)
-    (verilog-ext-beautify-current-buffer)
-    (untabify (point-min) (point-max))
-    (delete-trailing-whitespace (point-min) (point-max))
-    (buffer-substring-no-properties (point-min) (point-max))))
+  (cl-letf (((symbol-function 'message)
+             (lambda (FORMAT-STRING &rest ARGS)
+               nil))) ; Mock `message' to silence all the indentation reporting
+    (with-temp-buffer
+      (insert-file-contents file)
+      (verilog-mode)
+      (verilog-ext-beautify-current-buffer)
+      (untabify (point-min) (point-max))
+      (delete-trailing-whitespace (point-min) (point-max))
+      (buffer-substring-no-properties (point-min) (point-max)))))
 
 (defun verilog-ext-test-beautify-compare (file)
   "Compare raw and beautified versions of FILE.
