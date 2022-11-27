@@ -778,7 +778,6 @@ Return alist with defun data if point moved to a lower block."
          (end-pos (alist-get 'end-point data))
          name)
     (when data
-      ;; TODO: Review these conditions, I was very asleep
       (cond ((or (verilog-parenthesis-depth)
                  (looking-at "("))
              (verilog-ext-down-list)

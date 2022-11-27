@@ -3,8 +3,8 @@
 # Copyright (c) 2022 Gonzalo Larumbe
 # All rights reserved.
 
-PKGS_TO_INSTALL=(global universal-ctags python3-pygments silversearcher-ag ripgrep libverilog-perl)
-EXPECTED_INSTALLED_BINARIES=(python global gtags ctags ag rg vhier)
+PKGS_TO_INSTALL=(global universal-ctags python3-pygments silversearcher-ag ripgrep libverilog-perl verilator iverilog)
+EXPECTED_INSTALLED_BINARIES=(python global gtags ctags ag rg vhier verilator iverilog)
 
 for pkg in "${PKGS_TO_INSTALL[@]}"; do
     echo ""
