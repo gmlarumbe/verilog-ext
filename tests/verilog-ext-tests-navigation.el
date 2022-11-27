@@ -25,7 +25,6 @@
 ;;; Code:
 
 
-
 ;;;; Aux macros/defuns
 (defmacro verilog-ext-test-navigation-file (file &rest body)
   (declare (indent 1) (debug t))
@@ -33,7 +32,8 @@
      (let ((print-level nil)
            (print-length nil)
            (eval-expression-print-level nil)
-           (eval-expression-print-length nil))
+           (eval-expression-print-length nil)
+           (default-directory (file-name-as-directory verilog-ext-tests-examples-dir)))
        (insert-file-contents (verilog-ext-path-join verilog-ext-tests-examples-dir ,file))
        (verilog-mode)
        ,@body)))
@@ -113,28 +113,6 @@ It did work locally though."
 
 (defun verilog-ext-test-random-from-range (start end)
   (+ start (random (+ 1 (- end start)))))
-
-(defmacro verilog-ext-test-with-gtags (file &rest body)
-  (declare (indent 1) (debug t))
-  `(cl-letf (((symbol-function 'message)
-              (lambda (FORMAT-STRING &rest ARGS)
-                nil))) ; Mock `message' to silence all the indentation reporting
-     (let ((default-directory verilog-ext-tests-examples-dir)
-           (process-environment process-environment))
-       ;; Setup environment lexically only for current process
-       (push "GTAGSLABEL=ctags" process-environment)
-       ;; Remove/recreate gtags.file
-       (dolist (file '("gtags.files" "GTAGS" "GPATH" "GRTAGS"))
-         (when (file-exists-p file)
-           (delete-file file)))
-       (with-temp-file "gtags.files"
-         (insert (mapconcat #'identity (directory-files-recursively default-directory "\.s?vh?$" nil nil t) "\n")))
-       (ggtags-create-tags default-directory)
-       ;; Enable ggtags and run body
-       (find-file (verilog-ext-path-join verilog-ext-tests-examples-dir ,file))
-       (ggtags-mode 1)
-       (goto-char (point-min))
-       ,@body)))
 
 
 ;;;; Tests
@@ -329,56 +307,6 @@ It did work locally though."
         (should (equal (verilog-ext-jump-to-parent-module)
                        '("0 matches" "0 files contained matches")))))))
 
-(ert-deftest navigation::jump-to-parent-module-rg ()
-  (cl-letf (((symbol-function 'compilation-start)
-             (lambda (command &optional mode name-function highlight-regexp)
-               (butlast (split-string (shell-command-to-string command) "\n") 6))))
-    (let ((verilog-ext-jump-to-parent-module-engine "rg"))
-      ;; block0
-      (verilog-ext-test-navigation-file "jump-parent/block0.sv"
-        (should (equal (verilog-ext-jump-to-parent-module)
-                       '("[0m[35m./tests/examples/instances.sv[0m:[0m[32m23[0m:    [0m[1m[31mblock0[0m I_BLOCK0 (" "" "1 matches" "1 matched lines" "1 files contained matches"))))
-      ;; block1
-      (verilog-ext-test-navigation-file "jump-parent/block1.sv"
-        (should (equal (verilog-ext-jump-to-parent-module)
-                       '("[0m[35m./tests/examples/instances.sv[0m:[0m[32m30[0m:    [0m[1m[31mblock1[0m I_BLOCK1(" "" "1 matches" "1 matched lines" "1 files contained matches"))))
-      ;; block2
-      (verilog-ext-test-navigation-file "jump-parent/block2.sv"
-        (should (equal (verilog-ext-jump-to-parent-module)
-                       '("[0m[35m./tests/examples/instances.sv[0m:[0m[32m37[0m:    [0m[1m[31mblock2[0m #(" "" "1 matches" "1 matched lines" "1 files contained matches"))))
-      ;; block3
-      (verilog-ext-test-navigation-file "jump-parent/block3.sv"
-        (should (equal (verilog-ext-jump-to-parent-module)
-                       '("[0m[35m./tests/examples/instances.sv[0m:[0m[32m48[0m:    [0m[1m[31mblock3[0m#(" "" "1 matches" "1 matched lines" "1 files contained matches"))))
-      ;; block_gen
-      (verilog-ext-test-navigation-file "jump-parent/block_gen.sv"
-        (should (equal (verilog-ext-jump-to-parent-module)
-                       '("[0m[35m./tests/examples/instances.sv[0m:[0m[32m62[0m:            [0m[1m[31mblock_gen[0m #(" "" "1 matches" "1 matched lines" "1 files contained matches"))))
-      ;; test_if
-      (verilog-ext-test-navigation-file "jump-parent/test_if.sv"
-        (should (equal (verilog-ext-jump-to-parent-module)
-                       '("[0m[35m./tests/examples/instances.sv[0m:[0m[32m77[0m:    [0m[1m[31mtest_if[0m I_TEST_IF (.clk(clk), .rst_n(rst_n));" "" "1 matches" "1 matched lines" "1 files contained matches"))))
-      ;; test_if_params
-      (verilog-ext-test-navigation-file "jump-parent/test_if_params.sv"
-        (should (equal (verilog-ext-jump-to-parent-module)
-                       '("[0m[35m./tests/examples/instances.sv[0m:[0m[32m79[0m:    [0m[1m[31mtest_if_params[0m # (.param1(param1), .param2(param2)) ITEST_IF_PARAMS (.clk(clk), .rst_n(rst_n));" "" "1 matches" "1 matched lines" "1 files contained matches"))))
-      ;; test_if_params_array
-      (verilog-ext-test-navigation-file "jump-parent/test_if_params_array.sv"
-        (should (equal (verilog-ext-jump-to-parent-module)
-                       '("[0m[35m./tests/examples/instances.sv[0m:[0m[32m81[0m:    [0m[1m[31mtest_if_params_array[0m # (.param1(param1), .param2(param2)) ITEST_IF_PARAMS_ARRAY[5:0] (.clk(clk), .rst_n(rst_n));" "" "1 matches" "1 matched lines" "1 files contained matches"))))
-      ;; test_if_params_empty
-      (verilog-ext-test-navigation-file "jump-parent/test_if_params_empty.sv"
-        (should (equal (verilog-ext-jump-to-parent-module)
-                       '("[0m[35m./tests/examples/instances.sv[0m:[0m[32m83[0m:    [0m[1m[31mtest_if_params_empty[0m #() I_TEST_IF_PARAMS_EMPTY (.clk(clk), .rst_n(rst_n));" "" "1 matches" "1 matched lines" "1 files contained matches"))))
-      ;; block_ws_0
-      (verilog-ext-test-navigation-file "jump-parent/block_ws_0.sv"
-        (should (equal (verilog-ext-jump-to-parent-module)
-                       '("[0m[35m./tests/examples/instances.sv[0m:[0m[32m87[0m:    [0m[1m[31mblock_ws_0[0m" "" "1 matches" "1 matched lines" "1 files contained matches"))))
-      ;; block_ws_1 (TODO: Referenced in instances.sv:94 but not working with current regexp)
-      (verilog-ext-test-navigation-file "jump-parent/block_ws_1.sv"
-        (should (equal (verilog-ext-jump-to-parent-module)
-                       '("" "0 matches" "0 matched lines" "0 files contained matches")))))))
-
 
 (defvar verilog-ext-test-navigation-defun-level-up
   '(("tb_program.sv" ((855 . nil)
@@ -508,28 +436,6 @@ It did work locally though."
             (should (string= (verilog-ext-defun-level-down) block))
             (should (equal (point) end-pos))))))))
 
-(ert-deftest navigation::xref-definition ()
-  (verilog-ext-test-with-gtags "instances.sv"
-    (verilog-ext-find-module-instance-fwd)
-    (goto-char (match-beginning 0))
-    ;; DANGER: At some point, for some unknown reason, ERT got frozen if ran interactive while executing `xref-find-definitions'.
-    ;; Tested many things and changed many others but it seemed to be random and related to xref more than to any other thing
-    ;; It works fine though if run in a subshell
-    (xref-find-definitions (thing-at-point 'symbol :no-props))
-    (should (string= buffer-file-name (verilog-ext-path-join verilog-ext-tests-examples-dir "jump-parent/block0.sv")))
-    (should (equal (point) 15))))
-
-(ert-deftest navigation::jump-to-module-at-point ()
-  (verilog-ext-test-with-gtags "instances.sv"
-    (verilog-ext-find-module-instance-fwd)
-    (goto-char (match-beginning 0))
-    (forward-line)
-    ;; DANGER: At some point, for some unknown reason, ERT got frozen if ran interactive while executing `xref-find-definitions'.
-    ;; Tested many things and changed many others but it seemed to be random and related to xref more than to any other thing
-    ;; It works fine though if run in a subshell
-    (verilog-ext-jump-to-module-at-point)
-    (should (string= buffer-file-name (verilog-ext-path-join verilog-ext-tests-examples-dir "jump-parent/block0.sv")))
-    (should (equal (point) 15))))
 
 
 ;; (setq verilog-ext-test-navigation-instance-at-point

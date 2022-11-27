@@ -19,15 +19,14 @@ jobs:
       # Checks-out repository under $GITHUB_WORKSPACE
       - name: Clone verilog-ext
         uses: actions/checkout@v2
-        with:
-          path: verilog-ext
 
       - name: Install binaries
         run: |
-          cd $GITHUB_WORKSPACE/verilog-ext
+          cd $GITHUB_WORKSPACE
           .github/scripts/setup-env.sh
 
       - name: Run ERT tests
         run: |
-          cd $GITHUB_WORKSPACE/verilog-ext
+          cd $GITHUB_WORKSPACE
           .github/scripts/ert-tests.sh
+

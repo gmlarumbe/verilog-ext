@@ -211,7 +211,7 @@ Return nil if no module was found."
       (when (featurep 'project)
         (project-root (project-current)))
       (when (featurep 'ggtags)
-        ggtags-project-root)
+        (ggtags-current-project-root))
       default-directory))
 
 (defun verilog-ext-class-declaration-is-typedef-p ()
