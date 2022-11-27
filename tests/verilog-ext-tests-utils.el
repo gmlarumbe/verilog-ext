@@ -68,6 +68,9 @@
                           ;; (30879 . "function") ; ERROR in utils::block-at-point: virtual function void raised
                           ;; (31499 . "function") ; ERROR in utils::block-at-point: virtual function void dropped
                           (32030 . "class")
+                          ;; ERROR: Detects function due to embedded comment in extern function definition,
+                          ;; verilog-beg-of-statement should detect extern, but it doesn't due to the comment
+                          ;; (58460 . "class")
                           (58668 . nil)
                           (59430 . "function")
                           (63161 . "function")

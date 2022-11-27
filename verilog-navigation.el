@@ -623,7 +623,7 @@ If REF is non-nil show references instead."
     (error "Couldn't find executable `global' in PATH"))
   (unless (member 'ggtags--xref-backend xref-backend-functions)
     (error "Error: ggtags not configured as an xref backend.  Is ggtags-mode enabled?"))
-  (unless ggtags-project-root
+  (unless (ggtags-current-project-root)
     (error "Error: `ggtags-project-root' not set.  Are GTAGS/GRTAGS/GPATH files created?"))
   (let ((module (car (verilog-ext-instance-at-point))))
     (if module
@@ -748,9 +748,8 @@ Kill the buffer if there is only one match."
 Return alist with defun data if point moved to a higher block."
   (interactive)
   (let* ((data (verilog-ext-block-at-point))
-         beg-pos name)
+         name)
     (when data
-      (setq beg-pos (alist-get 'beg-point data))
       (cond ((verilog-parenthesis-depth)
              (verilog-backward-up-list 1)
              (setq name "("))
@@ -761,12 +760,12 @@ Return alist with defun data if point moved to a higher block."
              (setq name "begin"))
             (t
              (setq name (alist-get 'name data))
-             (goto-char beg-pos)
+             (goto-char (alist-get 'beg-point data))
              (backward-char)
              (verilog-beg-of-statement))))
     (if (called-interactively-p 'any)
         (message "%s" name)
-      data)))
+      name)))
 
 (defun verilog-ext-defun-level-down ()
   "Move down one defun-level.
@@ -779,29 +778,34 @@ Return alist with defun data if point moved to a lower block."
          (end-pos (alist-get 'end-point data))
          name)
     (when data
+      ;; TODO: Review these conditions, I was very asleep
       (cond ((or (verilog-parenthesis-depth)
                  (looking-at "("))
-             (verilog-ext-down-list))
+             (verilog-ext-down-list)
+             (setq name ")"))
             ((verilog-ext-point-inside-block-p 'begin-end)
              (when (verilog-ext-goto-begin-down)
-               (message "begin")))
+               (setq name "begin")))
             ((or (equal block-type "function")
                  (equal block-type "task"))
              (verilog-re-search-forward "\\<begin\\>" end-pos t)
-             (setq name (match-string-no-properties 0))
-             (when (and name
-                        (called-interactively-p 'any))
-               (message "%s" name)))
+             (setq name (match-string-no-properties 0)))
             ((equal block-type "class")
-             (verilog-ext-find-function-task-fwd end-pos))
+             (verilog-ext-find-function-task-fwd end-pos)
+             (setq name (match-string-no-properties 1)))
             ((equal block-type "package")
-             (verilog-ext-find-function-task-class-fwd end-pos))
+             (verilog-ext-find-function-task-class-fwd end-pos)
+             (setq name (match-string-no-properties 1)))
             ((or (equal block-type "module")
                  (equal block-type "interface")
                  (equal block-type "program"))
-             (verilog-ext-find-function-task-fwd end-pos))
+             (setq data (verilog-ext-find-function-task-fwd end-pos))
+             (setq name (match-string-no-properties 1)))
             (t
-             nil)))))
+             nil)))
+    (if (called-interactively-p 'any)
+        (message "%s" name)
+      name)))
 
 ;;; Dwim
 (defun verilog-ext-nav-down-dwim ()
