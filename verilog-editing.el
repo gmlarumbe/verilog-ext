@@ -71,7 +71,7 @@ table."
         (indent-region start-pos end-pos)
         (message "Indented %s : %s" block name)))))
 
-;;;; Misc
+;;;; Port connections
 (defun verilog-ext-clean-port-blanks ()
   "Cleans blanks inside port connections of current block."
   (interactive)
@@ -188,6 +188,37 @@ See `verilog-ext-block-end-comments-to-names' for an example."
       (message "Configured %s" (alist-get 'verilog-mode apheleia-mode-alist))
     (alist-get 'verilog-mode apheleia-mode-alist)))
 
+
+
+;;;; Time-stamp
+(defvar verilog-ext-time-stamp-regex   "^// Last modified : ")
+(defvar verilog-ext-time-stamp-pattern (concat verilog-ext-time-stamp-regex "%%$"))
+(defvar verilog-ext-time-stamp-format  "%:y/%02m/%02d")
+
+;; If using `time-stamp-start' and `time-stamp-end':
+;;   M-x `time-stamp' deletes the text between the first match of `time-stamp-start'
+;;   and the following match of `time-stamp-end', then writes the
+;;   time stamp specified by `time-stamp-format' between them.
+(defvar verilog-ext-time-stamp-start nil)
+(defvar verilog-ext-time-stamp-end nil)
+
+
+(define-minor-mode verilog-ext-time-stamp-mode
+  "Setup `time-stamp' format for Verilog files.
+By default `time-stamp' looks for the pattern in the first 8 lines.
+This can be changed by setting the local variables `time-stamp-start'
+and `time-stamp-end' for custom scenarios."
+  :global nil
+  (setq-local time-stamp-pattern verilog-ext-time-stamp-pattern)
+  (setq-local time-stamp-format verilog-ext-time-stamp-format)
+  (setq-local time-stamp-start verilog-ext-time-stamp-start)
+  (setq-local time-stamp-end verilog-ext-time-stamp-end)
+  (if verilog-ext-time-stamp-mode
+      (progn
+        (add-hook 'before-save-hook #'time-stamp nil :local)
+        (message "Enabled verilog-ext-time-stamp"))
+    (remove-hook 'before-save-hook #'time-stamp :local)
+    (message "Disabled verilog-ext-time-stamp")))
 
 
 (provide 'verilog-editing)
