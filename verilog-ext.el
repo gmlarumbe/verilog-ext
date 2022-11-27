@@ -53,6 +53,7 @@
 (require 'verilog-font-lock)
 (require 'verilog-vhier)
 (require 'verilog-flycheck)
+(require 'verilog-lsp)
 
 
 (provide 'verilog-ext)

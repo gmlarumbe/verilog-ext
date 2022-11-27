@@ -77,6 +77,10 @@
   :config
   (setq align-default-spacing 1)
   (setq align-to-tab-stop nil))
+(message "Installing lsp-mode")
+(use-package lsp-mode)
+(message "Installing eglot")
+(use-package eglot)
 (message "Overwriting verilog-mode with latest version")
 (use-package verilog-mode
   :straight (:repo "veripool/verilog-mode")
