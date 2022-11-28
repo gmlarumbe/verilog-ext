@@ -60,22 +60,29 @@ Register additional clients."
     (dolist (server verilog-ext-lsp-available-servers)
       (setq server-id (car server))
       (setq server-bin (cdr server))
-      (when (not (member server-id '(verilog svlangserver)))
+      (when (not (member server-id '(verilog svlangserver))) ; Already registered by `lsp-mode'
         (lsp-register-client
          (make-lsp-client :new-connection (lsp-stdio-connection server-bin)
                           :major-modes '(verilog-mode)
-                          :server-id server-id))))))
+                          :server-id server-id))
+        (message "Registered lsp-client: %s" server-id)))))
 
 (defun verilog-ext-lsp-set-server (server-id)
   "Set language server defined by SERVER-ID.
 Disable the rest to avoid handling priorities.
 Override any previous configuration for `verilog-mode'."
   (interactive (list (intern (completing-read "Server-id: " verilog-ext-lsp-server-ids nil t))))
+  (unless (executable-find (cdr (assoc server-id verilog-ext-lsp-available-servers)))
+    (error "Error: %s not in $PATH" server-id))
   (let ((server-list verilog-ext-lsp-server-ids))
     (setq lsp-disabled-clients (assq-delete-all 'verilog-mode lsp-disabled-clients))
     (push (cons 'verilog-mode (remove server-id server-list)) lsp-disabled-clients)
     (message "[Verilog LSP]: %s" server-id)))
 
+
+;;;;; Default config
+(verilog-ext-lsp-configure)
+(verilog-ext-lsp-set-server verilog-ext-lsp-mode-default-server)
 
 
 ;;;; eglot
@@ -87,10 +94,16 @@ Override any previous configuration for `verilog-mode'."
   "Configure Verilog for `eglot'.
 Override any previous configuration for `verilog-mode'."
   (interactive (list (intern (completing-read "Server-id: " verilog-ext-lsp-server-ids nil t))))
+  (unless (executable-find (cdr (assoc server-id verilog-ext-lsp-available-servers)))
+    (error "Error: %s not in $PATH" server-id))
   (setq eglot-server-programs (assq-delete-all 'verilog-mode eglot-server-programs))
-  (push (cons 'verilog-mode (alist-get server-id verilog-ext-lsp-available-servers))
-        eglot-server-programs))
+  (push (list 'verilog-mode (alist-get server-id verilog-ext-lsp-available-servers))
+        eglot-server-programs)
+  (message "Set eglot SV server: %s" server-id))
 
+
+;;;;; Default config
+(verilog-ext-eglot-set-server verilog-ext-eglot-default-server)
 
 
 ;;;; Provide package
