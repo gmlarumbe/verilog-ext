@@ -3,8 +3,8 @@
 # Copyright (c) 2022 Gonzalo Larumbe
 # All rights reserved.
 
-PKGS_TO_INSTALL=(global universal-ctags python3-pygments silversearcher-ag ripgrep libverilog-perl verilator iverilog)
-EXPECTED_INSTALLED_BINARIES=(python global gtags ctags ag rg vhier verilator iverilog)
+PKGS_TO_INSTALL=(global universal-ctags python3-pygments silversearcher-ag ripgrep libverilog-perl verilator iverilog nodejs npm)
+EXPECTED_INSTALLED_BINARIES=(python global gtags ctags ag rg vhier verilator iverilog nodejs npm)
 
 for pkg in "${PKGS_TO_INSTALL[@]}"; do
     echo ""
@@ -38,4 +38,10 @@ echo ""
 echo "verible-verilog-ls version $(verible-verilog-ls --version)"
 echo "verible-verilog-format version $(verible-verilog-format --version)"
 echo "verible-verilog-lint version $(verible-verilog-lint --version)"
+
+echo ""
+echo "Setting up svlangserver..."
+npm install -g @imc-trading/svlangserver
+echo "svlangserver path: $(which svlangserver)"
+echo "svlangserver version: $(svlangserver --version)"
 
