@@ -26,6 +26,7 @@
 ;; Extensions for Verilog Mode:
 ;;  - Improve syntax highlighting
 ;;  - Hierarchy extraction and visualization via Verilog-Perl `vhier'
+;;  - LSP configuration for `lsp-mode' and `eglot'
 ;;  - Support for many linters in `flycheck'
 ;;  - Improve `imenu': detect instances and support methods inside classes
 ;;  - Navigate through instances in a module
