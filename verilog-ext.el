@@ -33,8 +33,6 @@
 ;;  - Jump to definition/reference of module at point via `ggtags' and `xref'
 ;;  - Beautify modules: indent and align parameters and ports (interactively and in batch)
 ;;  - Extended collection of custom and `yasnippet' templates insertion via `hydra'
-;;  - Add `which-func' support
-;;  - Improve `hideshow' support
 ;;  - Setup `company' to complete with verilog keywords
 ;;  - Wrapper functions to make `kill-word' stop at underscores without breaking indentation
 
@@ -45,8 +43,6 @@
 (require 'verilog-navigation)
 (require 'verilog-typedef)
 (require 'verilog-compile)
-(require 'verilog-which-func)
-(require 'verilog-hideshow)
 (require 'verilog-beautify)
 (require 'verilog-imenu)
 (require 'verilog-templates)
