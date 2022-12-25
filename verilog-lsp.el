@@ -73,7 +73,7 @@ Disable the rest to avoid handling priorities.
 Override any previous configuration for `verilog-mode'."
   (interactive (list (intern (completing-read "Server-id: " verilog-ext-lsp-server-ids nil t))))
   (unless (executable-find (cdr (assoc server-id verilog-ext-lsp-available-servers)))
-    (error "Error: %s not in $PATH" server-id))
+    (message "%s not in $PATH, skipping config..." server-id))
   (let ((server-list verilog-ext-lsp-server-ids))
     (setq lsp-disabled-clients (assq-delete-all 'verilog-mode lsp-disabled-clients))
     (push (cons 'verilog-mode (remove server-id server-list)) lsp-disabled-clients)
@@ -95,7 +95,7 @@ Override any previous configuration for `verilog-mode'."
 Override any previous configuration for `verilog-mode'."
   (interactive (list (intern (completing-read "Server-id: " verilog-ext-lsp-server-ids nil t))))
   (unless (executable-find (cdr (assoc server-id verilog-ext-lsp-available-servers)))
-    (error "Error: %s not in $PATH" server-id))
+    (message "%s not in $PATH, skipping config..." server-id))
   (setq eglot-server-programs (assq-delete-all 'verilog-mode eglot-server-programs))
   (push (list 'verilog-mode (alist-get server-id verilog-ext-lsp-available-servers))
         eglot-server-programs)
