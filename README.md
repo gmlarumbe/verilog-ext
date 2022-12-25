@@ -12,24 +12,37 @@ This package includes some extensions on top of the great Emacs [verilog-mode](h
 * Code navigation functions: instances, definitions, references, parent module, dwim
 * Beautify modules and instances
 * Extended collection of custom and `yasnippet` templates insertion via `hydra`
-* Other various utilities
+* Many additional misc utilities
 
 ## Installation ##
 
 ### Requirements ###
 
-`verilog-ext` relies on much functionality from `verilog-mode`. Latest version is required for it to work properly. Download latest version of `verilog-mode` and add it to your `load-path`.
+#### Verilog-mode ####
 
-E.g. via straight:
+Latest `verilog-mode` version is required since `verilog-ext` relies on much of its functionality to work properly.
+
+Using straight:
 ```emacs-lisp
 (straight-use-package 'use-package)
 (use-package verilog-mode
   :straight (:repo "veripool/verilog-mode"))
 ```
+For other installation methods refer to [verilog-mode](https://github.com/veripool/verilog-mode) installation options.
 
-`verilog-ext` uses some other packages and binaries depending on the feature being used:
+#### Binaries and emacs lisp packages ####
 
-Emacs Lisp packages:
+`verilog-ext` makes use of several binaries used as backend engines to support IDE-like functionality. In addition, some third party Emacs Lisp packages serve as frontends for those binaries.
+
+List of required binaries:
+- global, gtags, universal-ctags
+- python, pygments
+- ag, rg
+- vhier
+- Linters: verilog, iverilog, verible-verilog-lint, slang, svlint, xrun/hal
+- LSP servers: hdl_checker, svlangserver, verible-verilog-ls, svls, veridian
+
+Emacs-lisp packages required:
 ```emacs-lisp
 (use-package projectile)
 (use-package ggtags)
@@ -45,12 +58,9 @@ Emacs Lisp packages:
 (use-package eglot)
 ```
 
-Binaries: check packages in `.github/scripts/setup-env.sh` depending on the required features.
+### verilog-ext ###
 
-
-## Package ##
-
-For the time being, `verilog-ext` is still work in progress and is not yet available in MELPA.
+For the time being `verilog-ext` is still work in progress and is not yet available in MELPA.
 To install it via `straight` (recommended):
 
 ```emacs-lisp
@@ -59,18 +69,18 @@ To install it via `straight` (recommended):
     :straight (:repo "gmlarumbe/verilog-ext"))
 ```
 
-Via `git clone`, adding to the `load-path` and `require`:
+To install it manually::
 ```shell
 $ cd ~/.emacs.d
 $ git clone https://github.com/gmlarumbe/verilog-ext
 ```
-Add the following snippet to your `.emacs` or `init.el`:
+And add the following snippet to your `.emacs` or `init.el`:
 ```emacs-lisp
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/verilog-ext"))
 (require 'verilog-ext)
 ```
 
-
+# Features #
 
 ## Syntax highlighting ##
 Font-lock based improved fontification.
@@ -98,7 +108,7 @@ Functions:
 * `vhier-outshine-mode`: for hierarchy navigation
 
 
-## LSP ##
+## Language Server Protocol ##
 
 Auto-configure various SystemVerilog language servers for `lsp-mode` and `eglot`:
 
@@ -149,7 +159,7 @@ Functions:
 
 ## Navigation ##
 ### Instance navigation ###
-Navigate through instances inside a module forwards/backwards.
+Navigate through instances inside a module forward/backwards.
 Jump to parent module via `ag`/`ripgrep`.
 
 <img src="https://user-images.githubusercontent.com/51021955/208782492-b2ff09b3-f662-4d22-a46c-64eb69f9f7b9.gif" width=400 height=300>
@@ -207,10 +217,12 @@ Functions:
 
 * Setup `company` to complete with verilog keywords
 
-* Wrapper functions to make `kill-word` stop at underscores without breaking indentation
+* Wrapper functions to stop cursor at underscores without breaking indentation
 
   - `verilog-ext-forward-word`
   - `verilog-ext-backward-word`
+  - `verilog-ext-kill-word`
+  - `verilog-ext-backward-kill-word`
 
 * Typedef handling for syntax-higlighting and alignment via `verilog-pretty-declarations`
 
@@ -219,10 +231,10 @@ Functions:
 * Toggle connections of ports under instance at point
 
   - `verilog-ext-toggle-connect-port`
-  - `verilog-ext-clean-port-blanks`
   - `verilog-ext-connect-ports-recursively`
+  - `verilog-ext-clean-port-blanks`
 
-* Timestamp mode updating after setting proper regexp
+* Timestamp mode updating (after setting header timestamp regexp)
 
     - `verilog-ext-time-stamp-mode`
 
@@ -232,9 +244,14 @@ Functions:
    - `verilog-ext-code-formatter-setup`
 
 
-* Block comments to names:
+* Auto convert block comments to names:
 
     - `verilog-ext-block-end-comments-to-names-mode`
+
+* Makefile based development:
+
+    - `verilog-ext-makefile-create`
+    - `verilog-ext-makefile-compile`
 
 
 ## Contributing ##
@@ -257,21 +274,23 @@ Requirements:
 ```
 
 
-### Why not in `verilog-mode` ? ##
+### Why not inside `verilog-mode` ? ##
 
-`verilog-ext` overrides some functionality from `verilog-mode` (e.g. syntax highlighting).
-Not every user of `verilog-mode` would be happy with all these changes, so `verilog-ext` offers some modularity in terms of what functionality to use.
+One of the reasons is that `verilog-ext` overrides some functionality of `verilog-mode` (e.g. syntax highlighting).
+Since not every user of `verilog-mode` would accept some of these changes, `verilog-ext` offers modularity with respect to which functionality to use.
 
-`verilog-ext` makes use of latest versions of `verilog-mode` and GNU Emacs. Opposite to `verilog-mode` it does not aim to be compatible with XEmacs.
+Another reason is that `verilog-ext` only supports GNU Emacs (tested in 28.1) in contrast to `verilog-mode` which also aims to be compatible with XEmacs.
+Backwards compatibility with XEmacs would prevent development from using new neat features such as `lsp` or `tree-sitter`.
 
-On the other hand, since the development of `verilog-ext` happens on GitHub, it's not restricted by the FSF contributor agreement and everyone can easily contribute to the project. Eventually, if maintainers of `verilog-mode` would agree on including some functionality of `verilog-ext` inside `verilog-mode` that could be easily included in new Emacs releases.
+On the other hand, since the development of `verilog-ext` happens on GitHub, it is not restricted by the FSF contributor agreement and everyone can easily contribute to the project.
+Eventually, maintainers of `verilog-mode` could agree on including some `verilog-ext` functionality inside `verilog-mode` for newer Emacs releases.
 
 
-## WIP ##
+## WIP/TODO ##
 
 ### Doc website ###
 
-Use a .org file as an input file and export to Markdown and HTML to generate documentation website.
+Use a .org file as an input for GitHub README and HTML doc website.
 
 ### Tree-sitter ###
 
@@ -286,6 +305,6 @@ be used by a function of `completion-at-point-functions` to determine contextual
 
 ### Hierarchy display ###
 
-Right now hierarchy is shown by using `outline-minor-mode` and `outshine`. However, another alternatives such as `hierarchy`
-and `treemacs` could be better options.
+Right now hierarchy is shown via `outline-minor-mode` and `outshine`. Other alternatives such as builtin `hierarchy`
+or `treemacs` could offer better results.
 
