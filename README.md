@@ -1,6 +1,6 @@
 [![Build Status](https://github.com/gmlarumbe/verilog-ext/workflows/CI/badge.svg)](https://github.com/gmlarumbe/verilog-ext/actions)
 
-# verilog-ext.el - Verilog Extensions for Emacs #
+# verilog-ext.el - SystemVerilog Extensions for Emacs #
 
 This package includes some extensions on top of the great Emacs [verilog-mode](https://github.com/veripool/verilog-mode).
 
@@ -8,8 +8,8 @@ This package includes some extensions on top of the great Emacs [verilog-mode](h
 * Hierarchy extraction and navigation
 * LSP configuration for `lsp-mode` and `eglot`
 * Support for many linters via `flycheck`
-* Improve `imenu` entries: instances, classes and methods
-* Code navigation functions: instances, definitions, references, parent module, dwim
+* Improve `imenu` entries: detect instances, classes and methods
+* Code navigation functions for RTL and Verification environments
 * Beautify modules and instances
 * Extended collection of custom and `yasnippet` templates insertion via `hydra`
 * Many additional misc utilities
@@ -20,9 +20,8 @@ This package includes some extensions on top of the great Emacs [verilog-mode](h
 
 #### Verilog-mode ####
 
-Latest `verilog-mode` version is required since `verilog-ext` relies on much of its functionality to work properly.
-
-Using straight:
+Latest `verilog-mode` version is required since `verilog-ext` relies on much of its functionality to work correctly.
+Using [straight](https://github.com/radian-software/straight.el) and [use-package](https://github.com/jwiegley/use-package):
 ```emacs-lisp
 (straight-use-package 'use-package)
 (use-package verilog-mode
@@ -30,19 +29,18 @@ Using straight:
 ```
 For other installation methods refer to [verilog-mode](https://github.com/veripool/verilog-mode) installation options.
 
-#### Binaries and emacs lisp packages ####
+#### Binaries and Emacs Lisp packages ####
 
-`verilog-ext` makes use of several binaries used as backend engines to support IDE-like functionality. In addition, some third party Emacs Lisp packages serve as frontends for those binaries.
+`verilog-ext` makes use of several binaries as backend engines to support IDE-like functionality. In addition, some third party Emacs Lisp packages serve as frontends for those binaries.
 
 List of required binaries:
-- global, gtags, universal-ctags
-- python, pygments
-- ag, rg
-- vhier
-- Linters: verilog, iverilog, verible-verilog-lint, slang, svlint, xrun/hal
-- LSP servers: hdl_checker, svlangserver, verible-verilog-ls, svls, veridian
+- Definitions and references navigation: `global`, `gtags`, `universal-ctags`, `python`, `pygments`
+- Jump to parent module: `ag`, `ripgrep`
+- Hierarchy extraction: `vhier`
+- Linting: `verilator`, `iverilog`, `verible-verilog-lint`, `slang`, `svlint`, `xrun`/`hal`
+- LSP: `hdl_checker`, `svlangserver`, `verible-verilog-ls`, `svls`, `veridian`
 
-Emacs-lisp packages required:
+Installation of required Emacs-lisp packages:
 ```emacs-lisp
 (use-package projectile)
 (use-package ggtags)
@@ -60,8 +58,10 @@ Emacs-lisp packages required:
 
 ### verilog-ext ###
 
-For the time being `verilog-ext` is still work in progress and is not yet available in MELPA.
-To install it via `straight` (recommended):
+#### straight.el ####
+
+For the time being `verilog-ext` is still work in progress and is not yet available at [MELPA](https://melpa.org/).
+To install it via [straight](https://github.com/radian-software/straight.el):
 
 ```emacs-lisp
 (straight-use-package 'use-package)
@@ -69,7 +69,7 @@ To install it via `straight` (recommended):
     :straight (:repo "gmlarumbe/verilog-ext"))
 ```
 
-To install it manually::
+#### Manually ####
 ```shell
 $ cd ~/.emacs.d
 $ git clone https://github.com/gmlarumbe/verilog-ext
@@ -78,6 +78,50 @@ And add the following snippet to your `.emacs` or `init.el`:
 ```emacs-lisp
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/verilog-ext"))
 (require 'verilog-ext)
+```
+
+## Basic config ##
+By default `verilog-ext` does not create any keybindings. Following snippet shows a configuration example with `use-package`:
+```emacs-lisp
+(use-package verilog-ext
+  :straight (:host github :repo "gmlarumbe/verilog-ext")
+  :after verilog-mode
+  :demand
+  :bind (:map verilog-mode-map
+         ;; Default keys override
+         ("TAB"           . verilog-ext-electric-verilog-tab)
+         ("M-d"           . verilog-ext-kill-word)
+         ("M-f"           . verilog-ext-forward-word)
+         ("M-b"           . verilog-ext-backward-word)
+         ("C-<backspace>" . verilog-ext-backward-kill-word)
+         ;; Features
+         ("M-i"           . verilog-ext-imenu-list)
+         ("C-c C-p"       . verilog-ext-preprocess)
+         ("C-c C-f"       . verilog-ext-flycheck-mode-toggle)
+         ("C-c C-t"       . verilog-ext-hydra/body)
+         ("C-c C-v"       . verilog-ext-vhier-current-file)
+         ;; Code beautifying
+         ("C-M-i"         . verilog-ext-indent-block-at-point)
+         ("C-c b"         . verilog-ext-module-at-point-beautify)
+         ;; Dwim navigation
+         ("C-M-a"         . verilog-ext-nav-beg-of-defun-dwim)
+         ("C-M-e"         . verilog-ext-nav-end-of-defun-dwim)
+         ("C-M-d"         . verilog-ext-nav-down-dwim)
+         ("C-M-u"         . verilog-ext-nav-up-dwim)
+         ("C-M-p"         . verilog-ext-nav-prev-dwim)
+         ("C-M-n"         . verilog-ext-nav-next-dwim)
+         ;; Module navigation
+         ("C-M-."         . verilog-ext-jump-to-parent-module)
+         ;; Port connections
+         ("C-c c"         . verilog-ext-toggle-connect-port)
+         ("C-c C-c"       . verilog-ext-connect-ports-recursively))
+  :init
+  (setq verilog-ext-snippets-dir "~/.emacs.d/straight/repos/verilog-ext/snippets")
+  (setq verilog-ext-flycheck-eldoc-toggle t)
+  (setq verilog-ext-flycheck-verible-rules '("-line-length"))
+  :config
+  (verilog-ext-flycheck-set-linter 'verilog-verible)
+  (verilog-ext-add-snippets))
 ```
 
 # Features #
@@ -102,10 +146,12 @@ Font-lock based improved fontification.
 Extract hierarchy of module at current buffer via [Verilog-Perl](https://github.com/veripool/verilog-perl) `vhier`.
 Visualize with `outline-minor-mode` and `outshine`.
 
+<img src="https://user-images.githubusercontent.com/51021955/209574234-eda2d151-87b4-44db-8edd-e41e2e1b79d4.gif" width=500 height=400>
+
 Functions:
 
-* `verilog-ext-vhier-current-file`: for hierarchy extraction
-* `vhier-outshine-mode`: for hierarchy navigation
+* `verilog-ext-vhier-current-file` for hierarchy extraction
+* `vhier-outshine-mode` for hierarchy navigation
 
 
 ## Language Server Protocol ##
@@ -123,6 +169,21 @@ Functions:
 
 * `verilog-ext-lsp-set-server`
 * `verilog-ext-eglot-set-server`
+
+
+## Linting ##
+Support via `flycheck` for the following linters:
+
+* [Verilator](https://github.com/verilator/verilator)
+* [Icarus Verilog](https://github.com/steveicarus/iverilog)
+* [Verible](https://github.com/chipsalliance/verible/tree/master/verilog/tools/lint)
+* [Slang](https://github.com/MikePopoloski/slang)
+* [Svlint](https://github.com/dalance/svlint)
+* Cadence HAL
+
+Functions:
+
+* `verilog-ext-flycheck-mode-toggle`: enable/disable current linter. Select linter with `prefix-arg`/(`C-u`).
 
 
 ## Imenu ##
@@ -143,21 +204,9 @@ Support detection of instances and methods inside classes.
 
 * `imenu-list` is a recommended package to visualize different levels of nesting in the hierarchy.
 
-## Linting ##
-Support via `flycheck` for the following linters:
-
-* [Verilator](https://github.com/verilator/verilator)
-* [Icarus Verilog](https://github.com/steveicarus/iverilog)
-* [Verible](https://github.com/chipsalliance/verible/tree/master/verilog/tools/lint)
-* [Slang](https://github.com/MikePopoloski/slang)
-* [Svlint](https://github.com/dalance/svlint)
-* Cadence HAL
-
-Functions:
-
-* `verilog-ext-flycheck-mode-toggle`: enable/disable current linter. Select linter with `prefix-arg`.
 
 ## Navigation ##
+
 ### Instance navigation ###
 Navigate through instances inside a module forward/backwards.
 Jump to parent module via `ag`/`ripgrep`.
@@ -172,7 +221,7 @@ Functions:
 * `verilog-ext-instance-at-point`
 
 ### Jump to definition/reference ###
-Jump to definition/reference of module at point via ggtags and xref.
+Jump to definition/reference of module at point via `ggtags` and `xref`.
 
 Functions:
 
@@ -181,6 +230,9 @@ Functions:
 * `verilog-ext-jump-to-module-at-point-ref`
 
 ### Dwim
+
+Context aware functions (do what I mean) depending on the file being edited.
+Modules (RTL) navigate through instances while classes (Verification) navigate through methods/defuns.
 
 Functions:
 
@@ -205,12 +257,31 @@ Functions:
 * `verilog-ext-beautify-files-current-dir`
 
 ## Snippets ##
+* Select between snippets that cover most frequently used SystemVerilog constructs:
+
+    <img src="https://user-images.githubusercontent.com/51021955/209577453-730014b7-d261-4884-9eb2-baa8eaa02a66.gif" width=400 height=300>
+
+
+* Insert instances in current module from file:
+
+    <img src="https://user-images.githubusercontent.com/51021955/209577185-ad6b688d-158d-476f-94f5-e1d0eeb0fbd8.gif" width=400 height=300>
+
+
+* Create basic testbench environment from DUT file:
+
+    <img src="https://user-images.githubusercontent.com/51021955/209578258-1db8eb6b-37ce-4be0-8cd6-ec380116d0cd.gif" width=400 height=300>
+
 
 Functions:
+
 
 * `verilog-ext-hydra/body`
 
 ## Misc ##
+* Code formatter setup via [apheleia](https://github.com/radian-software/apheleia)
+
+   - `verilog-ext-code-formatter-setup`
+
 * Preprocess files based on binary: `verilator`, `iverilog` or `vppreproc`
 
    - `verilog-ext-preprocess`
@@ -238,12 +309,6 @@ Functions:
 
     - `verilog-ext-time-stamp-mode`
 
-
-* Code formatter setup via `apheleia`
-
-   - `verilog-ext-code-formatter-setup`
-
-
 * Auto convert block comments to names:
 
     - `verilog-ext-block-end-comments-to-names-mode`
@@ -254,57 +319,22 @@ Functions:
     - `verilog-ext-makefile-compile`
 
 
-## Contributing ##
+# Contributing #
 
-Contributions are welcome! Just stick to regular Elisp conventions and run the ERT tests before submitting a new PR.
+Contributions are welcome! Just stick to common Elisp conventions and run the ERT suite after testing your changes and before submitting a new PR.
 
-For new functionality, add a new ERT test that covers that functionality.
+For new functionality add new ERT tests if possible.
 
-### ERT Tests setup ####
+## ERT Tests setup ###
 
-Requirements:
+To run the ERT test suite change directory to the `verilog-ext` root and run the `ert-tests.sh` script:
 
-```emacs-lisp
-(use-package faceup)
-(use-package align
-  :straight nil
-  :config
-  (setq align-default-spacing 1)
-  (setq align-to-tab-stop nil))
+```shell
+$ cd ~/.emacs.d/verilog-ext
+$ .github/scripts/ert-tests.sh
 ```
 
-
-### Why not inside `verilog-mode` ? ##
-
-One of the reasons is that `verilog-ext` overrides some functionality of `verilog-mode` (e.g. syntax highlighting).
-Since not every user of `verilog-mode` would accept some of these changes, `verilog-ext` offers modularity with respect to which functionality to use.
-
-Another reason is that `verilog-ext` only supports GNU Emacs (tested in 28.1) in contrast to `verilog-mode` which also aims to be compatible with XEmacs.
-Backwards compatibility with XEmacs would prevent development from using new neat features such as `lsp` or `tree-sitter`.
-
-On the other hand, since the development of `verilog-ext` happens on GitHub, it is not restricted by the FSF contributor agreement and everyone can easily contribute to the project.
-Eventually, maintainers of `verilog-mode` could agree on including some `verilog-ext` functionality inside `verilog-mode` for newer Emacs releases.
+If there is a missing dependency, check the file `.github/scripts/setup-env.sh` used by GitHub Actions to configure your environment.
 
 
-## WIP/TODO ##
-
-### Doc website ###
-
-Use a .org file as an input for GitHub README and HTML doc website.
-
-### Tree-sitter ###
-
-There is some work done with `tree-sitter`. Since Emacs 29 includes it as part of the core, many of the functionalities
-here could be replaced and optimized by using `tree-sitter` instead of regexp based search.
-
-### Completion ###
-
-A good `completion-at-point` function would include symbols indexing for a project (e.g. same as `ggtags`). This could
-be used by a function of `completion-at-point-functions` to determine contextually what type of completion is needed.
-
-
-### Hierarchy display ###
-
-Right now hierarchy is shown via `outline-minor-mode` and `outshine`. Other alternatives such as builtin `hierarchy`
-or `treemacs` could offer better results.
 
