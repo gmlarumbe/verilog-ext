@@ -27,6 +27,7 @@
 (require 'verilog-mode)
 (require 'verilog-utils)
 (require 'verilog-navigation)
+(require 'apheleia)
 
 ;;;; Syntax table override functions
 (defun verilog-ext-kill-word (&optional arg)

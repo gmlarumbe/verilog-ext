@@ -196,7 +196,6 @@ it could cause sluggish behaviour as it's not every efficient."
           (hs-show-block)))
     (message "Not in imenu-list mode !!")))
 
-;;;###autoload
 (defun verilog-ext-imenu-list ()
   "Wrapper for `imenu-list' for Verilog mode with `verilog-ext'."
   (interactive)

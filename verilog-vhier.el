@@ -31,6 +31,18 @@
 (require 'outshine)
 (require 'verilog-utils)
 
+
+(defcustom verilog-ext-vhier-command-file nil
+  "Verilog-ext vhier command file."
+  :type 'string
+  :group 'verilog-ext)
+
+(defcustom verilog-ext-vhier-output-file nil
+  "Verilog-ext vhier output file."
+  :type 'string
+  :group 'verilog-ext)
+
+
 ;;;; Hierarchy navigation
 (define-minor-mode vhier-outshine-mode
   "Instance navigation frontend for Verilog-Perl `vhier'.
@@ -106,9 +118,6 @@ Move through headings and point at the beginning of the tag."
 (defvar verilog-ext-vhier-vhier-args '("--cells"
                                        "--no-missing"
                                        "--missing-modules"))
-(defvar verilog-ext-vhier-command-file nil)
-(defvar verilog-ext-vhier-output-file nil)
-
 
 (defun verilog-ext-vhier-format-hierarchy-write-file (output-file)
   "Process Verilog-Perl buffer and write it to OUTPUT-FILE hierarchy file.
@@ -139,7 +148,6 @@ compatibility with outshine comments and Gtags/Xref."
     (write-file output-file)
     (vhier-outshine-mode)))
 
-;;;###autoload
 (defun verilog-ext-vhier-current-file ()
   "Extract hierarchy of current file module using Verilog-Perl backend."
   (interactive)

@@ -38,6 +38,12 @@
 
 ;;; Code:
 
+
+(defgroup verilog-ext nil
+  "Verilog Extensions."
+  :group 'languages
+  :group 'verilog-mode)
+
 (require 'verilog-utils)
 (require 'verilog-editing)
 (require 'verilog-navigation)

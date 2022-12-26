@@ -61,6 +61,12 @@
 (require 'verilog-navigation)
 
 
+(defcustom verilog-ext-align-typedef-uvm-dir nil
+  "Verilog-ext align typedef UVM directory."
+  :type 'string
+  :group 'verilog-ext)
+
+
 (defconst verilog-ext-range-optional-re
   (concat "\\(\\s-*" verilog-range-re "\\)?"))
 (defconst verilog-ext-range-or-class-params-optional-re
@@ -87,7 +93,6 @@
 
 (defvar verilog-ext-align-typedef-words nil)
 (defvar verilog-ext-align-typedef-words-re nil)
-(defvar verilog-ext-align-typedef-uvm-dir nil)
 
 
 (defun verilog-ext-typedef--var-find (regex &optional limit)
@@ -205,7 +210,6 @@ user typedefs."
       (setq verilog-ext-align-typedef-words-re (verilog-regexp-words verilog-ext-align-typedef-words))
       (setq verilog-align-typedef-regexp verilog-ext-align-typedef-words-re))))
 
-;;;###autoload
 (defun verilog-ext-typedef-project-update ()
   "Update typedef list of current project.
 

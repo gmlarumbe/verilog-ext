@@ -72,7 +72,6 @@
                  mouse-face mode-line-highlight)
                 "]")))
 
-;;;###autoload
 (define-minor-mode verilog-ext-which-func-mode
   "Enhanced extensions for `which-func' in Verilog."
   :lighter ""

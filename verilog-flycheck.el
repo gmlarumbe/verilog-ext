@@ -34,7 +34,16 @@
 (require 'verilog-utils)
 
 
-(defvar verilog-ext-flycheck-linter 'verilog-verilator)
+(defcustom verilog-ext-flycheck-linter 'verilog-verilator
+  "Verilog-ext flycheck linter."
+  :type '(choice (const :tag "verible"     'verilog-verible)
+                 (const :tag "verilator"   'verilog-verilator)
+                 (const :tag "slang"       'verilog-slang)
+                 (const :tag "iverilog"    'verilog-iverilog)
+                 (const :tag "cadence-hal" 'verilog-cadence-hal)
+                 (const :tag "svlint"      'verilog-svlint))
+  :group 'verilog-ext)
+
 (defvar verilog-ext-flycheck-linters '(verilog-verible
                                        verilog-verilator
                                        verilog-slang
@@ -286,7 +295,6 @@ be undefined when defining the checker."
     (add-to-list 'flycheck-checkers checker))
   (verilog-ext-flycheck-set-linter verilog-ext-flycheck-linter))
 
-;;;###autoload
 (defun verilog-ext-flycheck-mode-toggle (&optional uarg)
   "`flycheck-mode' Verilog wrapper function.
 If called with UARG select among available linters and enable flycheck.

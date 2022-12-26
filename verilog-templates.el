@@ -30,8 +30,22 @@
 (require 'verilog-utils)
 (require 'verilog-beautify)
 
-(defvar verilog-ext-templ-resetn "Rst_n")
-(defvar verilog-ext-templ-clock "Clk")
+
+(defcustom verilog-ext-snippets-dir "~/.emacs.d/verilog-ext/snippets"
+  "Yasnippet verilog-ext snippets directory."
+  :type 'string
+  :group 'verilog-ext)
+
+(defcustom verilog-ext-templ-resetn "Rst_n"
+  "Name of active low reset for templates."
+  :type 'string
+  :group 'verilog-ext)
+
+(defcustom verilog-ext-templ-clock "Clk"
+  "Name of clock for templates."
+  :type 'string
+  :group 'verilog-ext)
+
 
 (defmacro with-verilog-template (&rest body)
   "Execute BODY, indent region and place point at proper place."

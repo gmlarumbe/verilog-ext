@@ -34,12 +34,17 @@
 
 
 ;;;; Common
-(defconst verilog-ext-lsp-available-servers
+(defcustom verilog-ext-lsp-available-servers
   '((verilog      . "hdl_checker")
     (svlangserver . "svlangserver")
     (verible-ls   . "verible-verilog-ls")
     (svls         . "svls")
-    (veridian     . "veridian")))
+    (veridian     . "veridian"))
+  "Verilog-ext available LSP servers."
+  :type '(alist :key-type (symbol)
+                :value-type (string))
+  :group 'verilog-ext)
+
 
 (defconst verilog-ext-lsp-server-ids
   (mapcar #'car verilog-ext-lsp-available-servers))

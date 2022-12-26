@@ -44,41 +44,45 @@
 
 
 ;;;; Faces
+(defgroup verilog-ext-faces nil
+  "Verilog-ext faces."
+  :group 'verilog-ext)
+
 (defvar verilog-ext-font-lock-grouping-keywords-face 'verilog-ext-font-lock-grouping-keywords-face)
 (defface verilog-ext-font-lock-grouping-keywords-face
   '((t (:foreground "dark olive green")))
   "Face for grouping keywords: begin, end."
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-punctuation-face 'verilog-ext-font-lock-punctuation-face)
 (defface verilog-ext-font-lock-punctuation-face
   '((t (:foreground "burlywood")))
   "Face for punctuation symbols: !,;:?'=<>*"
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-punctuation-bold-face 'verilog-ext-font-lock-punctuation-bold-face)
 (defface verilog-ext-font-lock-punctuation-bold-face
   '((t (:inherit verilog-ext-font-lock-punctuation-face :weight extra-bold)))
   "Face for bold punctuation symbols, such as &^~+-/|."
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-braces-face 'verilog-ext-font-lock-braces-face)
 (defface verilog-ext-font-lock-braces-face
   '((t (:foreground "goldenrod")))
   "Face for braces []."
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-brackets-face 'verilog-ext-font-lock-brackets-face)
 (defface verilog-ext-font-lock-brackets-face
   '((t (:foreground "dark goldenrod")))
   "Face for brackets ()."
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-curly-brackets-face 'verilog-ext-font-lock-curly-brackets-face)
 (defface verilog-ext-font-lock-curly-brackets-face
   '((t (:foreground "DarkGoldenrod2")))
   "Face for curly brackets {}."
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-port-connection-face 'verilog-ext-font-lock-port-connection-face)
 (defface verilog-ext-font-lock-port-connection-face
@@ -88,7 +92,7 @@
 .portB (signalB)
 );
 "
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-dot-name-face 'verilog-ext-font-lock-dot-name-face)
 (defface verilog-ext-font-lock-dot-name-face
@@ -99,13 +103,13 @@
 axi_if.Ready <= 1'b1;
 obj.method();
 "
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-braces-content-face 'verilog-ext-font-lock-braces-content-face)
 (defface verilog-ext-font-lock-braces-content-face
   '((t (:foreground "yellow green")))
   "Face for content between braces: arrays, bit vector width and indexing."
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-width-num-face 'verilog-ext-font-lock-width-num-face)
 (defface verilog-ext-font-lock-width-num-face
@@ -115,7 +119,7 @@ obj.method();
 {4}'hF,
 {3}'o7,
 "
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-width-type-face 'verilog-ext-font-lock-width-type-face)
 (defface verilog-ext-font-lock-width-type-face
@@ -125,73 +129,73 @@ obj.method();
 4'{h}F,
 3'{o}7,
 "
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-module-face 'verilog-ext-font-lock-module-face)
 (defface verilog-ext-font-lock-module-face
   '((t (:foreground "green1")))
   "Face for module names."
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-instance-face 'verilog-ext-font-lock-instance-face)
 (defface verilog-ext-font-lock-instance-face
   '((t (:foreground "medium spring green")))
   "Face for instance names."
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-time-event-face 'verilog-ext-font-lock-time-event-face)
 (defface verilog-ext-font-lock-time-event-face
   '((t (:foreground "deep sky blue" :weight bold)))
   "Face for time-events: @ and #."
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-time-unit-face 'verilog-ext-font-lock-time-unit-face)
 (defface verilog-ext-font-lock-time-unit-face
   '((t (:foreground "light steel blue")))
   "Face for time-units: ms, us, ns, ps, fs (delays and timescale/timeprecision)."
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-preprocessor-face 'verilog-ext-font-lock-preprocessor-face)
 (defface verilog-ext-font-lock-preprocessor-face
   '((t (:foreground "pale goldenrod")))
   "Face for preprocessor compiler directives (`include, `define, UVM macros...)."
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-modport-face 'verilog-ext-font-lock-modport-face)
 (defface verilog-ext-font-lock-modport-face
   '((t (:foreground "light blue")))
   "Face for interface modports."
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-direction-face 'verilog-ext-font-lock-direction-face)
 (defface verilog-ext-font-lock-direction-face
   '((t (:foreground "RosyBrown3")))
   "Face for direction of ports/functions/tasks args."
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-typedef-face 'verilog-ext-font-lock-typedef-face)
 (defface verilog-ext-font-lock-typedef-face
   '((t (:foreground "light blue")))
   "Face for user defined types."
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-translate-off-face 'verilog-ext-font-lock-translate-off-face)
 (defface verilog-ext-font-lock-translate-off-face
   '((t (:background "gray20" :slant italic)))
   "Face for pragmas between comments: * translate_off / * translate_on"
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-uvm-classes-face 'verilog-ext-font-lock-uvm-classes-face)
 (defface verilog-ext-font-lock-uvm-classes-face
   '((t (:foreground "light blue")))
   "Face for UVM classes."
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-xilinx-attributes-face 'verilog-ext-font-lock-xilinx-attributes-face)
 (defface verilog-ext-font-lock-xilinx-attributes-face
   '((t (:foreground "orange1")))
   "Face for Xilinx Vivado RTL synthesis attributes."
-  :group 'verilog-ext-font-lock-faces)
+  :group 'verilog-ext-faces)
 
 
 ;;;; Regexps
@@ -684,6 +688,11 @@ Similar to `verilog-match-translate-off' but including
                                               verilog-ext-font-lock-keywords-2
                                               verilog-ext-font-lock-keywords-3) 'set)
 (add-hook 'verilog-mode-hook (lambda () (setq font-lock-multiline nil)))
+
+
+;; To remove fontification of verilog-ext:
+;;  Remove somehow the entry for verilog-mode in `font-lock-keywords-alist'
+;;  (font-lock-refresh-defaults)
 
 
 (provide 'verilog-font-lock)
