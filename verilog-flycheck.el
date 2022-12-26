@@ -34,15 +34,25 @@
 (require 'verilog-utils)
 
 
-(defcustom verilog-ext-flycheck-linter 'verilog-verilator
-  "Verilog-ext flycheck linter."
-  :type '(choice (const :tag "verible"     'verilog-verible)
-                 (const :tag "verilator"   'verilog-verilator)
-                 (const :tag "slang"       'verilog-slang)
-                 (const :tag "iverilog"    'verilog-iverilog)
-                 (const :tag "cadence-hal" 'verilog-cadence-hal)
-                 (const :tag "svlint"      'verilog-svlint))
+(defcustom verilog-ext-flycheck-eldoc-toggle nil
+  "Disable `eldoc-mode' if flycheck is enabled and viceversa.
+Avoids collisions in the minibufer between eldoc (ggtags) and flycheck."
+  :type '(choice
+          (const :tag "Enable" t)
+          (const :tag "Disable" nil))
   :group 'verilog-ext)
+
+(defcustom verilog-ext-flycheck-verible-rules nil
+  "List of strings containing verible liner rules.
+Use - or + prefixes depending on enabling/disabling of rules.
+https://chipsalliance.github.io/verible/lint.html"
+  :type '(repeat string)
+  :group 'verilog-ext)
+
+
+
+(defvar verilog-ext-flycheck-linter 'verilog-verilator
+  "Verilog-ext flycheck linter.")
 
 (defvar verilog-ext-flycheck-linters '(verilog-verible
                                        verilog-verilator
@@ -52,9 +62,6 @@
                                        verilog-svlint)
   "List of supported linters.")
 
-(defvar verilog-ext-flycheck-eldoc-toggle nil
-  "Disable `eldoc-mode' if flycheck is enabled and viceversa.
-Avoids collisions in the minibufer between eldoc (ggtags) and flycheck.")
 
 
 ;;; Linters
@@ -102,11 +109,6 @@ See URL `http://iverilog.icarus.com/'"
 
 
 ;;;; Verible
-(defvar verilog-ext-flycheck-verible-rules nil
-  "List of strings containing verible liner rules.
-Use - or + prefixes depending on enabling/disabling of rules.
-https://chipsalliance.github.io/verible/lint.html")
-
 (defvar verilog-ext-flycheck-verible-rules-formatted nil
   "Used as a flycheck argument extracted from `verilog-ext-flycheck-verible-rules'.")
 
@@ -323,6 +325,10 @@ to avoid minibuffer collisions."
       (if flycheck-mode
           (eldoc-mode -1)
         (eldoc-mode 1)))))
+
+
+;;;; Config
+(verilog-ext-flycheck-setup)
 
 
 (provide 'verilog-flycheck)

@@ -606,6 +606,7 @@ module tb_<module_name> () ;
 
 endmodule // tb_<module_name>
 ")
+    (setq verilog-ext-file-allows-instances t)
     ;; Replace template parameters, instantiate DUT and create header
     (verilog-ext-replace-string "<module_name>" module-name (point-min) (point-max))
     (verilog-ext-replace-string "<clock>" verilog-ext-templ-clock (point-min) (point-max))

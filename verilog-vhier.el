@@ -172,7 +172,8 @@ compatibility with outshine comments and Gtags/Xref."
     (unless (= 0 (shell-command cmd buf buf-err))
       (pop-to-buffer buf-err)
       (error err-msg))
-    (verilog-ext-vhier-format-hierarchy-write-file file-path)))
+    (verilog-ext-vhier-format-hierarchy-write-file file-path)
+    (pop-to-buffer (get-file-buffer file-path))))
 
 
 
