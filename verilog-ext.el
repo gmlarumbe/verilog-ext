@@ -57,6 +57,7 @@
 (require 'verilog-vhier)
 (require 'verilog-flycheck)
 (require 'verilog-lsp)
+(require 'verilog-tree-sitter)
 
 
 (provide 'verilog-ext)
