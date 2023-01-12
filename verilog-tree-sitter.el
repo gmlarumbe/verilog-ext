@@ -108,6 +108,7 @@
         ;; ] @repeat
         (always_keyword)
         "generate"
+        "endgenerate"
         "for"
         "foreach"
         "repeat"
@@ -134,6 +135,8 @@
         "rand"
         "constraint"
         "new"
+        "const"
+        "genvar"
         ))
 
 
@@ -260,9 +263,18 @@
           (net_port_header1
            (net_port_type1
             (simple_identifier) @font-lock-type-face)))
+         ;; Interfaces with modports
+         (ansi_port_declaration
+          (interface_port_header
+           (interface_identifier
+            (simple_identifier) @verilog-ext-font-lock-dot-name-face)
+           (modport_identifier
+            (modport_identifier
+             (simple_identifier) @verilog-ext-font-lock-modport-face))))
          ;; Ports in checkers TODO (instances of 1 port wrongly detected as checkers?)
          (formal_port_identifier
           (simple_identifier) @font-lock-constant-face)
+
          ;; Arrays
          ((packed_dimension
            (constant_range) @verilog-ext-font-lock-braces-content-face))
@@ -276,6 +288,9 @@
           (expression) @verilog-ext-font-lock-braces-content-face)
          (constant_select1
           (constant_expression) @verilog-ext-font-lock-braces-content-face)
+         (constant_bit_select1
+          (constant_expression) @verilog-ext-font-lock-braces-content-face)
+
          ;; Timeunit
          ((time_unit) @font-lock-constant-face)
          ;; Radix
@@ -283,6 +298,9 @@
          ;;  (primary
          ;;   (primary_literal
          ;;    (integral_number) @font-lock-constant-face)))
+         ;; ((:match "h[0-9a-fA-F]+" @font-lock-function-name-face))
+         ;; (:match "c_build_number" @font-lock-function-name-face)
+
 
          ;; System function
          ((system_tf_call
@@ -303,6 +321,20 @@
          ;; INFO: It was white before, is this important?
          (parameter_identifier
           (simple_identifier) @font-lock-doc-face)
+
+         ;; Interface signals
+         (expression
+          (primary
+           (simple_identifier) @verilog-ext-font-lock-dot-name-face
+           (select1
+            (member_identifier
+             (simple_identifier)))))
+
+         ;; Interface signals with index
+         (expression
+          (primary
+           (simple_identifier) @verilog-ext-font-lock-dot-name-face
+           (constant_bit_select1)))
 
          )
 
@@ -332,17 +364,41 @@
           (module_keyword) @font-lock-keyword-face
           ;; (lifetime) @font-lock-type-face ;; TODO: Don't know how to make it optional.
           (simple_identifier) @font-lock-function-name-face)
-         ;; Module instantiation (wihtout parameters)
-         (module_instantiation
-          (simple_identifier) @verilog-ext-font-lock-module-face
-          (hierarchical_instance
-           (name_of_instance
-            (instance_identifier
-             (simple_identifier) @verilog-ext-font-lock-instance-face))
-           (list_of_port_connections
-            (named_port_connection
-             (port_identifier
-              (simple_identifier) @verilog-ext-font-lock-port-connection-face)))))
+
+         ;; Module/program/interface instantiation
+         (module_or_generate_item
+          (module_instantiation
+           (simple_identifier) @verilog-ext-font-lock-module-face))
+         (module_or_generate_item
+          (program_instantiation
+           (program_identifier (simple_identifier) @verilog-ext-font-lock-module-face)))
+         (module_or_generate_item
+          (interface_instantiation
+           (interface_identifier (simple_identifier) @verilog-ext-font-lock-module-face)))
+
+         (hierarchical_instance
+          (name_of_instance
+           (instance_identifier
+            (simple_identifier) @verilog-ext-font-lock-instance-face)))
+
+         (hierarchical_instance
+          (list_of_port_connections
+           (named_port_connection
+            (port_identifier
+             (simple_identifier) @verilog-ext-font-lock-port-connection-face))))
+
+         ;; Module instantiation (wihtout parameters): INFO: Commented out to try to make things more general
+         ;; (module_instantiation
+         ;;  (simple_identifier) @verilog-ext-font-lock-module-face
+         ;;  (hierarchical_instance
+         ;;   (name_of_instance
+         ;;    (instance_identifier
+         ;;     (simple_identifier) @verilog-ext-font-lock-instance-face))
+         ;;   (list_of_port_connections
+         ;;    (named_port_connection
+         ;;     (port_identifier
+         ;;      (simple_identifier) @verilog-ext-font-lock-port-connection-face)))))
+
          ;; Module instantiation parameters: INFO: Commented out to make it more general for interfaces/classes parameters
          ;; (module_instantiation
          ;;  (parameter_value_assignment
@@ -368,7 +424,7 @@
          ;;     (port_identifier
          ;;      (simple_identifier) @font-lock-constant-face)))))
 
-         ;; TODO: Instances of 1 port are detected as checkers? Also happens for interfaces?
+         ;; TODO: Instances of 1 port are detected as checkers? Also happens for interfaces? Is this a known conflict?
          (checker_instantiation
           (checker_identifier
            (simple_identifier) @font-lock-function-name-face)
