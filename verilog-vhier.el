@@ -1,6 +1,6 @@
 ;;; verilog-vhier.el --- Verilog-Perl Hierarchy  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2022 Gonzalo Larumbe
+;; Copyright (C) 2022-2023 Gonzalo Larumbe
 
 ;; Author: Gonzalo Larumbe <gonzalomlarumbe@gmail.com>
 ;; URL: https://github.com/gmlarumbe/verilog-ext
