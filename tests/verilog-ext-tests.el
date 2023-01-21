@@ -44,8 +44,6 @@
 
 
 ;;;; Tests
-(unless (featurep 'verilog-ext)
-  (error "verilog-ext has not been loaded. Cannot run tests!"))
 (require 'verilog-ext)
 
 (defvar verilog-ext-tests-root-dir (file-name-directory (locate-library "verilog-ext")))
