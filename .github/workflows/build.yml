@@ -11,9 +11,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         emacs_version:
           - 28.2
+          - release-snapshot
           - snapshot
     steps:
       - name: Set up Emacs

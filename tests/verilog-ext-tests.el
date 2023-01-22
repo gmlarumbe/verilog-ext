@@ -62,8 +62,17 @@
 (require 'verilog-ext-tests-font-lock)
 (require 'verilog-ext-tests-utils)
 (require 'verilog-ext-tests-beautify)
-(when (>= emacs-major-version 29)
-  (require 'verilog-ext-tests-tree-sitter))
+
+(message "Emacs version: %s" emacs-version)
+(if (< emacs-major-version 29)
+    (message "Skipping verilog-ext-tests-tree-sitter...")
+  ;; Else
+  (message "(treesit-available-p): %s" (treesit-available-p))
+  (when (treesit-available-p)
+    (require 'treesit)
+    (message "(treesit-language-available-p 'verilog): %s" (treesit-language-available-p 'verilog))
+    (when (treesit-language-available-p 'verilog)
+      (require 'verilog-ext-tests-tree-sitter))))
 
 
 (provide 'verilog-ext-tests)

@@ -3,7 +3,7 @@
 # Copyright (c) 2022 Gonzalo Larumbe
 # All rights reserved.
 
-PKGS_TO_INSTALL=(global universal-ctags python3-pygments silversearcher-ag ripgrep libverilog-perl verilator iverilog nodejs npm)
+PKGS_TO_INSTALL=(global universal-ctags python3-pygments silversearcher-ag ripgrep libverilog-perl verilator iverilog nodejs npm libtree-sitter-dev)
 EXPECTED_INSTALLED_BINARIES=(python global gtags ctags ag rg vhier verilator iverilog nodejs npm)
 
 for pkg in "${PKGS_TO_INSTALL[@]}"; do
