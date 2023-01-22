@@ -66,22 +66,22 @@
   "Face for bold punctuation symbols, such as &^~+-/|."
   :group 'verilog-ext-faces)
 
-(defvar verilog-ext-font-lock-braces-face 'verilog-ext-font-lock-braces-face)
-(defface verilog-ext-font-lock-braces-face
-  '((t (:foreground "goldenrod")))
-  "Face for braces []."
-  :group 'verilog-ext-faces)
-
 (defvar verilog-ext-font-lock-brackets-face 'verilog-ext-font-lock-brackets-face)
 (defface verilog-ext-font-lock-brackets-face
-  '((t (:foreground "dark goldenrod")))
-  "Face for brackets ()."
+  '((t (:foreground "goldenrod")))
+  "Face for brackets []."
   :group 'verilog-ext-faces)
 
-(defvar verilog-ext-font-lock-curly-brackets-face 'verilog-ext-font-lock-curly-brackets-face)
-(defface verilog-ext-font-lock-curly-brackets-face
+(defvar verilog-ext-font-lock-parenthesis-face 'verilog-ext-font-lock-parenthesis-face)
+(defface verilog-ext-font-lock-parenthesis-face
+  '((t (:foreground "dark goldenrod")))
+  "Face for parenthesis ()."
+  :group 'verilog-ext-faces)
+
+(defvar verilog-ext-font-lock-curly-braces-face 'verilog-ext-font-lock-curly-braces-face)
+(defface verilog-ext-font-lock-curly-braces-face
   '((t (:foreground "DarkGoldenrod2")))
-  "Face for curly brackets {}."
+  "Face for curly braces {}."
   :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-port-connection-face 'verilog-ext-font-lock-port-connection-face)
@@ -199,16 +199,16 @@ obj.method();
 
 
 ;;;; Regexps
-(defconst verilog-ext-font-lock-brackets-re "[()]")
-(defconst verilog-ext-font-lock-curly-brackets-re "[{}]")
-(defconst verilog-ext-font-lock-braces-re "\\(\\[\\|\\]\\)")
+(defconst verilog-ext-font-lock-parenthesis-re "[()]")
+(defconst verilog-ext-font-lock-curly-braces-re "[{}]")
+(defconst verilog-ext-font-lock-brackets-re "\\(\\[\\|\\]\\)")
 (defconst verilog-ext-font-lock-punctuation-re "\\([!,;:?'=<>]\\|\\*\\)")
 (defconst verilog-ext-font-lock-punctuation-bold-re "\\([&^~%\+-]\\||\\|\\.\\|\\/\\)")
 (defconst verilog-ext-font-lock-system-task-re (concat "\\$" verilog-identifier-re))
 (defconst verilog-ext-font-lock-port-connection-re (concat "^[[:blank:]]*\\.\\(" verilog-identifier-re "\\)"))
 (defconst verilog-ext-font-lock-dot-name-re (concat "\\(" verilog-identifier-re "\\)\\.\\(" verilog-identifier-re "\\)"))
 (defconst verilog-ext-font-lock-braces-content-re "\\[\\(?1:[ +'\*/()$0-9a-zA-Z:_-]*\\)\\]")
-(defconst verilog-ext-font-lock-width-signal-re "\\(?1:[0-9]*\\)'\\(?2:[hdxbo]\\)\\(?3:[0-9a-fA-F_xzXZ]+\\)")
+(defconst verilog-ext-font-lock-width-signal-re "\\(?1:[0-9]*\\)'[sS]?\\(?2:[hHdDxXbBoO]\\)\\(?3:[0-9a-fA-F_xzXZ]+\\)")
 (defconst verilog-ext-font-lock-time-event-re "\\([@#]\\)")
 (defconst verilog-ext-font-lock-time-unit-re "[0-9]+\\(\\.[0-9]+\\)?\\(?2:[umnpf]s\\)")
 (defconst verilog-ext-font-lock-interface-modport-re (concat "\\(?1:^\\s-*\\(?2:" verilog-identifier-re "\\)\\.\\(?3:" verilog-identifier-re "\\)\\s-+\\)"))
@@ -595,9 +595,9 @@ Similar to `verilog-match-translate-off' but including
    (list verilog-ext-font-lock-braces-content-re     1 verilog-ext-font-lock-braces-content-face)
    (list verilog-ext-font-lock-punctuation-re        0 verilog-ext-font-lock-punctuation-face)
    (list verilog-ext-font-lock-punctuation-bold-re   0 verilog-ext-font-lock-punctuation-bold-face)
-   (list verilog-ext-font-lock-braces-re             0 verilog-ext-font-lock-braces-face)
    (list verilog-ext-font-lock-brackets-re           0 verilog-ext-font-lock-brackets-face)
-   (list verilog-ext-font-lock-curly-brackets-re     0 verilog-ext-font-lock-curly-brackets-face)
+   (list verilog-ext-font-lock-parenthesis-re        0 verilog-ext-font-lock-parenthesis-face)
+   (list verilog-ext-font-lock-curly-braces-re       0 verilog-ext-font-lock-curly-braces-face)
    (list verilog-ext-font-lock-width-signal-re
          '(1 verilog-ext-font-lock-width-num-face)
          '(2 verilog-ext-font-lock-width-type-face))

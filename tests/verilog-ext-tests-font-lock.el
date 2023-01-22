@@ -42,6 +42,7 @@ At some point tried with `with-temp-buffer' without success."
         (message "Disabling untabify-trailing-ws-mode..."))
       (dolist (file (directory-files verilog-ext-tests-examples-dir t ".s?vh?$"))
         (find-file file)
+        (verilog-mode)
         (when (fboundp 'fic-mode)
           (fic-mode -1)
           (message "Disabling fic-mode for file %s" file))
