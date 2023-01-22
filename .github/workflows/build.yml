@@ -31,6 +31,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           .github/scripts/setup-env.sh
+          .github/scripts/install-ts-grammar.sh
 
       - name: Run ERT tests
         run: |
