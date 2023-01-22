@@ -62,7 +62,7 @@
 (require 'verilog-ext-tests-font-lock)
 (require 'verilog-ext-tests-utils)
 (require 'verilog-ext-tests-beautify)
-
+(require 'verilog-ext-tests-tree-sitter)
 
 
 (provide 'verilog-ext-tests)

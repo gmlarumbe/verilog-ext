@@ -84,7 +84,7 @@ See URL `https://www.veripool.org/wiki/verilator'."
   ((warning line-start "%Warning-" (zero-or-more not-newline) ": " (file-name) ":" line ":" column ": " (message) line-end)
    (error   line-start "%Error: "                                  (file-name) ":" line ":" column ": " (message) line-end)
    (error   line-start "%Error-"   (zero-or-more not-newline) ": " (file-name) ":" line ":" column ": " (message) line-end))
-  :modes verilog-mode)
+  :modes (verilog-mode verilog-ts-mode))
 
 
 
@@ -104,7 +104,7 @@ See URL `http://iverilog.icarus.com/'"
    (warning (file-name) ":" line ":" (zero-or-more not-newline) "warning:" (message) line-end)
    (error   (file-name) ":" line ":" (zero-or-more not-newline) "error:"   (message) line-end)
    (error   (file-name) ":" line ":" (message) line-end)) ; 'syntax error' message (e.g. missing package)
-  :modes verilog-mode)
+  :modes (verilog-mode verilog-ts-mode))
 
 
 
@@ -136,7 +136,7 @@ See URL `https://github.com/chipsalliance/verible'."
   ((error    (file-name) ":" line ":" column (zero-or-more "-") (zero-or-more digit) ":" (zero-or-more blank) "syntax error at "        (message) line-end)
    (error    (file-name) ":" line ":" column (zero-or-more "-") (zero-or-more digit) ":" (zero-or-more blank) "preprocessing error at " (message) line-end)
    (warning  (file-name) ":" line ":" column (zero-or-more "-") (zero-or-more digit) ":" (zero-or-more blank)                           (message) line-end))
-  :modes verilog-mode)
+  :modes (verilog-mode verilog-ts-mode))
 
 
 
@@ -155,7 +155,7 @@ See URL `https://github.com/MikePopoloski/slang'."
   :error-patterns
   ((error   (file-name) ":" line ":" column ": error: "   (message))
    (warning (file-name) ":" line ":" column ": warning: " (message)))
-  :modes verilog-mode)
+  :modes (verilog-mode verilog-ts-mode))
 
 
 
@@ -174,7 +174,7 @@ See URL `https://github.com/dalance/svlint'"
   :error-patterns
   ((warning line-start "Fail"  (zero-or-more blank) (file-name) ":" line ":" column (zero-or-more blank) (zero-or-more not-newline) "hint: " (message) line-end)
    (error   line-start "Error" (zero-or-more blank) (file-name) ":" line ":" column (zero-or-more blank) (zero-or-more not-newline) "hint: " (message) line-end))
-  :modes verilog-mode)
+  :modes (verilog-mode verilog-ts-mode))
 
 
 
@@ -262,7 +262,7 @@ be undefined when defining the checker."
     '((info    (zero-or-more not-newline) ": *N," (zero-or-more not-newline) "(" (file-name) "," line "|" column "): " (message) line-end)
       (warning (zero-or-more not-newline) ": *W," (zero-or-more not-newline) "(" (file-name) "," line "|" column "): " (message) line-end)
       (error   (zero-or-more not-newline) ": *E," (zero-or-more not-newline) "(" (file-name) "," line "|" column "): " (message) line-end))
-    :modes 'verilog-mode))
+    :modes '(verilog-mode verilog-ts-mode)))
 
 
 ;;; Functions

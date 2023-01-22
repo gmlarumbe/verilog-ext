@@ -58,6 +58,11 @@
 (require 'verilog-flycheck)
 (require 'verilog-lsp)
 
+;; Requires Emacs 29 with tree-sitter support and VHDL grammar
+(when (and (treesit-available-p)
+           (treesit-language-available-p 'verilog))
+  (require 'verilog-tree-sitter))
+
 
 (provide 'verilog-ext)
 

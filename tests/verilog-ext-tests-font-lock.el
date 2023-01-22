@@ -28,7 +28,7 @@
 
 (require 'faceup)
 
-(defun verilog-ext-test-font-lock-update-dir ()
+(defun verilog-ext-test-font-lock-update-dir (&optional tree-sitter)
   "Update .faceup files.
 INFO: Makes sure that additional settings that might change specific font-lock
 are disabled for the .faceup generation.
@@ -42,7 +42,9 @@ At some point tried with `with-temp-buffer' without success."
         (message "Disabling untabify-trailing-ws-mode..."))
       (dolist (file (directory-files verilog-ext-tests-examples-dir t ".s?vh?$"))
         (find-file file)
-        (verilog-mode)
+        (if tree-sitter
+            (verilog-ts-mode)
+          (verilog-mode))
         (when (fboundp 'fic-mode)
           (fic-mode -1)
           (message "Disabling fic-mode for file %s" file))
@@ -53,14 +55,22 @@ At some point tried with `with-temp-buffer' without success."
         (faceup-write-file (concat (file-name-directory file)
                                    "faceup/"
                                    (file-name-nondirectory file)
+                                   (when tree-sitter
+                                     ".ts")
                                    ".faceup"))))))
 
-(defun verilog-ext-test-font-lock-test-file (file)
+(defun verilog-ext-test-font-lock-test-file (file &optional tree-sitter)
   "Test that Verilog FILE fontifies as the .faceup file describes."
-  (let ((verilog-align-typedef-regexp nil))
-    (faceup-test-font-lock-file 'verilog-mode
+  (let ((verilog-align-typedef-regexp nil)
+        (mode (if tree-sitter
+                  'verilog-ts-mode
+                'verilog-mode)))
+    (faceup-test-font-lock-file mode
                                 (verilog-ext-path-join verilog-ext-tests-examples-dir file)
-                                (verilog-ext-path-join verilog-ext-tests-faceup-dir (concat file ".faceup")))))
+                                (verilog-ext-path-join verilog-ext-tests-faceup-dir (concat file
+                                                                                            (when tree-sitter
+                                                                                              ".ts")
+                                                                                            ".faceup")))))
 
 (faceup-defexplainer verilog-ext-test-font-lock-test-file)
 
