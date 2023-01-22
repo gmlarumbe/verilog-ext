@@ -10,11 +10,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        emacs_version:
+          - 28.2
+          - snapshot
     steps:
       - name: Set up Emacs
         uses: purcell/setup-emacs@v3.0
         with:
-          version: 28.1
+          version: ${{ matrix.emacs_version }}
 
       # Checks-out repository under $GITHUB_WORKSPACE
       - name: Clone verilog-ext
