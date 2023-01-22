@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Copyright (c) 2022 Gonzalo Larumbe
+# Copyright (c) 2022-2023 Gonzalo Larumbe
 # All rights reserved.
 
-PKGS_TO_INSTALL=(global universal-ctags python3-pygments silversearcher-ag ripgrep libverilog-perl verilator iverilog nodejs npm libtree-sitter-dev)
+PKGS_TO_INSTALL=(global universal-ctags python3-pygments silversearcher-ag ripgrep libverilog-perl verilator iverilog nodejs npm)
 EXPECTED_INSTALLED_BINARIES=(python global gtags ctags ag rg vhier verilator iverilog nodejs npm)
 
 for pkg in "${PKGS_TO_INSTALL[@]}"; do
@@ -44,4 +44,20 @@ echo "Setting up svlangserver..."
 npm install -g @imc-trading/svlangserver
 echo "svlangserver path: $(which svlangserver)"
 echo "svlangserver version: $(svlangserver --version)"
+
+echo ""
+echo "Settin up tree-sitter"
+git clone https://github.com/tree-sitter/tree-sitter.git
+cd tree-sitter
+echo ""
+echo "Building tree-sitter..."
+make all
+echo ""
+echo "Installing tree-sitter..."
+sudo make install
+sudo ldconfig # Update ldconfig cache to find libtree-sitter
+echo ""
+echo "tree-sitter lib path: "
+echo "$(sudo ldconfig -p | grep libtree-sitter)"
+cd ..
 

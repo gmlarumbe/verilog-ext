@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (c) 2022 Gonzalo Larumbe
+# Copyright (c) 2022-2023 Gonzalo Larumbe
 # All rights reserved.
 
 
