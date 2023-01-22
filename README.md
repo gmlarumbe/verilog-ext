@@ -4,6 +4,7 @@
 
 This package includes some extensions on top of the great Emacs [verilog-mode](https://github.com/veripool/verilog-mode).
 
+* Tree-sitter support (requires Emacs 29)
 * Improve syntax highlighting
 * Hierarchy extraction and navigation
 * LSP configuration for `lsp-mode` and `eglot`
@@ -80,6 +81,26 @@ And add the following snippet to your `.emacs` or `init.el`:
 (require 'verilog-ext)
 ```
 
+### tree-sitter ###
+Requires Emacs 29, installation of `tree-sitter` and Verilog grammar.
+
+To install `tree-sitter` there are different options:
+
+* Via [npm](https://www.npmjs.com/package/tree-sitter)
+* Manually:
+```shell
+$ git clone https://github.com/tree-sitter/tree-sitter.git
+$ cd tree-sitter
+$ make && sudo make install
+```
+
+Installation of grammar can be automated through the script:
+```shell
+$ .github/scripts/install-ts-grammar.sh
+```
+That will install `libtree-sitter-verilog.so` at `$HOME/.emacs.d/tree-sitter`.
+
+
 ## Basic config ##
 By default `verilog-ext` does not create any keybindings. Following snippet shows a configuration example with `use-package`:
 ```emacs-lisp
@@ -125,6 +146,10 @@ By default `verilog-ext` does not create any keybindings. Following snippet show
 ```
 
 # Features #
+
+## Tree-sitter ##
+The package includes the major-mode `verilog-ts-mode` for syntax highligting and indentation.
+There is some WIP, e.g. Imenu or navigation functions.
 
 ## Syntax highlighting ##
 Font-lock based improved fontification.

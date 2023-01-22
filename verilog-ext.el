@@ -24,6 +24,7 @@
 ;;; Commentary:
 
 ;; Extensions for Verilog Mode:
+;;  - Tree-sitter support (requires Emacs 29)
 ;;  - Improve syntax highlighting
 ;;  - Hierarchy extraction and visualization via Verilog-Perl `vhier'
 ;;  - LSP configuration for `lsp-mode' and `eglot'
