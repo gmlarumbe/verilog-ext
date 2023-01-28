@@ -32,14 +32,13 @@
 ;;; Code:
 
 
-
 ;;;; Common
 (defcustom verilog-ext-lsp-available-servers
-  '((verilog      . "hdl_checker")
-    (svlangserver . "svlangserver")
-    (verible-ls   . "verible-verilog-ls")
-    (svls         . "svls")
-    (veridian     . "veridian"))
+  '((ve-hdl-checker  . ("hdl_checker" "--lsp"))
+    (ve-svlangserver . "svlangserver")
+    (ve-verible-ls   . "verible-verilog-ls")
+    (ve-svls         . "svls")
+    (ve-veridian     . "veridian"))
   "Verilog-ext available LSP servers."
   :type '(alist :key-type (symbol)
                 :value-type (string))
@@ -48,41 +47,55 @@
 
 (defconst verilog-ext-lsp-server-ids
   (mapcar #'car verilog-ext-lsp-available-servers))
-(defconst verilog-ext-lsp-server-binaries
-  (mapcar #'cdr verilog-ext-lsp-available-servers))
 
 
 ;;;; lsp-mode
 (require 'lsp-mode)
+(require 'lsp-verilog)
 
-(defvar verilog-ext-lsp-mode-default-server 'svlangserver)
+(defvar verilog-ext-lsp-mode-default-server 've-svlangserver)
+
 
 (defun verilog-ext-lsp-configure ()
   "Configure Verilog for `lsp-mode'.
 Register additional clients."
   (interactive)
   (let (server-id server-bin)
+    ;; Add `verilog-ts-mode' to the list of existing lsp ids
+    (unless (alist-get 'verilog-ts-mode lsp-language-id-configuration)
+      (push (cons 'verilog-ts-mode "verilog") lsp-language-id-configuration))
+    ;; Register clients
     (dolist (server verilog-ext-lsp-available-servers)
       (setq server-id (car server))
       (setq server-bin (cdr server))
-      (when (not (member server-id '(verilog svlangserver))) ; Already registered by `lsp-mode'
-        (lsp-register-client
-         (make-lsp-client :new-connection (lsp-stdio-connection server-bin)
-                          :major-modes '(verilog-mode)
-                          :server-id server-id))
-        (message "Registered lsp-client: %s" server-id)))))
+      (cond ((eq server-id 've-svlangserver)
+             (lsp-register-client
+              (make-lsp-client :new-connection (lsp-stdio-connection 'lsp-clients-svlangserver-command)
+                               :major-modes '(verilog-mode verilog-ts-mode)
+                               :library-folders-fn 'lsp-clients-svlangserver-get-workspace-additional-dirs
+                               :server-id server-id)))
+            (t
+             (lsp-register-client
+              (make-lsp-client :new-connection (lsp-stdio-connection server-bin)
+                               :major-modes '(verilog-mode verilog-ts-mode)
+                               :server-id server-id))))
+      (message "Registered lsp-client: %s" server-id))))
 
 (defun verilog-ext-lsp-set-server (server-id)
   "Set language server defined by SERVER-ID.
 Disable the rest to avoid handling priorities.
-Override any previous configuration for `verilog-mode'."
+Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
   (interactive (list (intern (completing-read "Server-id: " verilog-ext-lsp-server-ids nil t))))
-  (unless (executable-find (cdr (assoc server-id verilog-ext-lsp-available-servers)))
-    (message "%s not in $PATH, skipping config..." server-id))
-  (let ((server-list verilog-ext-lsp-server-ids))
-    (setq lsp-disabled-clients (assq-delete-all 'verilog-mode lsp-disabled-clients))
-    (push (cons 'verilog-mode (remove server-id server-list)) lsp-disabled-clients)
-    (message "[Verilog LSP]: %s" server-id)))
+  (let ((cmd (cdr (assoc server-id verilog-ext-lsp-available-servers))))
+    (if (not (executable-find (if (listp cmd)
+                                  (car cmd)
+                                cmd)))
+        (message "%s not in $PATH, skipping config..." server-id)
+      ;; Else configure available server
+      (dolist (mode '(verilog-mode verilog-ts-mode))
+        (setq lsp-disabled-clients (assq-delete-all mode lsp-disabled-clients))
+        (push (cons mode (remove server-id verilog-ext-lsp-server-ids)) lsp-disabled-clients))
+      (message "[Verilog LSP]: %s" server-id))))
 
 
 ;;;;; Default config
@@ -93,18 +106,26 @@ Override any previous configuration for `verilog-mode'."
 ;;;; eglot
 (require 'eglot)
 
-(defvar verilog-ext-eglot-default-server 'svlangserver)
+(defvar verilog-ext-eglot-default-server 've-svlangserver)
 
 (defun verilog-ext-eglot-set-server (server-id)
   "Configure Verilog for `eglot'.
-Override any previous configuration for `verilog-mode'."
+Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
   (interactive (list (intern (completing-read "Server-id: " verilog-ext-lsp-server-ids nil t))))
-  (unless (executable-find (cdr (assoc server-id verilog-ext-lsp-available-servers)))
-    (message "%s not in $PATH, skipping config..." server-id))
-  (setq eglot-server-programs (assq-delete-all 'verilog-mode eglot-server-programs))
-  (push (list 'verilog-mode (alist-get server-id verilog-ext-lsp-available-servers))
-        eglot-server-programs)
-  (message "Set eglot SV server: %s" server-id))
+  (let ((cmd (alist-get server-id verilog-ext-lsp-available-servers)))
+    (unless cmd
+      (error "%s not recognized as a supported server" server-id))
+    (if (not (executable-find (if (listp cmd)
+                                  (car cmd)
+                                cmd)))
+        (message "%s not in $PATH, skipping config..." server-id)
+      ;; Else configure available server
+      (dolist (mode '(verilog-mode verilog-ts-mode))
+        (setq eglot-server-programs (assq-delete-all mode eglot-server-programs))
+        (if (listp cmd)
+            (push (append (list mode) cmd) eglot-server-programs)
+          (push (list mode cmd) eglot-server-programs)))
+      (message "Set eglot SV server: %s" server-id))))
 
 
 ;;;;; Default config
