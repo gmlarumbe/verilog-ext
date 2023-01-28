@@ -388,7 +388,8 @@ positions."
   (let (verilog-buffers verilog-dirs)
     (dolist (buf (buffer-list (current-buffer)))
       (with-current-buffer buf
-        (when (string-equal major-mode "verilog-mode")
+        (when (or (string-equal major-mode "verilog-mode")
+                  (string-equal major-mode "verilog-ts-mode"))
           (push buf verilog-buffers)
           (unless (member default-directory verilog-dirs)
             (push default-directory verilog-dirs)))))

@@ -32,6 +32,7 @@
 
 
 ;;; Utils
+;;;; Auxiliary
 (defun verilog-ts--node-at-point ()
   "Return tree-sitter node at point."
   (treesit-node-at (point) 'verilog))
@@ -43,19 +44,13 @@
    (lambda (node)
      (string= (treesit-node-type node) node-type))))
 
-;; TODO: Only works if point is placed before the identifier
 (defun verilog-ts--node-identifier-name (node)
   "Return identifier name of NODE."
-  (treesit-node-text (treesit-search-forward
-                      node
-                      "simple_identifier"
-                      nil
-                      t)
-                     :no-prop))
+  (treesit-node-text (treesit-search-subtree node "simple_identifier") :no-prop))
 
-  ;; TODO: Only works if point is at the beginning of a symbol!
 (defun verilog-ts--highest-node-at-pos (pos)
   "Return highest node in the hierarchy that starts at POS.
+INFO: Only works if point is at the beginning of a symbol!
 Snippet fetched from `treesit--indent-1'."
   (let* ((smallest-node (verilog-ts--node-at-point))
          (node (treesit-parent-while
@@ -63,6 +58,11 @@ Snippet fetched from `treesit--indent-1'."
                 (lambda (node)
                   (eq pos (treesit-node-start node))))))
     node))
+
+(defun verilog-ts--highest-node-at-symbol ()
+  "Return highest node in the hierarchy for symbol at point.
+Check also `treesit-thing-at-point' for similar functionality."
+  (verilog-ts--highest-node-at-pos (car (bounds-of-thing-at-point 'symbol))))
 
 (defun verilog-ts--node-at-bol ()
   "Return node at first non-blank character of current line.
@@ -84,45 +84,39 @@ Snippet fetched from `treesit--indent-1'."
                   (eq bol (treesit-node-start node))))))
     node))
 
-;; INFO: Only works for brackets and begin/end now
+;;;; Navigation
 (defun verilog-ts-forward-sexp ()
   "Move forward across expressions."
   (interactive)
   (if (member (following-char) '(?\( ?\{ ?\[))
       (forward-sexp 1)
-    (let* ((node (verilog-ts--node-at-point))  ; begin/end
-           (parent (treesit-node-parent node)) ; seq_block
-           (beg (treesit-node-start parent))
-           (end (treesit-node-end parent))
+    (let* ((node (verilog-ts--highest-node-at-symbol))
+           (beg (treesit-node-start node))
+           (end (treesit-node-end node))
            (text (treesit-node-text node :no-props)))
       (goto-char end))))
 
-;; INFO: Only works for brackets and begin/end now
 (defun verilog-ts-backward-sexp ()
   "Move backward across expressions."
   (interactive)
   (if (member (preceding-char) '(?\) ?\} ?\]))
       (backward-sexp 1)
-    (let* ((node (verilog-ts--node-at-point))  ; begin/end
-           (parent (treesit-node-parent node)) ; seq_block
-           (beg (treesit-node-start parent))
-           (end (treesit-node-end parent))
+    (let* ((node (treesit-node-parent (verilog-ts--node-at-point)))
+           (beg (treesit-node-start node))
+           (end (treesit-node-end node))
            (text (treesit-node-text node :no-props)))
       (goto-char beg))))
 
+
+;;;; Context info
 (defun verilog-ts-module-at-point ()
   "Return name of module at point."
   (interactive)
   (let ((node-at-point (treesit-node-at (point)))
-        module-node module-at-point)
+        module-node)
     (setq module-node (verilog-ts--node-has-parent-recursive node-at-point "module_instantiation"))
-    ;; (setq module-at-point (treesit-node-text module-node :no-prop))
-    (setq module-at-point (treesit-node-text (treesit-search-forward
-                                              module-node
-                                              "simple_identifier"
-                                              nil
-                                              nil)
-                                             :no-prop))))
+    (when module-node
+      (treesit-node-text (treesit-search-subtree module-node "simple_identifier") :no-prop))))
 
 (defun verilog-ts-nodes-current-buffer (pred)
   "Return node names that satisfy PRED in current buffer."
@@ -139,6 +133,7 @@ Snippet fetched from `treesit--indent-1'."
   (interactive)
   (verilog-ts-nodes-current-buffer "class_property"))
 
+;; TODO: Still does not work for constructors (new methods)
 (defun verilog-ts-class-methods ()
   "Return class methods of current file."
   (interactive)
@@ -148,6 +143,18 @@ Snippet fetched from `treesit--indent-1'."
   "Return class constraints of current file."
   (interactive)
   (verilog-ts-nodes-current-buffer "constraint_declaration"))
+
+(defun verilog-ts-module-instances ()
+  "Return module instances of current file."
+  (interactive)
+  (verilog-ts-nodes-current-buffer "module_instantiation"))
+
+;; TODO: Does not work since it does not find simple_identifier easily
+(defun verilog-ts-always-blocks ()
+  "Return always blocks of current file."
+  (interactive)
+  (verilog-ts-nodes-current-buffer "always_keyword"))
+
 
 
 ;;; Font-lock
@@ -173,6 +180,7 @@ Snippet fetched from `treesit--indent-1'."
     "cross"
     "default"
     "defparam"
+    "disable"
     "do"
     "else"
     "endcase"
@@ -361,6 +369,9 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
       (list_of_parameter_assignments
        (named_parameter_assignment
         (parameter_identifier (simple_identifier) @verilog-ext-font-lock-port-connection-face))))
+     (ordered_parameter_assignment ; Ordered parameters (e.g. parameterized class type declaration)
+      (_ordered_parameter_assignment
+       (data_type (simple_identifier) @verilog-ext-font-lock-port-connection-face)))
      ;; Interface signals (members)
      (expression
       (primary
@@ -381,7 +392,9 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
      (["(*" "*)"] @font-lock-constant-face)
      (attribute_instance
       (attr_spec (simple_identifier) @verilog-ext-font-lock-xilinx-attributes-face))
-     ;; Typedef class
+     ;; Typedefs
+     (type_declaration
+      (simple_identifier) @font-lock-constant-face)
      ("typedef" "class" (simple_identifier) @font-lock-constant-face)
      ;; Coverpoint label
      (cover_point
@@ -399,7 +412,18 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
    :feature 'keyword
    :language 'verilog
    `((["begin" "end" "this"] @verilog-ext-font-lock-grouping-keywords-face)
-     ([,@verilog-ts-keywords] @font-lock-keyword-face))
+     ([,@verilog-ts-keywords] @font-lock-keyword-face)
+     ;; INFO: Still not well implemented in the grammar (new as a method call without and with arguments)
+     (expression ; W/o args
+      (primary (simple_identifier) @font-lock-keyword-face)
+      (:match "^new$" @font-lock-keyword-face))
+     (subroutine_call ; With args
+      (tf_call (simple_identifier) @font-lock-keyword-face)
+      (:match "^new$" @font-lock-keyword-face))
+     (primary
+      (let_expression (simple_identifier) @font-lock-keyword-face)
+      (:match "^new$" @font-lock-keyword-face))
+     )
 
    :feature 'operator
    :language 'verilog
@@ -416,7 +440,7 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
      (["."] @verilog-ext-font-lock-punctuation-bold-face)
      (["(" ")"] @verilog-ext-font-lock-parenthesis-face)
      (["[" "]"] @verilog-ext-font-lock-brackets-face)
-     (["{" "}"] @verilog-ext-font-lock-curly-brackets-face)
+     (["{" "}"] @verilog-ext-font-lock-curly-braces-face)
      (["@" "#" "##"] @verilog-ext-font-lock-time-event-face))
 
    :feature 'directives-macros
@@ -459,27 +483,21 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
 
    :feature 'instance
    :language 'verilog
-   '((module_or_generate_item
-      (module_instantiation (simple_identifier) @verilog-ext-font-lock-module-face))
-     (module_or_generate_item
-      (program_instantiation
-       (program_identifier (simple_identifier) @verilog-ext-font-lock-module-face)))
-     (module_or_generate_item
-      (interface_instantiation
-       (interface_identifier (simple_identifier) @verilog-ext-font-lock-module-face)))
-     (hierarchical_instance
-      (name_of_instance
-       (instance_identifier (simple_identifier) @verilog-ext-font-lock-instance-face)))
-     (hierarchical_instance
-      (list_of_port_connections
-       (named_port_connection
-        (port_identifier (simple_identifier) @verilog-ext-font-lock-port-connection-face))))
+   '(;; Module names
+     (module_instantiation (simple_identifier) @verilog-ext-font-lock-module-face)
+     (program_instantiation
+      (program_identifier (simple_identifier) @verilog-ext-font-lock-module-face))
+     (interface_instantiation
+      (interface_identifier (simple_identifier) @verilog-ext-font-lock-module-face))
      (checker_instantiation ; Some module/interface instances might wrongly be detected as checkers
-      (checker_identifier (simple_identifier) @verilog-ext-font-lock-module-face)
-      (name_of_instance
-       (instance_identifier (simple_identifier) @verilog-ext-font-lock-instance-face)))
-     (checker_instantiation
-      (formal_port_identifier (simple_identifier) @verilog-ext-font-lock-port-connection-face))
+      (checker_identifier (simple_identifier) @verilog-ext-font-lock-module-face))
+     ;; Instance names
+     (name_of_instance
+      (instance_identifier (simple_identifier) @verilog-ext-font-lock-instance-face))
+     ;; Port names
+     (named_port_connection ; 'port_identifier standalone also matches port declarations of a module
+      (port_identifier (simple_identifier) @verilog-ext-font-lock-port-connection-face))
+     (formal_port_identifier (simple_identifier) @verilog-ext-font-lock-port-connection-face)
      )
 
    :feature 'types
@@ -531,9 +549,16 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
 
    :feature 'funcall
    :language 'verilog
+   '(;; System task/function
+     ((system_tf_identifier) @font-lock-builtin-face)
+     ;; Method calls (class name)
+     (method_call (simple_identifier) @verilog-ext-font-lock-dot-name-face)
+     )
+
+   :feature 'extra
+   :language 'verilog
    ;; System task/function
-   '(((system_tf_identifier) @font-lock-builtin-face)
-     ;; Method calls
+   '(;; Method calls (method name)
      (method_call_body
       (method_identifier
        (method_identifier (simple_identifier) @font-lock-doc-face))))
@@ -671,7 +696,7 @@ Return nil if there is no name or if NODE is not a defun node."
 
 (defvar verilog-ts-mode-syntax-table
   (let ((table (make-syntax-table)))
-    (modify-syntax-entry ?\\ "\\"      table)
+    (modify-syntax-entry ?\\ "\\"     table)
     (modify-syntax-entry ?+  "."      table)
     (modify-syntax-entry ?-  "."      table)
     (modify-syntax-entry ?=  "."      table)
@@ -701,8 +726,8 @@ Return nil if there is no name or if NODE is not a defun node."
     (setq-local treesit-font-lock-feature-list
                 '((comment string)
                   (keyword operator)
-                  (directives-macros types punctuation declaration definition)
-                  (all funcall instance)))
+                  (directives-macros types punctuation declaration definition all instance funcall)
+                  (extra)))
     (setq-local treesit-font-lock-settings verilog--treesit-settings)
     ;; Indent.
     (setq-local indent-line-function nil)
