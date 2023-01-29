@@ -11,11 +11,20 @@ else
     CMD="(ert-run-tests-batch-and-exit)"
 fi
 
-echo "Removing .elc files"
-find . -name "*.elc" -exec rm -v {} \;
+# Byte-compiling
+echo "####################"
+echo "## Byte-compiling ##"
+echo "####################"
+echo ""
+$PWD/.github/scripts/byte-compile.sh recompile
+echo ""
 
+# Run tests
+echo "#######################"
+echo "## Running ERT tests ##"
+echo "#######################"
+echo ""
 RC=
-echo "Running ERT tests..."
 emacs -Q -nw -batch \
       -L $PWD/tests \
       -l ert \
