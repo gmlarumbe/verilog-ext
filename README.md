@@ -185,12 +185,22 @@ Auto-configure various SystemVerilog language servers for `lsp-mode` and `eglot`
 - [svls](https://github.com/dalance/svls)
 - [veridian](https://github.com/vivekmalneedi/veridian)
 
+Make sure that Language Server binary is in the $PATH:
+```shell
+$ which svlangserver
+/usr/local/bin/svlangserver
+```
 
-Functions:
+Interactively:
+<kbd>M-x</kbd> `verilog-ext-lsp-set-server`<kbd>RET</kbd> `ve-svlangserver`
 
-* `verilog-ext-lsp-set-server`
-* `verilog-ext-eglot-set-server`
-
+Programatically:
+```elisp
+;; For `lsp-mode':
+(verilog-ext-lsp-set-server 've-svlangserver)
+;; For `eglot':
+(verilog-ext-eglot-set-server 've-svlangserver)
+```
 
 ## Linting ##
 Support via `flycheck` for the following linters:
