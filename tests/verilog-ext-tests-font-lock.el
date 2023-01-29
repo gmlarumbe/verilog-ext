@@ -33,7 +33,7 @@
 INFO: Makes sure that additional settings that might change specific font-lock
 are disabled for the .faceup generation.
 E.g: disables `fic-mode', `untabify-trailing-ws', 'outshine-mode' and the value
-of `verilog-align-typedef-regexp.
+of `verilog-align-typedef-regexp'.
 At some point tried with `with-temp-buffer' without success."
   (let ((verilog-align-typedef-regexp nil))
     (save-window-excursion

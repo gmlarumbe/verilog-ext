@@ -74,7 +74,7 @@ the same structure (point) as original buffer."
       (while (re-search-forward "//" (point-max) :noerror)
         (backward-char 2)
         (setq posA (point))
-        (setq posB (point-at-eol))
+        (setq posB (line-end-position))
         (setq num (- posB posA))
         (kill-line)
         (insert-char unicode-spc num))

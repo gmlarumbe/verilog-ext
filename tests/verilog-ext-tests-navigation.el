@@ -494,7 +494,7 @@ It did work locally though."
 
 (ert-deftest navigation::instance-at-point ()
   (let ((alist verilog-ext-test-navigation-instance-at-point)
-        file data)
+        file data block)
     (dolist (elm alist)
       (setq file (car elm))
       (setq data (cadr elm))

@@ -78,7 +78,7 @@
           ";")
   "type_t foo;
    type_t [10:0] foo;
-   type_t [10:0] foo = 'h0;")
+   type_t [10:0] foo = \\='h0;")
 (defconst verilog-ext-typedef-var-decl-multiple-re
   (concat "\\<\\(?1:" verilog-identifier-re "\\)\\>" verilog-ext-range-or-class-params-optional-re "\\s-+"  ; Var type
           "\\(?3:\\(" verilog-identifier-re "\\s-*,\\s-*\\)+\\(" verilog-identifier-re "\\s-*\\)\\)"                ; Var names
