@@ -651,6 +651,9 @@ If REF is non-nil show references instead."
 Used in ag/rg end of search hooks to conditionally set the xref marker stack.")
 (defvar verilog-ext-jump-to-parent-module-name nil)
 (defvar verilog-ext-jump-to-parent-module-dir nil)
+(defvar verilog-ext-jump-to-parent-trigger nil
+  "Variable to run the post ag/rg command hook only when the ag/rg search
+was triggered by `verilog-ext-jump-to-parent-module' command.")
 
 (defun verilog-ext-jump-to-parent-module ()
   "Find current module/interface instantiations via `ag'/`rg'.
@@ -682,6 +685,7 @@ after the search has been done."
            (executable-find "rg"))
       (let ((rg-extra-args '("-t" "verilog" "--pcre2" "--multiline" "--stats")))
         (setq verilog-ext-jump-to-parent-module-point-marker (point-marker))
+        (setq verilog-ext-jump-to-parent-trigger t)
         (ripgrep-regexp module-instance-pcre proj-dir rg-extra-args)))
      ;; Try ag
      ((and (string= verilog-ext-jump-to-parent-module-engine "ag")
@@ -691,6 +695,7 @@ after the search has been done."
         (dolist (extra-ag-arg extra-ag-args)
           (add-to-list 'ag-arguments extra-ag-arg :append))
         (setq verilog-ext-jump-to-parent-module-point-marker (point-marker))
+        (setq verilog-ext-jump-to-parent-trigger t)
         (ag-regexp module-instance-pcre proj-dir)))
      ;; Fallback
      (t
@@ -699,25 +704,27 @@ after the search has been done."
 (defun verilog-ext-navigation-ag-rg-hook ()
   "Jump to the first result and push xref marker if there were any matches.
 Kill the buffer if there is only one match."
-  (let ((module-name (propertize verilog-ext-jump-to-parent-module-name 'face '(:foreground "green")))
-        (dir (propertize verilog-ext-jump-to-parent-module-dir 'face '(:foreground "light blue")))
-        (num-matches))
-    (save-excursion
-      (goto-char (point-min))
-      (re-search-forward "^\\([0-9]+\\) matches\\s-*$" nil :noerror)
-      (setq num-matches (string-to-number (match-string-no-properties 1))))
-    (cond ((eq num-matches 1)
-           (xref-push-marker-stack verilog-ext-jump-to-parent-module-point-marker)
-           (next-error)
-           (kill-buffer (current-buffer))
-           (message "Jump to only match for [%s] @ %s" module-name dir))
-          ((> num-matches 1)
-           (xref-push-marker-stack verilog-ext-jump-to-parent-module-point-marker)
-           (next-error)
-           (message "Showing matches for [%s] @ %s" module-name dir))
-          (t
-           (kill-buffer (current-buffer))
-           (message "No matches found")))))
+  (when verilog-ext-jump-to-parent-trigger
+    (let ((module-name (propertize verilog-ext-jump-to-parent-module-name 'face '(:foreground "green")))
+          (dir (propertize verilog-ext-jump-to-parent-module-dir 'face '(:foreground "light blue")))
+          (num-matches))
+      (save-excursion
+        (goto-char (point-min))
+        (re-search-forward "^\\([0-9]+\\) matches\\s-*$" nil :noerror)
+        (setq num-matches (string-to-number (match-string-no-properties 1))))
+      (cond ((eq num-matches 1)
+             (xref-push-marker-stack verilog-ext-jump-to-parent-module-point-marker)
+             (next-error)
+             (kill-buffer (current-buffer))
+             (message "Jump to only match for [%s] @ %s" module-name dir))
+            ((> num-matches 1)
+             (xref-push-marker-stack verilog-ext-jump-to-parent-module-point-marker)
+             (next-error)
+             (message "Showing matches for [%s] @ %s" module-name dir))
+            (t
+             (kill-buffer (current-buffer))
+             (message "No matches found")))
+      (setq verilog-ext-jump-to-parent-trigger nil))))
 
 ;;; Hooks
 (defun verilog-ext-navigation-hook ()
