@@ -1,4 +1,4 @@
-[![Build Status](https://github.com/gmlarumbe/verilog-ext/workflows/CI/badge.svg)](https://github.com/gmlarumbe/verilog-ext/actions)
+[![Build Status](https://github.com/gmlarumbe/verilog-ext/workflows/ERT/badge.svg)](https://github.com/gmlarumbe/verilog-ext/actions)
 
 # verilog-ext.el - SystemVerilog Extensions for Emacs #
 
@@ -152,26 +152,22 @@ The package includes the major-mode `verilog-ts-mode` for syntax highligting and
 There is some WIP, e.g. Imenu or navigation functions.
 
 ## Syntax highlighting ##
-Font-lock based improved fontification.
-<table>
-<tr>
-<th>verilog-mode</th>
-<th>verilog-ext</th>
-<tr>
-<td>
-<img src="https://user-images.githubusercontent.com/51021955/208774001-01a164b4-bc16-4860-9bf2-1b2f4d60ef8e.gif" width=300 height=250>
-</td>
-<td>
-<img src="https://user-images.githubusercontent.com/51021955/208774894-a0f3159e-0f41-45db-be28-8a8706ad49ec.gif" width=300 height=250>
-</td>
-</tr>
-<table>
+Improved fontification via:
+
+  * Tree-sitter: requires Emacs 29
+  * Font-lock override
+
+<img src="https://user-images.githubusercontent.com/51021955/208774894-a0f3159e-0f41-45db-be28-8a8706ad49ec.gif" width=400 height=300>
+
+For face customization: <kbd>M-x</kbd> `customize-group` <kbd>RET</kbd> `verilog-ext-faces`
+
 
 ## Hierarchy extraction ##
 Extract hierarchy of module at current buffer via [Verilog-Perl](https://github.com/veripool/verilog-perl) `vhier`.
+
 Visualize with `outline-minor-mode` and `outshine`.
 
-<img src="https://user-images.githubusercontent.com/51021955/209574234-eda2d151-87b4-44db-8edd-e41e2e1b79d4.gif" width=500 height=400>
+<img src="https://user-images.githubusercontent.com/51021955/209574234-eda2d151-87b4-44db-8edd-e41e2e1b79d4.gif" width=400 height=300>
 
 Functions:
 
@@ -213,19 +209,14 @@ Functions:
 
 ## Imenu ##
 Support detection of instances and methods inside classes.
-<table>
-<tr>
-<th>Instances</th>
-<th>Methods</th>
-<tr>
-<td>
-<img src="https://user-images.githubusercontent.com/51021955/208779722-9b760d8d-796b-48cb-ad35-f95f1ec48786.gif" width=300 height=250>
-</td>
-<td>
-<img src="https://user-images.githubusercontent.com/51021955/208780855-52166bf0-5897-48d1-83e8-698d0b1d6269.gif" width=300 height=250>
-</td>
-</tr>
-<table>
+
+* Instances
+
+<img src="https://user-images.githubusercontent.com/51021955/208779722-9b760d8d-796b-48cb-ad35-f95f1ec48786.gif" width=400 height=300>
+
+* Methods
+
+<img src="https://user-images.githubusercontent.com/51021955/208780855-52166bf0-5897-48d1-83e8-698d0b1d6269.gif" width=400 height=300>
 
 * `imenu-list` is a recommended package to visualize different levels of nesting in the hierarchy.
 
@@ -362,4 +353,8 @@ $ .github/scripts/ert-tests.sh
 If there is a missing dependency, check the file `.github/scripts/setup-env.sh` used by GitHub Actions to configure your environment.
 
 
+## Other packages
+
+* [vhdl-ext](https://github.com/gmlarumbe/vhdl-ext): VHDL Extensions for Emacs
+  * Analog package to edit VHDL sources
 
