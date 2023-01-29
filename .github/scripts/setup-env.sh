@@ -46,7 +46,7 @@ echo "svlangserver path: $(which svlangserver)"
 echo "svlangserver version: $(svlangserver --version)"
 
 echo ""
-echo "Settin up tree-sitter"
+echo "Setting up tree-sitter"
 git clone https://github.com/tree-sitter/tree-sitter.git
 cd tree-sitter
 echo ""

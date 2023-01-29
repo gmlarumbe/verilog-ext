@@ -11,6 +11,8 @@ else
     CMD="(ert-run-tests-batch-and-exit)"
 fi
 
+echo "Removing .elc files"
+find . -name "*.elc" -exec rm -v {} \;
 
 RC=
 echo "Running ERT tests..."

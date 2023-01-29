@@ -504,9 +504,7 @@ It did work locally though."
           (if (cdr pos-type)
               (setq block (cdr pos-type))
             (setq block nil))
-          (if block
-              (should (string= (car (verilog-ext-instance-at-point)) block))
-            (should (equal block nil))))))))
+          (should (string= (car (verilog-ext-instance-at-point)) block)))))))
 
 
 
