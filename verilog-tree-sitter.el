@@ -31,6 +31,13 @@
 (require 'treesit)
 
 
+(defcustom verilog-ts-indent-level 4
+  "Tree-sitter indentation of Verilog statements with respect to containing block."
+  :group 'verilog-ext
+  :type 'integer)
+(put 'verilog-ts-indent-level 'safe-local-variable #'integerp)
+
+
 ;;; Utils
 ;;;; Auxiliary
 (defun verilog-ts--node-at-point ()
@@ -618,29 +625,29 @@ Always return non-nil."
      ((and (node-is "comment")
            (parent-is "list_of_port_connections"))
       parent-bol 0)
-     ((node-is "comment") parent-bol 4)
+     ((node-is "comment") parent-bol ,verilog-ts-indent-level)
      ;; Procedural
-     ((node-is "statement_or_null") parent-bol 4)
-     ((node-is "case_item") parent-bol 4)
-     ((node-is "block_item_declaration") parent-bol 4)     ; Procedural local variables declaration
-     ((node-is "tf_item_declaration") parent-bol 4)        ; Procedural local variables in tasks declaration
-     ((node-is "function_statement_or_null") parent-bol 4) ; Procedural statement in a function
-     ((node-is "super") parent-bol 4)
+     ((node-is "statement_or_null") parent-bol ,verilog-ts-indent-level)
+     ((node-is "case_item") parent-bol ,verilog-ts-indent-level)
+     ((node-is "block_item_declaration") parent-bol ,verilog-ts-indent-level)     ; Procedural local variables declaration
+     ((node-is "tf_item_declaration") parent-bol ,verilog-ts-indent-level)        ; Procedural local variables in tasks declaration
+     ((node-is "function_statement_or_null") parent-bol ,verilog-ts-indent-level) ; Procedural statement in a function
+     ((node-is "super") parent-bol ,verilog-ts-indent-level)
      ;; ANSI Port/parameter declaration
-     ((node-is "ansi_port_declaration") parent-bol 4)
-     ((node-is "parameter_port_declaration") parent-bol 4)
-     ((node-is "module_or_generate_item") parent-bol 4)
-     ((node-is "interface_or_generate_item") parent-bol 4)
-     ((node-is "list_of_param_assignments") parent-bol 4) ; First instance parameter (without parameter keyword)
-     ((node-is "parameter_port_declaration") parent-bol 4) ; First instance parameter (without parameter keyword)
+     ((node-is "ansi_port_declaration") parent-bol ,verilog-ts-indent-level)
+     ((node-is "parameter_port_declaration") parent-bol ,verilog-ts-indent-level)
+     ((node-is "module_or_generate_item") parent-bol ,verilog-ts-indent-level)
+     ((node-is "interface_or_generate_item") parent-bol ,verilog-ts-indent-level)
+     ((node-is "list_of_param_assignments") parent-bol ,verilog-ts-indent-level) ; First instance parameter (without parameter keyword)
+     ((node-is "parameter_port_declaration") parent-bol ,verilog-ts-indent-level) ; First instance parameter (without parameter keyword)
      ;; import packages
      ((and (node-is "package_or_generate_item_declaration")
            (parent-is "package_declaration"))
-      parent-bol 4)
+      parent-bol ,verilog-ts-indent-level)
      ;; Instance port/parameters
-     ((node-is "list_of_port_connections") parent-bol 4)      ; First port connection
+     ((node-is "list_of_port_connections") parent-bol ,verilog-ts-indent-level)      ; First port connection
      ((node-is "named_port_connection") parent-bol 0)         ; Rest of ports with respect to first port
-     ((node-is "list_of_parameter_assignments") parent-bol 4) ; First instance parameter
+     ((node-is "list_of_parameter_assignments") parent-bol ,verilog-ts-indent-level) ; First instance parameter
      ((node-is "named_parameter_assignment") parent-bol 0)    ; Rest of instance parameters with respect to first parameter
      ;; Closing
      ((or (node-is "end")
@@ -659,16 +666,16 @@ Always return non-nil."
            verilog-ts--uvm-field-macro)
       parent-bol 8)
      ;; Others
-     ((node-is "class_item") parent-bol 4)
-     ((node-is "timeunits_declaration") parent-bol 4)
-     ((node-is "tf_port_item1") grand-parent 4)       ; Task ports in multiple lines
-     ((node-is "tf_port_list") parent 4)              ; Task ports in multiple lines (first line)
-     ((node-is "constraint_block_item") parent-bol 4)
-     ((node-is "enum_name_declaration") parent-bol 4)
-     ((node-is "generate_region") parent-bol 4)
+     ((node-is "class_item") parent-bol ,verilog-ts-indent-level)
+     ((node-is "timeunits_declaration") parent-bol ,verilog-ts-indent-level)
+     ((node-is "tf_port_item1") grand-parent ,verilog-ts-indent-level)       ; Task ports in multiple lines
+     ((node-is "tf_port_list") parent ,verilog-ts-indent-level)              ; Task ports in multiple lines (first line)
+     ((node-is "constraint_block_item") parent-bol ,verilog-ts-indent-level)
+     ((node-is "enum_name_declaration") parent-bol ,verilog-ts-indent-level)
+     ((node-is "generate_region") parent-bol ,verilog-ts-indent-level)
      ((node-is "hierarchical_instance") parent-bol 0) ; Instance name in separate line
      ;; Blank lines
-     (verilog-ts--blank-line parent-bol 4)
+     (verilog-ts--blank-line parent-bol ,verilog-ts-indent-level)
      )))
 
 
