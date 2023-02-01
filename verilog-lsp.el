@@ -108,6 +108,46 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
 
 (defvar verilog-ext-eglot-default-server 've-svlangserver)
 
+(defun verilog-ext-eglot-svlangserver-configuration ()
+  "Configure settings for 'svlangserver with `eglot'.
+For the time being, reuse 'lsp-clients-svlangserver* variables from `lsp-verilog'."
+  (setq eglot-workspace-configuration
+        `((:systemverilog
+           (:includeIndexing ,lsp-clients-svlangserver-includeIndexing)
+           (:excludeIndexing ,lsp-clients-svlangserver-excludeIndexing)
+           (:defines ,lsp-clients-svlangserver-defines)
+           (:launchConfiguration ,lsp-clients-svlangserver-launchConfiguration)
+           (:lintOnUnsaved ,lsp-clients-svlangserver-lintOnUnsaved)
+           (:formatCommand ,lsp-clients-svlangserver-formatCommand)
+           (:disableCompletionProvider ,lsp-clients-svlangserver-disableCompletionProvider)
+           (:disableHoverProvider ,lsp-clients-svlangserver-disableHoverProvider)
+           (:disableSignatureHelpProvider ,lsp-clients-svlangserver-disableSignatureHelpProvider)
+           (:disableLinting ,lsp-clients-svlangserver-disableLinting)))))
+
+(defun verilog-ext-eglot-svlangserver-command (command &optional args)
+  "Execute 'svlangserver COMMAND with ARGS with `eglot'."
+  (let ((eglot-server (eglot-current-server))
+        (verilog-mode-ls (car (alist-get 'verilog-mode eglot-server-programs)))
+        (verilog-ts-mode-ls (car (alist-get 'verilog-ts-mode eglot-server-programs))))
+    (unless eglot-server
+      (user-error "Couldn't find (eglot-current-server), is eglot enabled?"))
+    (unless (and (string= verilog-mode-ls "svlangserver")
+                 (string= verilog-ts-mode-ls "svlangserver"))
+      (user-error "ve-svlangserver not configured as current server for eglot"))
+    (eglot-execute-command (eglot-current-server) command args)
+    (message "Ran svlangserver command: %s" command)))
+
+(defun verilog-ext-eglot-svlangserver-build-index ()
+  "Execute command to build index with 'svlangserver."
+  (interactive)
+  (verilog-ext-eglot-svlangserver-command "systemverilog.build_index"))
+
+(defun verilog-ext-eglot-svlangserver-report-hierarchy ()
+  "Execute command to report hierarchy of current buffer module with 'svlangserver."
+  (interactive)
+  (verilog-ext-eglot-svlangserver-command "systemverilog.report_hierarchy" (vector (verilog-ext-select-file-module))))
+
+
 (defun verilog-ext-eglot-set-server (server-id)
   "Configure Verilog for `eglot'.
 Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
@@ -125,6 +165,11 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
         (if (listp cmd)
             (push (append (list mode) cmd) eglot-server-programs)
           (push (list mode cmd) eglot-server-programs)))
+      ;; Additional settings depending on chosen server-id
+      (when (equal server-id 've-svlangserver)
+        (dolist (hook '(verilog-mode-hook verilog-ts-mode-hook))
+          (add-hook hook #'verilog-ext-eglot-svlangserver-configuration)))
+      ;; Some reporting
       (message "Set eglot SV server: %s" server-id))))
 
 

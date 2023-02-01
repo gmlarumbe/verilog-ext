@@ -29,7 +29,13 @@
 
 
 (require 'treesit)
+(require 'verilog-mode)
 
+
+(defcustom verilog-ts-mode-hook nil
+  "Hook run after Verilog Tree-sitter mode is loaded."
+  :type 'hook
+  :group 'verilog-ext)
 
 (defcustom verilog-ts-indent-level 4
   "Tree-sitter indentation of Verilog statements with respect to containing block."
