@@ -50,27 +50,31 @@ Optional ARG sets number of words to kill."
 
 
 ;;;; Indentation
-(defun verilog-ext-indent-block-at-point ()
-  "Indent current block at point.
+(defun verilog-ext-indent-region (start end &optional column)
+  "Wrapper for `indent-region'.
 Prevents indentation issues with compiler directives with a modified syntax
 table."
-  (interactive)
-  (let ((table (make-syntax-table verilog-mode-syntax-table))
-        (data (verilog-ext-block-at-point))
-        start-pos end-pos block name)
+  (let ((table (make-syntax-table verilog-mode-syntax-table)))
     (modify-syntax-entry ?` "w" table)
     (with-syntax-table table
-      (unless data
-        (user-error "Not inside a block"))
-      (save-excursion
-        (setq block (alist-get 'type data))
-        (setq name (alist-get 'name data))
-        (goto-char (alist-get 'beg-point data))
-        (setq start-pos (line-beginning-position))
-        (goto-char (alist-get 'end-point data))
-        (setq end-pos (line-end-position))
-        (indent-region start-pos end-pos)
-        (message "Indented %s : %s" block name)))))
+      (indent-region start end column))))
+
+(defun verilog-ext-indent-block-at-point ()
+  "Indent current block at point."
+  (interactive)
+  (let ((data (verilog-ext-block-at-point))
+        start-pos end-pos block name)
+    (unless data
+      (user-error "Not inside a block"))
+    (save-excursion
+      (setq block (alist-get 'type data))
+      (setq name (alist-get 'name data))
+      (goto-char (alist-get 'beg-point data))
+      (setq start-pos (line-beginning-position))
+      (goto-char (alist-get 'end-point data))
+      (setq end-pos (line-end-position))
+      (verilog-ext-indent-region start-pos end-pos)
+      (message "Indented %s : %s" block name))))
 
 ;;;; Port connections
 (defun verilog-ext-clean-port-blanks ()

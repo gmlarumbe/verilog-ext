@@ -72,8 +72,7 @@
 (defun verilog-ext-module-at-point-indent ()
   "Indent current module."
   (interactive)
-  (let ((table (make-syntax-table verilog-mode-syntax-table))
-        (case-fold-search nil)
+  (let ((case-fold-search nil)
         (current-ids (verilog-ext-instance-at-point))
         current-module beg end)
     (unless current-ids
@@ -86,9 +85,7 @@
       (goto-char (match-end 0))
       (end-of-line)
       (setq end (point)))
-    (modify-syntax-entry ?` "w" table)
-    (with-syntax-table table
-      (indent-region beg end))
+    (verilog-ext-indent-region beg end)
     (message "Indented %s" current-module)))
 
 (defun verilog-ext-module-at-point-beautify ()
@@ -108,16 +105,13 @@
 - Beautify every instantiated module
 - Untabify and delete trailing whitespace"
   (interactive)
-  (let ((table (make-syntax-table verilog-mode-syntax-table)))
-    (modify-syntax-entry ?` "w" table)
-    (with-syntax-table table
-      (save-excursion
-        (indent-region (point-min) (point-max))
-        (goto-char (point-min))
-        (while (verilog-ext-find-module-instance-fwd)
-          (verilog-ext-module-at-point-beautify))
-        (untabify (point-min) (point-max))
-        (delete-trailing-whitespace (point-min) (point-max))))))
+  (save-excursion
+    (verilog-ext-indent-region (point-min) (point-max))
+    (goto-char (point-min))
+    (while (verilog-ext-find-module-instance-fwd)
+      (verilog-ext-module-at-point-beautify))
+    (untabify (point-min) (point-max))
+    (delete-trailing-whitespace (point-min) (point-max))))
 
 (defun verilog-ext-beautify-files (files)
   "Beautify Verilog FILES.

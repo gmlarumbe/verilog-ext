@@ -80,8 +80,8 @@ module axi_demux #(
     // pass through if only one master port
     if (NoMstPorts == 32'h1) begin : gen_no_demux
         spill_register #(
-            .T      ( aw_chan_t  ),
-            .Bypass ( ~SpillAw   )
+            .T       ( aw_chan_t  ),
+            .Bypass  ( ~SpillAw   )
         ) i_aw_spill_reg (
             .clk_i   ( clk_i                    ),
             .rst_ni  ( rst_ni                   ),
@@ -93,8 +93,8 @@ module axi_demux #(
             .data_o  ( mst_reqs_o[0].aw         )
         );
         spill_register #(
-            .T      ( w_chan_t  ),
-            .Bypass ( ~SpillW   )
+            .T       ( w_chan_t  ),
+            .Bypass  ( ~SpillW   )
         ) i_w_spill_reg (
             .clk_i   ( clk_i                   ),
             .rst_ni  ( rst_ni                  ),
@@ -106,8 +106,8 @@ module axi_demux #(
             .data_o  ( mst_reqs_o[0].w         )
         );
         spill_register #(
-            .T      ( b_chan_t ),
-            .Bypass ( ~SpillB      )
+            .T       ( b_chan_t ),
+            .Bypass  ( ~SpillB      )
         ) i_b_spill_reg (
             .clk_i   ( clk_i                  ),
             .rst_ni  ( rst_ni                 ),
@@ -119,8 +119,8 @@ module axi_demux #(
             .data_o  ( slv_resp_o.b           )
         );
         spill_register #(
-            .T      ( ar_chan_t  ),
-            .Bypass ( ~SpillAr   )
+            .T       ( ar_chan_t  ),
+            .Bypass  ( ~SpillAr   )
         ) i_ar_spill_reg (
             .clk_i   ( clk_i                    ),
             .rst_ni  ( rst_ni                   ),
@@ -132,8 +132,8 @@ module axi_demux #(
             .data_o  ( mst_reqs_o[0].ar         )
         );
         spill_register #(
-            .T      ( r_chan_t ),
-            .Bypass ( ~SpillR      )
+            .T       ( r_chan_t ),
+            .Bypass  ( ~SpillR      )
         ) i_r_spill_reg (
             .clk_i   ( clk_i                  ),
             .rst_ni  ( rst_ni                 ),
@@ -227,8 +227,8 @@ module axi_demux #(
         //--------------------------------------
         // spill register at the channel input
         spill_register #(
-            .T      ( aw_chan_t          ),
-            .Bypass ( ~SpillAw           ) // because module param indicates if we want a spill reg
+            .T       ( aw_chan_t          ),
+            .Bypass  ( ~SpillAw           ) // because module param indicates if we want a spill reg
         ) i_aw_channel_spill_reg (
             .clk_i   ( clk_i              ),
             .rst_ni  ( rst_ni             ),
@@ -240,8 +240,8 @@ module axi_demux #(
             .data_o  ( slv_aw_chan        )
         );
         spill_register #(
-            .T      ( select_t           ),
-            .Bypass ( ~SpillAw           ) // because module param indicates if we want a spill reg
+            .T       ( select_t           ),
+            .Bypass  ( ~SpillAw           ) // because module param indicates if we want a spill reg
         ) i_aw_select_spill_reg (
             .clk_i   ( clk_i              ),
             .rst_ni  ( rst_ni             ),
@@ -377,8 +377,8 @@ module axi_demux #(
         //  W Channel
         //--------------------------------------
         spill_register #(
-            .T      ( w_chan_t ),
-            .Bypass ( ~SpillW  )
+            .T       ( w_chan_t ),
+            .Bypass  ( ~SpillW  )
         ) i_w_spill_reg(
             .clk_i   ( clk_i              ),
             .rst_ni  ( rst_ni             ),
@@ -395,8 +395,8 @@ module axi_demux #(
         //--------------------------------------
         // optional spill register
         spill_register #(
-            .T      ( b_chan_t ),
-            .Bypass ( ~SpillB  )
+            .T       ( b_chan_t ),
+            .Bypass  ( ~SpillB  )
         ) i_b_spill_reg (
             .clk_i   ( clk_i              ),
             .rst_ni  ( rst_ni             ),
@@ -410,22 +410,22 @@ module axi_demux #(
 
         // Arbitration of the different B responses
         rr_arb_tree #(
-            .NumIn     ( NoMstPorts ),
-            .DataType  ( b_chan_t   ),
-            .AxiVldRdy ( 1'b1       ),
-            .LockIn    ( 1'b1       )
+            .NumIn    ( NoMstPorts ),
+            .DataType ( b_chan_t   ),
+            .AxiVldRdy( 1'b1       ),
+            .LockIn   ( 1'b1       )
         ) i_b_mux (
-            .clk_i   ( clk_i         ),
-            .rst_ni  ( rst_ni        ),
-            .flush_i ( 1'b0          ),
-            .rr_i    ( '0            ),
-            .req_i   ( mst_b_valids  ),
-            .gnt_o   ( mst_b_readies ),
-            .data_i  ( mst_b_chans   ),
-            .gnt_i   ( slv_b_ready   ),
-            .req_o   ( slv_b_valid   ),
-            .data_o  ( slv_b_chan    ),
-            .idx_o   (               )
+            .clk_i  ( clk_i         ),
+            .rst_ni ( rst_ni        ),
+            .flush_i( 1'b0          ),
+            .rr_i   ( '0            ),
+            .req_i  ( mst_b_valids  ),
+            .gnt_o  ( mst_b_readies ),
+            .data_i ( mst_b_chans   ),
+            .gnt_i  ( slv_b_ready   ),
+            .req_o  ( slv_b_valid   ),
+            .data_o ( slv_b_chan    ),
+            .idx_o  (               )
         );
 
         //--------------------------------------
@@ -434,8 +434,8 @@ module axi_demux #(
         ar_chan_t slv_ar_chan;
         select_t  slv_ar_select;
         spill_register #(
-            .T      ( ar_chan_t          ),
-            .Bypass ( ~SpillAr           )
+            .T       ( ar_chan_t          ),
+            .Bypass  ( ~SpillAr           )
         ) i_ar_chan_spill_reg (
             .clk_i   ( clk_i              ),
             .rst_ni  ( rst_ni             ),
@@ -447,8 +447,8 @@ module axi_demux #(
             .data_o  ( slv_ar_chan        )
         );
         spill_register #(
-            .T      ( select_t           ),
-            .Bypass ( ~SpillAr           )
+            .T       ( select_t           ),
+            .Bypass  ( ~SpillAr           )
         ) i_ar_sel_spill_reg (
             .clk_i   ( clk_i              ),
             .rst_ni  ( rst_ni             ),
@@ -547,8 +547,8 @@ module axi_demux #(
         //--------------------------------------
         // optional spill register
         spill_register #(
-            .T      ( r_chan_t ),
-            .Bypass ( ~SpillR  )
+            .T       ( r_chan_t ),
+            .Bypass  ( ~SpillR  )
         ) i_r_spill_reg (
             .clk_i   ( clk_i              ),
             .rst_ni  ( rst_ni             ),
@@ -562,22 +562,22 @@ module axi_demux #(
 
         // Arbitration of the different r responses
         rr_arb_tree #(
-            .NumIn     ( NoMstPorts ),
-            .DataType  ( r_chan_t   ),
-            .AxiVldRdy ( 1'b1       ),
-            .LockIn    ( 1'b1       )
+            .NumIn    ( NoMstPorts ),
+            .DataType ( r_chan_t   ),
+            .AxiVldRdy( 1'b1       ),
+            .LockIn   ( 1'b1       )
         ) i_r_mux (
-            .clk_i   ( clk_i         ),
-            .rst_ni  ( rst_ni        ),
-            .flush_i ( 1'b0          ),
-            .rr_i    ( '0            ),
-            .req_i   ( mst_r_valids  ),
-            .gnt_o   ( mst_r_readies ),
-            .data_i  ( mst_r_chans   ),
-            .gnt_i   ( slv_r_ready   ),
-            .req_o   ( slv_r_valid   ),
-            .data_o  ( slv_r_chan    ),
-            .idx_o   (               )
+            .clk_i  ( clk_i         ),
+            .rst_ni ( rst_ni        ),
+            .flush_i( 1'b0          ),
+            .rr_i   ( '0            ),
+            .req_i  ( mst_r_valids  ),
+            .gnt_o  ( mst_r_readies ),
+            .data_i ( mst_r_chans   ),
+            .gnt_i  ( slv_r_ready   ),
+            .req_o  ( slv_r_valid   ),
+            .data_o ( slv_r_chan    ),
+            .idx_o  (               )
         );
 
         assign ar_ready = ar_valid & mst_resps_i[slv_ar_select].ar_ready;
@@ -862,24 +862,24 @@ module axi_demux_intf #(
     end
 
     axi_demux #(
-        .AxiIdWidth  ( AXI_ID_WIDTH  ), // ID Width
-        .AtopSupport ( ATOP_SUPPORT  ),
-        .aw_chan_t   (  aw_chan_t    ), // AW Channel Type
-        .w_chan_t    (   w_chan_t    ), //  W Channel Type
-        .b_chan_t    (   b_chan_t    ), //  B Channel Type
-        .ar_chan_t   (  ar_chan_t    ), // AR Channel Type
-        .r_chan_t    (   r_chan_t    ), //  R Channel Type
-        .axi_req_t   (  axi_req_t    ),
-        .axi_resp_t  ( axi_resp_t    ),
-        .NoMstPorts  ( NO_MST_PORTS  ),
-        .MaxTrans    ( MAX_TRANS     ),
-        .AxiLookBits ( AXI_LOOK_BITS ),
-        .UniqueIds   ( UNIQUE_IDS    ),
-        .SpillAw     ( SPILL_AW      ),
-        .SpillW      ( SPILL_W       ),
-        .SpillB      ( SPILL_B       ),
-        .SpillAr     ( SPILL_AR      ),
-        .SpillR      ( SPILL_R       )
+        .AxiIdWidth     ( AXI_ID_WIDTH  ), // ID Width
+        .AtopSupport    ( ATOP_SUPPORT  ),
+        .aw_chan_t      (  aw_chan_t    ), // AW Channel Type
+        .w_chan_t       (   w_chan_t    ), //  W Channel Type
+        .b_chan_t       (   b_chan_t    ), //  B Channel Type
+        .ar_chan_t      (  ar_chan_t    ), // AR Channel Type
+        .r_chan_t       (   r_chan_t    ), //  R Channel Type
+        .axi_req_t      (  axi_req_t    ),
+        .axi_resp_t     ( axi_resp_t    ),
+        .NoMstPorts     ( NO_MST_PORTS  ),
+        .MaxTrans       ( MAX_TRANS     ),
+        .AxiLookBits    ( AXI_LOOK_BITS ),
+        .UniqueIds      ( UNIQUE_IDS    ),
+        .SpillAw        ( SPILL_AW      ),
+        .SpillW         ( SPILL_W       ),
+        .SpillB         ( SPILL_B       ),
+        .SpillAr        ( SPILL_AR      ),
+        .SpillR         ( SPILL_R       )
     ) i_axi_demux (
         .clk_i,   // Clock
         .rst_ni,  // Asynchronous reset active low

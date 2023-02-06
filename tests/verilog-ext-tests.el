@@ -53,6 +53,7 @@
 (defvar verilog-ext-tests-examples-dir (verilog-ext-path-join verilog-ext-tests-test-dir "examples"))
 (defvar verilog-ext-tests-faceup-dir (verilog-ext-path-join verilog-ext-tests-test-dir "examples/faceup"))
 (defvar verilog-ext-tests-beautify-dir (verilog-ext-path-join verilog-ext-tests-test-dir "examples/beautify"))
+(defvar verilog-ext-tests-indent-dir (verilog-ext-path-join verilog-ext-tests-test-dir "examples/indent"))
 
 (unless (member verilog-ext-tests-test-dir load-path)
   (add-to-list 'load-path verilog-ext-tests-test-dir))
@@ -62,6 +63,7 @@
 (require 'verilog-ext-tests-font-lock)
 (require 'verilog-ext-tests-utils)
 (require 'verilog-ext-tests-beautify)
+(require 'verilog-ext-tests-indent)
 
 (message "Emacs version: %s" emacs-version)
 (if (< emacs-major-version 29)

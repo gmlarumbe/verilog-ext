@@ -3,3 +3,5 @@ gtags.files
 GTAGS
 GPATH
 GRTAGS
+
+tests/examples/indent/dump

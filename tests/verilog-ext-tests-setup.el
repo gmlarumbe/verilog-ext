@@ -112,7 +112,8 @@
   (setq verilog-auto-wire-comment             nil)
   (setq verilog-minimum-comment-distance        1) ; (default 10) Only applies to AUTOs, called in `verilog-set-auto-endcomments'
   ;; Alignment
-  (setq verilog-align-assign-expr t))
+  (setq verilog-align-assign-expr t)
+  (setq verilog-align-typedef-regexp (concat "\\<" verilog-identifier-re "_\\(t\\|if\\|vif\\)\\>")))
 
 
 ;;;; Install package
