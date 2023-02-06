@@ -353,14 +353,21 @@ For new functionality add new ERT tests if possible.
 
 ## ERT Tests setup ###
 
-To run the ERT test suite change directory to the `verilog-ext` root and run the `ert-tests.sh` script:
+To run the whole ERT test suite change directory to the `verilog-ext` root and run the `test` target:
 
 ```shell
 $ cd ~/.emacs.d/verilog-ext
-$ .github/scripts/ert-tests.sh
+$ make test
 ```
 
-If there is a missing dependency, check the file `.github/scripts/setup-env.sh` used by GitHub Actions to configure your environment.
+To run a subset of tests (e.g. navigation):
+
+```shell
+$ cd ~/.emacs.d/verilog-ext
+$ tests/scripts/ert-tests.sh run_tests navigation::
+```
+
+If there is a missing dependency, check the file `tests/scripts/setup-env.sh` used by GitHub Actions to configure your environment.
 
 
 ## Other packages

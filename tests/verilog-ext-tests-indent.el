@@ -67,10 +67,12 @@
           (verilog-ext-test-indent-buffer file tree-sitter))))))
 
 (defun verilog-ext-test-indent-file (file &optional tree-sitter)
-  (let* ((filename-indent (verilog-ext-path-join verilog-ext-tests-examples-dir file))
+  (let* ((verbose nil)
+         (filename-indent (verilog-ext-path-join verilog-ext-tests-examples-dir file))
          (dump-file (verilog-ext-path-join verilog-ext-test-indent-dump-dir
                                            (concat (file-name-nondirectory filename-indent) ".dump"))))
-    (message "Indenting %s..." file)
+    (when verbose
+      (message "Indenting %s..." file))
     (cl-letf (((symbol-function 'message)
                (lambda (FORMAT-STRING &rest ARGS)
                  nil))) ; Mock `message' to silence all the indentation reporting
@@ -80,11 +82,13 @@
 (defun verilog-ext-test-indent-compare (file &optional dump)
   "Compare original and indented versions of FILE.
 Expects a file.sv in the examples dir and its indented version file.sv.indent in indent dir."
-  (let* ((filename-indent-golden (verilog-ext-path-join verilog-ext-tests-indent-dir (concat file ".indent")))
+  (let* ((verbose nil)
+         (filename-indent-golden (verilog-ext-path-join verilog-ext-tests-indent-dir (concat file ".indent")))
          (filename-indent (verilog-ext-path-join verilog-ext-tests-examples-dir file))
          (dump-file (verilog-ext-path-join verilog-ext-test-indent-dump-dir
                                            (concat (file-name-nondirectory filename-indent) ".dump"))))
-    (message "Comparing %s" file)
+    (when verbose
+      (message "Comparing %s" file))
     (verilog-ext-test-indent-file file)
     ;; Comparison
     (string= (with-temp-buffer
