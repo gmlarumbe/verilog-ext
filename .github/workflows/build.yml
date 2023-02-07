@@ -30,8 +30,8 @@ jobs:
       - name: Install binaries
         run: |
           cd $GITHUB_WORKSPACE
-          tests/scripts/setup-env.sh
-          tests/scripts/install-ts-grammar.sh
+          test/scripts/setup-env.sh
+          test/scripts/install-ts-grammar.sh
 
       - name: Run ERT tests
         run: |

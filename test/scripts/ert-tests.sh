@@ -7,7 +7,7 @@
 # * Utils
 run_elisp_cmd() {
     emacs -Q -nw -batch \
-          -L $PWD/tests \
+          -L $PWD/test \
           -l ert \
           -l verilog-ext-tests-setup \
           -l verilog-ext-tests \

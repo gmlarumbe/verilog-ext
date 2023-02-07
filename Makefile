@@ -1,4 +1,4 @@
-ERT_TESTS=tests/scripts/ert-tests.sh
+ERT_TESTS=test/scripts/ert-tests.sh
 
 all: test
 

@@ -75,6 +75,7 @@ At some point tried with `with-temp-buffer' without success."
 (faceup-defexplainer verilog-ext-test-font-lock-test-file)
 
 (ert-deftest font-lock::generic ()
+  (setq faceup-test-explain t)
   (should (verilog-ext-test-font-lock-test-file "axi_demux.sv"))
   (should (verilog-ext-test-font-lock-test-file "axi_test.sv"))
   (should (verilog-ext-test-font-lock-test-file "instances.sv"))
