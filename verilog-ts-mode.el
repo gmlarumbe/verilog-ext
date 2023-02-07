@@ -1,4 +1,4 @@
-;;; verilog-tree-sitter.el --- Verilog Tree-sitter  -*- lexical-binding: t -*-
+;;; verilog-ts-mode.el --- Verilog Tree-Sitter Mode  -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2022-2023 Gonzalo Larumbe
 
@@ -6,7 +6,7 @@
 ;; URL: https://github.com/gmlarumbe/verilog-ext
 ;; Version: 0.0.0
 ;; Keywords: Verilog, IDE, Tools
-;; Package-Requires: ((emacs "28.1"))
+;; Package-Requires: ((emacs "29"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -23,13 +23,14 @@
 
 ;;; Commentary:
 
-;; Verilog Tree-sitter
+;; Verilog Tree-sitter Mode
 
 ;;; Code:
 
 
 (require 'treesit)
 (require 'verilog-mode)
+(require 'verilog-ext)
 
 
 (defcustom verilog-ts-mode-hook nil
@@ -759,7 +760,7 @@ Return nil if there is no name or if NODE is not a defun node."
 
 
 ;;; Provide
-(provide 'verilog-tree-sitter)
+(provide 'verilog-ts-mode)
 
-;;; verilog-tree-sitter.el ends here
+;;; verilog-ts-mode.el ends here
 

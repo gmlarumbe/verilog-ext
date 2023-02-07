@@ -5,3 +5,4 @@ GPATH
 GRTAGS
 
 tests/examples/indent/dump
+tests/examples/beautify/dump

@@ -17,6 +17,7 @@ run_elisp_cmd() {
 clean() {
     echo "Removing .elc files"
     find . -name "*.elc" -exec rm -v {} \;
+    find ../../build/verilog-ext -name "*.elc" -exec rm -v {} \;
     echo ""
 }
 
@@ -56,6 +57,11 @@ run_tests () {
     RC=$?
     echo "Exiting with return code $RC"
     return $RC
+}
+
+recompile_run () {
+    recompile
+    run_tests $1
 }
 
 # Main

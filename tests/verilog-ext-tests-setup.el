@@ -119,8 +119,11 @@
 ;;;; Install package
 (message "Installing and setting up verilog-ext")
 (use-package verilog-ext
-  :straight (:host github :repo "gmlarumbe/verilog-ext"))
-
+  :straight (:host github :repo "gmlarumbe/verilog-ext")
+  :after verilog-mode
+  :demand)
+(verilog-ext-mode-setup)
+(add-hook 'verilog-mode-hook #'verilog-ext-mode)
 
 
 (provide 'verilog-ext-tests-setup)
