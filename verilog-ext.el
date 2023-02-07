@@ -4,7 +4,7 @@
 
 ;; Author: Gonzalo Larumbe <gonzalomlarumbe@gmail.com>
 ;; URL: https://github.com/gmlarumbe/verilog-ext
-;; Version: 0.0.0
+;; Version: 0.1.0
 ;; Keywords: Verilog, IDE, Tools
 ;; Package-Requires: ((emacs "28.1") (verilog-mode "2022.12.18.181110314") (eglot "1.9") (lsp-mode "8.0.1") (ag "0.48") (ripgrep "0.4.0") (ggtags "0.9.0") (hydra "0.15.0") (apheleia "3.1") (yasnippet "0.14.0") (company "0.9.13") (flycheck "33-cvs") (imenu-list "0.9") (outshine "3.1-pre"))
 
@@ -2734,6 +2734,7 @@ endmodule // tb_<module_name>
 ;;
 ;; Search based fontification:
 ;; - https://www.gnu.org/software/emacs/manual/html_node/elisp/Search_002dbased-Fontification.html
+
 ;;;; Faces
 (defgroup verilog-ext-faces nil
   "Verilog-ext faces."
@@ -3960,54 +3961,52 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
   ;; Flycheck
   (verilog-ext-flycheck-setup)
   ;; Lsp
-  (verilog-ext-lsp-setup))
+  (verilog-ext-lsp-setup)
+  (verilog-ext-lsp-set-server verilog-ext-lsp-mode-default-server)
+  (verilog-ext-eglot-set-server verilog-ext-eglot-default-server))
 
 ;;;###autoload
 (define-minor-mode verilog-ext-mode
   "Minor mode for editing SystemVerilog files.
 
 \\{verilog-ext-mode-map}"
-  :lighter " VerilogX"
+  :lighter " vX"
   :global nil
   ;; Update list of open buffers/directories (Verilog AUTO, flycheck)
-  (verilog-ext-scan-buffer-modules)
-  (verilog-ext-update-buffer-and-dir-list)
-  (setq verilog-library-directories verilog-ext-dir-list)
-  (setq verilog-ext-flycheck-verilator-include-path verilog-ext-dir-list)
-  (add-hook 'kill-buffer-hook #'verilog-ext-kill-buffer-hook nil :local)
-  ;; Editing minor modes
-  (verilog-ext-block-end-comments-to-names-mode)
-  (verilog-ext-time-stamp-mode)
-  ;; `verilog-mode'-only customization (exclude `verilog-ts-mode')
-  (when (string= major-mode "verilog-mode")
-    ;; Imenu
-    (setq-local imenu-create-index-function #'verilog-ext-imenu-index)
-
-    ;; Font-lock
-    ;;   It's not possible to add font-lock keywords to minor-modes.
-    ;;   The workaround consists in add/remove keywords to the major mode when
-    ;;   the minor mode is loaded/unloaded.
-    ;;   https://emacs.stackexchange.com/questions/60198/font-lock-add-keywords-is-not-working
-    (when (bound-and-true-p verilog-ext-mode)
-      (font-lock-add-keywords nil (append verilog-ext-font-lock-keywords
-                                          verilog-ext-font-lock-keywords-1
-                                          verilog-ext-font-lock-keywords-2
-                                          verilog-ext-font-lock-keywords-3) 'set)
-      (font-lock-flush))
-    (when (not (bound-and-true-p verilog-ext-mode))
-      (font-lock-remove-keywords nil (append verilog-ext-font-lock-keywords
-                                             verilog-ext-font-lock-keywords-1
-                                             verilog-ext-font-lock-keywords-2
-                                             verilog-ext-font-lock-keywords-3))
-      (font-lock-flush))
-    (setq-local font-lock-multiline nil)
-
-    ;; Syntax table overriding:
-    ;; Avoid considering tick as part of a symbol on preprocessor directives while
-    ;; isearching.  Works in conjunction with `verilog-ext-electric-verilog-tab'
-    ;; and `verilog-ext-indent-region' to get back standard table to avoid
-    ;; indentation issues with compiler directives.
-    (modify-syntax-entry ?` ".")))
+  (if verilog-ext-mode
+      (progn
+        (verilog-ext-scan-buffer-modules)
+        (verilog-ext-update-buffer-and-dir-list)
+        (setq verilog-library-directories verilog-ext-dir-list)
+        (setq verilog-ext-flycheck-verilator-include-path verilog-ext-dir-list)
+        (add-hook 'kill-buffer-hook #'verilog-ext-kill-buffer-hook nil :local)
+        (verilog-ext-block-end-comments-to-names-mode)
+        (verilog-ext-time-stamp-mode)
+        ;; `verilog-mode'-only customization (exclude `verilog-ts-mode')
+        (when (string= major-mode "verilog-mode")
+          ;; Imenu
+          (setq-local imenu-create-index-function #'verilog-ext-imenu-index)
+          ;; Font-lock
+          ;;   It's not possible to add font-lock keywords to minor-modes.
+          ;;   The workaround consists in add/remove keywords to the major mode when
+          ;;   the minor mode is loaded/unloaded.
+          ;;   https://emacs.stackexchange.com/questions/60198/font-lock-add-keywords-is-not-working
+          (font-lock-add-keywords nil (append verilog-ext-font-lock-keywords
+                                              verilog-ext-font-lock-keywords-1
+                                              verilog-ext-font-lock-keywords-2
+                                              verilog-ext-font-lock-keywords-3) 'set)
+          (font-lock-flush)
+          (setq-local font-lock-multiline nil)
+          ;; Syntax table overriding:
+          ;; Avoid considering tick as part of a symbol on preprocessor directives while
+          ;; isearching.  Works in conjunction with `verilog-ext-electric-verilog-tab'
+          ;; and `verilog-ext-indent-region' to get back standard table to avoid
+          ;; indentation issues with compiler directives.
+          (modify-syntax-entry ?` ".")))
+    ;; Cleanup
+    (remove-hook 'kill-buffer-hook #'verilog-ext-kill-buffer-hook :local)
+    (verilog-ext-block-end-comments-to-names-mode -1)
+    (verilog-ext-time-stamp-mode -1)))
 
 
 ;;; Provide
