@@ -6,7 +6,7 @@
 ;; URL: https://github.com/gmlarumbe/verilog-ext
 ;; Version: 0.0.0
 ;; Keywords: Verilog, IDE, Tools
-;; Package-Requires: ((emacs "28.1"))
+;; Package-Requires: ((emacs "28.1") (verilog-mode "2022.12.18.181110314") (eglot "1.9") (lsp-mode "8.0.1") (ag "0.48") (ripgrep "0.4.0") (ggtags "0.9.0") (hydra "0.15.0") (apheleia "3.1") (yasnippet "0.14.0") (company "0.9.13") (flycheck "33-cvs") (imenu-list "0.9") (outshine "3.1-pre"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -41,18 +41,20 @@
 
 (require 'verilog-mode)
 (require 'xref)
+(require 'make-mode)
 (require 'eglot)
+(require 'lsp-mode)
+(require 'lsp-verilog)
 (require 'ag)
 (require 'ripgrep)
-(require 'make-mode)
+(require 'imenu-list)
+(require 'outshine)
 (require 'ggtags)
 (require 'hydra)
 (require 'apheleia)
 (require 'yasnippet)
-(require 'company-keywords)
 (require 'flycheck)
-(require 'lsp-mode)
-(require 'lsp-verilog)
+(require 'company-keywords)
 
 
 ;;; Customization
@@ -530,13 +532,6 @@ positions."
             (push default-directory verilog-dirs)))))
     (setq verilog-ext-buffer-list verilog-buffers)
     (setq verilog-ext-dir-list verilog-dirs)))
-
-(defun verilog-ext-open-buffer-update ()
-  "Actions to run when opening a file."
-  (verilog-ext-scan-buffer-modules)
-  (verilog-ext-update-buffer-and-dir-list)
-  (setq verilog-library-directories verilog-ext-dir-list)
-  (setq verilog-ext-flycheck-verilator-include-path verilog-ext-dir-list))
 
 (defun verilog-ext-kill-buffer-hook ()
   "Verilog hook to run when killing a buffer."
@@ -2007,23 +2002,6 @@ and methods.  These are collected with `verilog-ext-imenu-classes-index'."
 
 
 ;;;; Imenu-list
-(defun verilog-ext-imenu-list-hide-all (&optional first)
-  "Hide all the blocks at `imenu-list' buffer.
-If optional arg FIRST is non-nil show first Imenu block
-which by default corresponds to *instances*.
-INFO: It is meant to be run after `verilog-ext-imenu-list', however
-it could cause sluggish behaviour as it's not every efficient."
-  (if (string-equal major-mode "imenu-list-major-mode")
-      (progn
-        (goto-char (point-min))
-        (while (< (point) (point-max))
-          (hs-hide-block)
-          (line-move-visual 1))
-        (goto-char (point-min))
-        (when first
-          (hs-show-block)))
-    (message "Not in imenu-list mode !!")))
-
 (defun verilog-ext-imenu-list ()
   "Wrapper for `imenu-list' for Verilog mode with `verilog-ext'."
   (interactive)
@@ -3992,7 +3970,10 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
   :lighter " VerilogX"
   :global nil
   ;; Update list of open buffers/directories (Verilog AUTO, flycheck)
-  (verilog-ext-open-buffer-update)
+  (verilog-ext-scan-buffer-modules)
+  (verilog-ext-update-buffer-and-dir-list)
+  (setq verilog-library-directories verilog-ext-dir-list)
+  (setq verilog-ext-flycheck-verilator-include-path verilog-ext-dir-list)
   (add-hook 'kill-buffer-hook #'verilog-ext-kill-buffer-hook nil :local)
   ;; Editing minor modes
   (verilog-ext-block-end-comments-to-names-mode)
