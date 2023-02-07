@@ -62,6 +62,11 @@
   :group 'languages
   :group 'verilog-mode)
 
+(defcustom verilog-ext-mode-hook nil
+  "Hook run when `verilog-ext-mode' is enabled."
+  :type 'hook
+  :group 'verilog-ext)
+
 (defcustom verilog-ext-jump-to-parent-module-engine "ag"
   "Default program to find parent module instantiations.
 Either `rg' or `ag' are implemented."
@@ -131,7 +136,7 @@ https://chipsalliance.github.io/verible/lint.html"
 
 (defcustom verilog-ext-time-stamp-start nil
   "If using `time-stamp-start' and `time-stamp-end':
-'time-stamp' deletes the text between the first match of `time-stamp-start'.
+`'time-stamp' deletes the text between the first match of `time-stamp-start'.
 and the following match of `time-stamp-end', then writes the time stamp
 specified by `time-stamp-format' between them."
   :type 'string
@@ -139,7 +144,7 @@ specified by `time-stamp-format' between them."
 
 (defcustom verilog-ext-time-stamp-end nil
   "If using `time-stamp-start' and `time-stamp-end':
-'time-stamp' deletes the text between the first match of `time-stamp-start'.
+`time-stamp' deletes the text between the first match of `time-stamp-start'.
 and the following match of `time-stamp-end', then writes the time stamp
 specified by `time-stamp-format' between them."
   :type 'string
@@ -3929,6 +3934,38 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
 
 
 ;;; Major-mode
+(defvar verilog-ext-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "TAB") 'verilog-ext-electric-verilog-tab)
+    (define-key map (kbd "M-d") 'verilog-ext-kill-word)
+    (define-key map (kbd "M-f") 'verilog-ext-forward-word)
+    (define-key map (kbd "M-b") 'verilog-ext-backward-word)
+    (define-key map (kbd "C-<backspace>") 'verilog-ext-backward-kill-word)
+    ;; Features
+    (define-key map (kbd "M-i") 'verilog-ext-imenu-list)
+    (define-key map (kbd "C-c C-p") 'verilog-ext-preprocess)
+    (define-key map (kbd "C-c C-f") 'verilog-ext-flycheck-mode-toggle)
+    (define-key map (kbd "C-c C-t") 'verilog-ext-hydra/body)
+    (define-key map (kbd "C-c C-v") 'verilog-ext-vhier-current-file)
+    ;; Code beautifying
+    (define-key map (kbd "C-M-i") 'verilog-ext-indent-block-at-point)
+    (define-key map (kbd "C-c C-b") 'verilog-ext-module-at-point-beautify)
+    ;; Dwim navigation
+    (define-key map (kbd "C-M-a") 'verilog-ext-nav-beg-of-defun-dwim)
+    (define-key map (kbd "C-M-e") 'verilog-ext-nav-end-of-defun-dwim)
+    (define-key map (kbd "C-M-d") 'verilog-ext-nav-down-dwim)
+    (define-key map (kbd "C-M-u") 'verilog-ext-nav-up-dwim)
+    (define-key map (kbd "C-M-p") 'verilog-ext-nav-prev-dwim)
+    (define-key map (kbd "C-M-n") 'verilog-ext-nav-next-dwim)
+    ;; Jump to parent module
+    (define-key map (kbd "C-M-.") 'verilog-ext-jump-to-parent-module)
+    ;; Port connections
+    (define-key map (kbd "C-c C-c") 'verilog-ext-toggle-connect-port)
+    (define-key map (kbd "C-c C-l") 'verilog-ext-connect-ports-recursively)
+    map)
+  "Key map for the `verilog-ext'.")
+
+
 ;;;###autoload
 (defun verilog-ext-mode-setup ()
   "Setup `verilog-ext-mode' depending on enabled features."
@@ -3943,9 +3980,11 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
 
 ;;;###autoload
 (define-minor-mode verilog-ext-mode
-  "Minor mode for editing SystemVerilog files."
-  :global nil
+  "Minor mode for editing SystemVerilog files.
+
+\\{verilog-ext-mode-map}"
   :lighter " VerilogX"
+  :global nil
   ;; Update list of open buffers/directories (Verilog AUTO, flycheck)
   (verilog-ext-open-buffer-update)
   (add-hook 'kill-buffer-hook #'verilog-ext-kill-buffer-hook nil :local)
@@ -3956,6 +3995,7 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
   (when (string= major-mode "verilog-mode")
     ;; Imenu
     (setq-local imenu-create-index-function #'verilog-ext-imenu-index)
+
     ;; Font-lock
     ;;   It's not possible to add font-lock keywords to minor-modes.
     ;;   The workaround consists in add/remove keywords to the major mode when
@@ -3966,14 +4006,15 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
                                           verilog-ext-font-lock-keywords-1
                                           verilog-ext-font-lock-keywords-2
                                           verilog-ext-font-lock-keywords-3) 'set)
-      (font-lock-fontify-buffer))
+      (font-lock-flush))
     (when (not (bound-and-true-p verilog-ext-mode))
       (font-lock-remove-keywords nil (append verilog-ext-font-lock-keywords
                                              verilog-ext-font-lock-keywords-1
                                              verilog-ext-font-lock-keywords-2
                                              verilog-ext-font-lock-keywords-3))
-      (font-lock-fontify-buffer))
+      (font-lock-flush))
     (setq-local font-lock-multiline nil)
+
     ;; Syntax table overriding:
     ;; Avoid considering tick as part of a symbol on preprocessor directives while
     ;; isearching.  Works in conjunction with `verilog-ext-electric-verilog-tab'
