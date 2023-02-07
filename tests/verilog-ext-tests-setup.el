@@ -51,8 +51,6 @@
 
 
 ;;;; Install dependencies
-(message "Installing projectile")
-(use-package projectile)
 (message "Installing ggtags")
 (use-package ggtags)
 (message "Installing ag")

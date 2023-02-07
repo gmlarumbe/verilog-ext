@@ -45,7 +45,6 @@
 (require 'ag)
 (require 'ripgrep)
 (require 'make-mode)
-(require 'projectile)
 (require 'ggtags)
 (require 'hydra)
 (require 'apheleia)
@@ -342,10 +341,8 @@ Return nil if no module was found."
 
 (defun verilog-ext-project-root ()
   "Find current project root, depending on available packages."
-  (or (when (featurep 'projectile)
-        (projectile-project-root))
-      (when (featurep 'project)
-        (project-root (project-current)))
+  (or (and (project-current)
+           (project-root (project-current)))
       (when (featurep 'ggtags)
         (ggtags-current-project-root))
       default-directory))
