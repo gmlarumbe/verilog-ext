@@ -249,12 +249,14 @@ IEEE 1800-2012 SystemVerilog Section 9.3.4 Block names.")
   (> (skip-chars-forward "a-zA-Z0-9_") 0))
 
 (defmacro verilog-ext-when-t (cond &rest body)
-  "Same function `when' from subr.el but returning t if COND is nil."
+  "Execute BODY when COND is non-nil.
+Same function `when' from subr.el but returning t if COND is nil."
   (declare (indent 1) (debug t))
   (list 'if cond (cons 'progn body) t))
 
 (defmacro verilog-ext-while-t (cond &rest body)
-  "Same function `while' but returning t after last condition for use in ands."
+  "Execute BODY while COND is non-nil.
+Same function `while' but returning t after last condition for use in ands."
   (declare (indent 1) (debug t))
   `(progn
      (while ,cond
@@ -563,7 +565,8 @@ Optional ARG sets number of words to kill."
 (defun verilog-ext-indent-region (start end &optional column)
   "Wrapper for `indent-region'.
 Prevents indentation issues with compiler directives with a modified syntax
-table."
+table.
+Pass the args START, END and optional COLUMN to `indent-region'."
   (let ((table (make-syntax-table verilog-mode-syntax-table)))
     (modify-syntax-entry ?` "w" table)
     (with-syntax-table table
@@ -1042,9 +1045,10 @@ DANGER: Still very inefficient, removed funcall in
        (not (verilog-ext-inside-procedural))))
 
 (defun verilog-ext-find-module-instance--continue (&optional bwd)
-  "Auxiliary function for find module and instance functions.
-(In theory) speeds up the search by skipping sections of code where instances
-are not legal."
+  "Auxiliary function for finding module and instance functions.
+\(In theory) speeds up the search by skipping sections of code where instances
+are not legal.
+Continue search backward if BWD is non-nil."
   (cond ((verilog-parenthesis-depth)
          (if bwd
              (verilog-backward-up-list 1)
@@ -1293,8 +1297,9 @@ Used in ag/rg end of search hooks to conditionally set the xref marker stack.")
 (defvar verilog-ext-jump-to-parent-module-name nil)
 (defvar verilog-ext-jump-to-parent-module-dir nil)
 (defvar verilog-ext-jump-to-parent-trigger nil
-  "Variable to run the post ag/rg command hook only when the ag/rg search
-was triggered by `verilog-ext-jump-to-parent-module' command.")
+  "Variable to run the post ag/rg command hook.
+Runs only when the ag/rg search was triggered by
+`verilog-ext-jump-to-parent-module' command.")
 
 (defun verilog-ext-jump-to-parent-module ()
   "Find current module/interface instantiations via `ag'/`rg'.
@@ -1549,14 +1554,16 @@ Otherwise move to previous paragraph."
           "\\<\\(?3:" verilog-identifier-re "\\)\\>\\s-*" verilog-ext-range-optional-re "\\s-*"              ; Var name
           "\\(?4:=.*\\)?" ; Optional initialization value
           ";")
-  "type_t foo;
-   type_t [10:0] foo;
-   type_t [10:0] foo = \\='h0;")
+  "Example:
+type_t foo;
+type_t [10:0] foo;
+type_t [10:0] foo = \\='h0;")
 (defconst verilog-ext-typedef-var-decl-multiple-re
   (concat "\\<\\(?1:" verilog-identifier-re "\\)\\>" verilog-ext-range-or-class-params-optional-re "\\s-+"  ; Var type
           "\\(?3:\\(" verilog-identifier-re "\\s-*,\\s-*\\)+\\(" verilog-identifier-re "\\s-*\\)\\)"                ; Var names
           ";")
-  "type_t foo1, foo2 , foo4, foo6[], foo7 [25], foo8 ;")
+  "Example:
+type_t foo1, foo2 , foo4, foo6[], foo7 [25], foo8 ;")
 (defconst verilog-ext-typedef-class-params-optional-re "\\(\\s-*#([^)]*)\\)?")
 (defconst verilog-ext-typedef-class-re (concat "^\\s-*typedef\\s-+\\(?1:\\<class\\>\\)\\s-+\\(?2:\\<" verilog-identifier-re "\\>\\)"))
 (defconst verilog-ext-typedef-generic-re (concat "^\\s-*typedef\\s-+\\(?1:\\<" verilog-identifier-re "\\>\\)"
@@ -1707,19 +1714,19 @@ variable."
     ("verilator"
      (if (executable-find "verilator")
          (setq verilog-preprocessor "verilator -E __FLAGS__ __FILE__")
-       (error "verilator binary not found in $PATH")))
+       (error "Binary verilator not found in $PATH")))
     ;; Verilog-Perl
     ("vppreproc"
      (if (executable-find "vppreproc")
          (setq verilog-preprocessor "vppreproc __FLAGS__ __FILE__")
-       (error "vppreproc binary not found in $PATH")))
+       (error "Binary vppreproc not found in $PATH")))
     ;; Icarus Verilog:  `iverilog' command syntax requires writing to an output file (defaults to a.out).
     ("iverilog"
      (if (executable-find "iverilog")
          (let* ((filename-sans-ext (file-name-sans-extension (file-name-nondirectory (buffer-file-name))))
                 (iver-out-file (read-string "Output filename: " (concat filename-sans-ext "_pp.sv"))))
            (setq verilog-preprocessor (concat "iverilog -E -o" iver-out-file " __FILE__ __FLAGS__")))
-       (error "iverilog binary not found in $PATH"))))
+       (error "Binary iverilog not found in $PATH"))))
   (verilog-preprocess)
   (pop-to-buffer "*Verilog-Preprocessed*"))
 
@@ -2763,7 +2770,8 @@ endmodule // tb_<module_name>
 (defvar verilog-ext-font-lock-punctuation-face 'verilog-ext-font-lock-punctuation-face)
 (defface verilog-ext-font-lock-punctuation-face
   '((t (:foreground "burlywood")))
-  "Face for punctuation symbols: !,;:?'=<>*"
+  "Face for punctuation symbols, e.g:
+!,;:?'=<>*"
   :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-punctuation-bold-face 'verilog-ext-font-lock-punctuation-bold-face)
@@ -2796,8 +2804,7 @@ endmodule // tb_<module_name>
   "Face for port connections of instances.
 .portA (signalA),
 .portB (signalB)
-);
-"
+);"
   :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-dot-name-face 'verilog-ext-font-lock-dot-name-face)
@@ -2807,8 +2814,7 @@ endmodule // tb_<module_name>
 - Interface signals, classes attributes/methods and hierarchical refs.
 
 axi_if.Ready <= 1'b1;
-obj.method();
-"
+obj.method();"
   :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-braces-content-face 'verilog-ext-font-lock-braces-content-face)
@@ -2823,8 +2829,7 @@ obj.method();
   "Face for the bit width number expressions.
 {1}'b1,
 {4}'hF,
-{3}'o7,
-"
+{3}'o7,"
   :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-width-type-face 'verilog-ext-font-lock-width-type-face)
@@ -2833,8 +2838,7 @@ obj.method();
   "Face for the bit width type expressions.
 1'{b}1,
 4'{h}F,
-3'{o}7,
-"
+3'{o}7,"
   :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-module-face 'verilog-ext-font-lock-module-face)
@@ -2888,7 +2892,8 @@ obj.method();
 (defvar verilog-ext-font-lock-translate-off-face 'verilog-ext-font-lock-translate-off-face)
 (defface verilog-ext-font-lock-translate-off-face
   '((t (:background "gray20" :slant italic)))
-  "Face for pragmas between comments: * translate_off / * translate_on"
+  "Face for pragmas between comments, e.g:
+* translate_off / * translate_on"
   :group 'verilog-ext-faces)
 
 (defvar verilog-ext-font-lock-uvm-classes-face 'verilog-ext-font-lock-uvm-classes-face)
@@ -3213,7 +3218,8 @@ Bound search by LIMIT."
       (point))))
 
 (defun verilog-ext-font-lock-var-decl-typedef-fontify (limit)
-  "Fontify variable declarations of user defined types."
+  "Fontify variable declarations of user defined types.
+Bound search by LIMIT."
   (let ((decl-typedef-re (verilog-get-declaration-typedef-re))
         start end found)
     (when (verilog-align-typedef-enabled-p)
@@ -3230,7 +3236,8 @@ Bound search by LIMIT."
         (point)))))
 
 (defun verilog-ext-font-lock-enum-fontify (limit)
-  "Fontify (typedef) enum declarations."
+  "Fontify (typedef) enum declarations.
+Bound search by LIMIT."
   (let (start-line-pos end-line-pos)
     (when (and (verilog-re-search-forward verilog-typedef-enum-re limit t)
                (setq start-line-pos (line-beginning-position))
@@ -3246,7 +3253,8 @@ Bound search by LIMIT."
       (point))))
 
 (defun verilog-ext-font-lock-struct-fontify (limit)
-  "Fontify (typedef) struct declarations."
+  "Fontify (typedef) struct declarations.
+Bound search by LIMIT."
   (let (start-line-pos end-line-pos)
     (when (and (verilog-re-search-forward verilog-ext-font-lock-typedef-struct-re limit t)
                (setq start-line-pos (line-beginning-position))
@@ -3444,7 +3452,7 @@ Move through headings and point at the beginning of the tag."
   (unless (executable-find "global")
     (error "Vhier mode requires global to work"))
   (unless (featurep 'ggtags)
-    (error "ggtags not available, required for jumping to a file"))
+    (error "Ggtags not available, required for jumping to a file"))
   (unless (ggtags-find-project)
     (error "Associated GTAGS file not found.  Make sure hierarchy file is in the same folder as its matching GTAGS file"))
   (delete-other-windows)
@@ -3655,7 +3663,8 @@ Pass correct arguments to --rules flycheck checker."
 
 (flycheck-define-checker verilog-verible
   "The Verible project's main mission is to parse SystemVerilog (IEEE 1800-2017)
-(as standardized in the SV-LRM) for a wide variety of applications, including developer tools.
+\(as standardized in the SV-LRM) for a wide variety of applications, including
+developer tools.
 
 See URL `https://github.com/chipsalliance/verible'."
   ;; From the documentation:
@@ -3741,7 +3750,7 @@ This is needed since the output of HAL is written to a logfile and
 flycheck parses stdout (didn't find the way to redirect xrun output to stdout).
 
 Plus, the :command key arg of `flycheck-define-command-checker' assumes each
-of the strings are arguments. If something such as \"&&\" \"cat\" is used to
+of the strings are arguments.  If something such as \"&&\" \"cat\" is used to
 try to display the logfile in stdout , it would throw an xrun fatal error as
 \"&&\" would not be recognized as a file."
   (let* ((log-path (verilog-ext-path-join verilog-ext-flycheck-hal-directory verilog-ext-flycheck-hal-log-name))
@@ -3866,8 +3875,8 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
 (defvar verilog-ext-eglot-default-server 've-svlangserver)
 
 (defun verilog-ext-eglot-svlangserver-configuration ()
-  "Configure settings for 'svlangserver with `eglot'.
-For the time being, reuse `'lsp-clients-svlangserver' variables from
+  "Configure settings for svlangserver with `eglot'.
+For the time being, reuse `lsp-clients-svlangserver' variables from
 `lsp-verilog'."
   (setq eglot-workspace-configuration
         `((:systemverilog
@@ -3891,7 +3900,7 @@ For the time being, reuse `'lsp-clients-svlangserver' variables from
       (user-error "Couldn't find (eglot-current-server), is eglot enabled?"))
     (unless (and (string= verilog-mode-ls "svlangserver")
                  (string= verilog-ts-mode-ls "svlangserver"))
-      (user-error "ve-svlangserver not configured as current server for eglot"))
+      (user-error "Ve-svlangserver not configured as current server for eglot"))
     (eglot-execute-command (eglot-current-server) command args)
     (message "Ran svlangserver command: %s" command)))
 
@@ -3906,7 +3915,7 @@ For the time being, reuse `'lsp-clients-svlangserver' variables from
   (verilog-ext-eglot-svlangserver-command "systemverilog.report_hierarchy" (vector (verilog-ext-select-file-module))))
 
 (defun verilog-ext-eglot-set-server (server-id)
-  "Configure Verilog for `eglot'.
+  "Configure Verilog for `eglot' with SERVER-ID server.
 Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
   (interactive (list (intern (completing-read "Server-id: " verilog-ext-lsp-server-ids nil t))))
   (let ((cmd (alist-get server-id verilog-ext-lsp-available-servers)))
@@ -4025,3 +4034,8 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
 
 ;;; verilog-ext.el ends here
 
+;; Silence all the hydra docstring byte-compiler warnings:
+;;
+;; Local Variables:
+;; byte-compile-warnings: (not docstrings)
+;; End:
