@@ -709,15 +709,22 @@ Move backward ARG words."
     (with-syntax-table table
       (backward-word arg))))
 
-(defun verilog-ext-electric-verilog-tab ()
-  "Run `electric-verilog-tab' with original `verilog-mode' syntax table.
-Prevents indentation issues with compiler directives with a modified syntax
-table."
-  (interactive)
-  (let ((table (make-syntax-table verilog-mode-syntax-table)))
-    (modify-syntax-entry ?` "w" table)
-    (with-syntax-table table
-      (electric-verilog-tab))))
+(defun verilog-ext-tab (&optional arg)
+  "Run corresponding TAB function depending on `major-mode'.
+If on a `verilog-mode' buffer, run `electric-verilog-tab' with original
+`verilog-mode' syntax table.  Prevents indentation issues with compiler
+directives with a modified syntax table.
+If on a `verilog-ts-mode' buffer, run `indent-for-tab-command' with ARG."
+  (interactive "P")
+  (cond ((string= major-mode "verilog-mode")
+         (let ((table (make-syntax-table verilog-mode-syntax-table)))
+           (modify-syntax-entry ?` "w" table)
+           (with-syntax-table table
+             (electric-verilog-tab))))
+        ((string= major-mode "verilog-ts-mode")
+         (indent-for-tab-command arg))
+        (t
+         (error "Wrong major-mode to run `verilog-ext-tab'"))))
 
 (defun verilog-ext-find-function-task (&optional limit bwd interactive-p)
   "Search for a Verilog function/task declaration or definition.
@@ -1854,12 +1861,10 @@ FILES is a list of strings containing the filepaths."
       (verilog-ext-beautify-current-buffer)
       (write-file file))))
 
-(defun verilog-ext-beautify-files-current-dir ()
-  "Beautify Verilog files on current Dired directory."
-  (interactive)
-  (unless (string= major-mode "dired-mode")
-    (error "Must be used in Dired!"))
-  (let ((files (directory-files-recursively default-directory "\\.[s]?v[h]?$")))
+(defun verilog-ext-beautify-dir-files (dir)
+  "Beautify Verilog files on DIR."
+  (interactive "DDirectory: ")
+  (let ((files (directory-files-recursively dir "\\.[s]?v[h]?$")))
     (verilog-ext-beautify-files files)))
 
 ;;; Imenu
@@ -3921,7 +3926,7 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
 ;;; Major-mode
 (defvar verilog-ext-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "TAB") 'verilog-ext-electric-verilog-tab)
+    (define-key map (kbd "TAB") 'verilog-ext-tab)
     (define-key map (kbd "M-d") 'verilog-ext-kill-word)
     (define-key map (kbd "M-f") 'verilog-ext-forward-word)
     (define-key map (kbd "M-b") 'verilog-ext-backward-word)
@@ -3999,7 +4004,7 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
           (setq-local font-lock-multiline nil)
           ;; Syntax table overriding:
           ;; Avoid considering tick as part of a symbol on preprocessor directives while
-          ;; isearching.  Works in conjunction with `verilog-ext-electric-verilog-tab'
+          ;; isearching.  Works in conjunction with `verilog-ext-tab'
           ;; and `verilog-ext-indent-region' to get back standard table to avoid
           ;; indentation issues with compiler directives.
           (modify-syntax-entry ?` ".")))

@@ -4,5 +4,5 @@ GTAGS
 GPATH
 GRTAGS
 
-test/examples/indent/dump
-test/examples/beautify/dump
+test/**/dump
+

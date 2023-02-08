@@ -92,11 +92,11 @@ module instances;
     );
 
     block_ws_1 // Comment
-#(     // More comments
-    .Param0 (Param0),
-    .Param1 (Param1),
-    .Param2 (Param2)
-) // Even more comments
+        #(     // More comments
+            .Param0 (Param0),
+            .Param1 (Param1),
+            .Param2 (Param2)
+        ) // Even more comments
     I_BLOCK_WS_1 // More comments here
     (
         .Port0 (Port0),

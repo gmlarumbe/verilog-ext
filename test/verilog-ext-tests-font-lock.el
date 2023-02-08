@@ -40,7 +40,7 @@ At some point tried with `with-temp-buffer' without success."
       (when (fboundp 'untabify-trailing-ws-mode)
         (untabify-trailing-ws-mode -1)
         (message "Disabling untabify-trailing-ws-mode..."))
-      (dolist (file (directory-files verilog-ext-tests-examples-dir t ".s?vh?$"))
+      (dolist (file (directory-files verilog-ext-tests-common-dir t ".s?vh?$"))
         (find-file file)
         (if tree-sitter
             (verilog-ts-mode)
@@ -52,8 +52,7 @@ At some point tried with `with-temp-buffer' without success."
           (outshine-mode -1)
           (message "Disabling outshine-mode for file %s" file))
         (message "Processing %s" file)
-        (faceup-write-file (concat (file-name-directory file)
-                                   "faceup/"
+        (faceup-write-file (concat verilog-ext-tests-faceup-dir
                                    (file-name-nondirectory file)
                                    (when tree-sitter
                                      ".ts")
@@ -66,7 +65,7 @@ At some point tried with `with-temp-buffer' without success."
                   'verilog-ts-mode
                 'verilog-mode)))
     (faceup-test-font-lock-file mode
-                                (verilog-ext-path-join verilog-ext-tests-examples-dir file)
+                                (verilog-ext-path-join verilog-ext-tests-common-dir file)
                                 (verilog-ext-path-join verilog-ext-tests-faceup-dir (concat file
                                                                                             (when tree-sitter
                                                                                               ".ts")
@@ -75,13 +74,11 @@ At some point tried with `with-temp-buffer' without success."
 (faceup-defexplainer verilog-ext-test-font-lock-test-file)
 
 (ert-deftest font-lock::generic ()
-  (setq faceup-test-explain t)
-  (should (verilog-ext-test-font-lock-test-file "axi_demux.sv"))
-  (should (verilog-ext-test-font-lock-test-file "axi_test.sv"))
-  (should (verilog-ext-test-font-lock-test-file "instances.sv"))
-  (should (verilog-ext-test-font-lock-test-file "tb_program.sv"))
-  (should (verilog-ext-test-font-lock-test-file "ucontroller.sv"))
-  (should (verilog-ext-test-font-lock-test-file "uvm_component.svh")))
+  (let ((default-directory verilog-ext-tests-common-dir)
+        (faceup-test-explain t))
+    (dolist (file (directory-files verilog-ext-tests-common-dir nil ".s?vh?$"))
+      (should (verilog-ext-test-font-lock-test-file file)))))
+
 
 (provide 'verilog-ext-tests-font-lock)
 

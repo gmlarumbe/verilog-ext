@@ -175,102 +175,20 @@ Snippet fetched from `treesit--indent-1'."
 ;; There are some keywords that are not recognized by tree-sitter grammar.
 ;; For these ones, use regexp matching patterns inside tree-sitter (:match "^foo$")
 (defconst verilog-ts-keywords
-  '("alias"
-    "and"
-    "assert"
-    "assign"
-    "assume"
-    "before"
-    "binsof"
-    "break"
-    "checker"
-    "class"
-    "class"
-    "config"
-    "const"
-    "constraint"
-    "covergroup"
-    "coverpoint"
-    "cross"
-    "default"
-    "defparam"
-    "disable"
-    "do"
-    "else"
-    "endcase"
-    "endchecker"
-    "endclass"
-    "endconfig"
-    "endfunction"
-    "endgenerate"
-    "endgroup"
-    "endinterface"
-    "endmodule"
-    "endpackage"
-    "endprogram"
-    "endproperty"
-    "endsequence"
-    "endtask"
-    "enum"
-    "extends"
-    "extern"
-    "final"
-    "first_match"
-    "for"
-    "foreach"
-    "forever"
-    "fork"
-    "forkjoin"
-    "function"
-    "generate"
-    "genvar"
-    "if"
-    "iff"
-    "illegal_bins"
-    "implements"
-    "import"
-    "initial"
-    "inside"
-    "interconnect"
-    "interface"
-    "intersect"
-    "join"
-    "join_any"
-    "join_none"
-    "local"
-    "localparam"
-    "modport"
-    "new"
-    "null"
-    "option"
-    "or"
-    "package"
-    "packed"
-    "parameter"
-    "program"
-    "property"
-    "pure"
-    "randomize"
-    "repeat"
-    "return"
-    "sequence"
-    "showcancelled"
-    "soft"
-    "solve"
-    "struct"
-    "super"
-    "tagged"
-    "task"
-    "timeprecision"
-    "timeunit"
-    "type"
-    "typedef"
-    "union"
-    "unique"
-    "virtual"
-    "wait"
-    "while"
-    "with"
+  '("alias" "and" "assert" "assign" "assume" "before" "binsof" "break" "checker"
+    "class" "class" "config" "const" "constraint" "cover" "covergroup"
+    "coverpoint" "cross" "default" "defparam" "disable" "do" "else" "endcase"
+    "endchecker" "endclass" "endconfig" "endfunction" "endgenerate" "endgroup"
+    "endinterface" "endmodule" "endpackage" "endprogram" "endproperty"
+    "endsequence" "endtask" "enum" "extends" "extern" "final" "first_match"
+    "for" "foreach" "forever" "fork" "forkjoin" "function" "generate" "genvar"
+    "if" "iff" "illegal_bins" "implements" "import" "initial" "inside"
+    "interconnect" "interface" "intersect" "join" "join_any" "join_none" "local"
+    "localparam" "modport" "new" "null" "option" "or" "package" "packed"
+    "parameter" "program" "property" "pure" "randomize" "repeat" "return"
+    "sequence" "showcancelled" "soft" "solve" "struct" "super" "tagged" "task"
+    "timeprecision" "timeunit" "type" "typedef" "union" "unique" "virtual"
+    "wait" "while" "with"
     (always_keyword)       ; always, always_comb, always_latch, always_ff
     (bins_keyword)         ; bins, illegal_bins, ignore_bins
     (case_keyword)         ; case, casez, casex
@@ -618,7 +536,7 @@ Always return non-nil."
   t)
 
 
-(defvar verilog-ts--indent-rules
+(setq verilog-ts--indent-rules
   `((verilog
      ;; Unit scope
      (verilog-ts--unit-scope point-min 0) ; Place first for highest precedence
@@ -634,11 +552,18 @@ Always return non-nil."
       parent-bol 0)
      ((node-is "comment") parent-bol ,verilog-ts-indent-level)
      ;; Procedural
+     ((node-is "continuous_assign") parent-bol ,verilog-ts-indent-level)
+     ((node-is "always_construct") parent-bol ,verilog-ts-indent-level)
+     ((node-is "if_generate_construct") parent-bol ,verilog-ts-indent-level)
+     ((node-is "loop_generate_construct") parent-bol ,verilog-ts-indent-level)
+     ((node-is "initial_construct") parent-bol ,verilog-ts-indent-level)
      ((node-is "statement_or_null") parent-bol ,verilog-ts-indent-level)
      ((node-is "case_item") parent-bol ,verilog-ts-indent-level)
      ((node-is "block_item_declaration") parent-bol ,verilog-ts-indent-level)     ; Procedural local variables declaration
      ((node-is "tf_item_declaration") parent-bol ,verilog-ts-indent-level)        ; Procedural local variables in tasks declaration
      ((node-is "function_statement_or_null") parent-bol ,verilog-ts-indent-level) ; Procedural statement in a function
+     ((node-is "checker_or_generate_item_declaration") parent-bol ,verilog-ts-indent-level) ; default disable iff (!rst_ni);
+     ((node-is "concurrent_assertion_item") parent-bol ,verilog-ts-indent-level) ; default disable iff (!rst_ni);
      ((node-is "super") parent-bol ,verilog-ts-indent-level)
      ;; ANSI Port/parameter declaration
      ((node-is "ansi_port_declaration") parent-bol ,verilog-ts-indent-level)
@@ -681,8 +606,13 @@ Always return non-nil."
      ((node-is "enum_name_declaration") parent-bol ,verilog-ts-indent-level)
      ((node-is "generate_region") parent-bol ,verilog-ts-indent-level)
      ((node-is "hierarchical_instance") parent-bol 0) ; Instance name in separate line
+     ;; Continued lines
+     ((node-is "expression") parent-bol 0)
+     ((node-is "constant_expression") parent-bol 0)
      ;; Blank lines
      (verilog-ts--blank-line parent-bol ,verilog-ts-indent-level)
+     ;; Default indent
+     (verilog-ts--default-indent parent-bol ,verilog-ts-indent-level)
      )))
 
 
@@ -763,4 +693,3 @@ Return nil if there is no name or if NODE is not a defun node."
 (provide 'verilog-ts-mode)
 
 ;;; verilog-ts-mode.el ends here
-

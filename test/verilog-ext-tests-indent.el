@@ -25,15 +25,14 @@
 ;;; Code:
 
 
-(defvar verilog-ext-test-indent-dump-dir (verilog-ext-path-join verilog-ext-tests-indent-dir "dump"))
+(defvar verilog-ext-test-indent-dump-diff-on-error nil)
 
 
-(defun verilog-ext-test-indent-buffer (file &optional tree-sitter)
+(defun verilog-ext-test-indent-buffer (&optional tree-sitter)
   "Perform indentation of current buffer for indentation tests."
   (let ((debug nil))
     (when debug
       (clone-indirect-buffer-other-window "*debug*" t))
-    (insert-file-contents file)
     ;; De-indent original file
     (goto-char (point-min))
     (while (< (point) (point-max))
@@ -51,58 +50,77 @@
     (untabify (point-min) (point-max))
     (delete-trailing-whitespace (point-min) (point-max))))
 
-(defun verilog-ext-test-indent-update-dir (&optional tree-sitter)
+(defun verilog-ext-test-indent-gen-expected-files (&optional tree-sitter)
   "Update .indent files manually."
   (save-window-excursion
-    (dolist (file (directory-files verilog-ext-tests-examples-dir t ".s?vh?$"))
-      (let ((indented-file (concat (file-name-directory file)
-                                   "indent/"
-                                   (file-name-nondirectory file)
-                                   (when tree-sitter
-                                     ".ts")
-                                   ".indent"))
+    (dolist (file (directory-files verilog-ext-tests-common-dir t ".s?vh?$"))
+      (let ((indented-file
+             (verilog-ext-path-join verilog-ext-tests-indent-dir
+                                    (concat
+                                     (file-name-sans-extension (file-name-nondirectory file))
+                                     (when tree-sitter
+                                       ".ts")
+                                     ".indent.sv")))
             (verilog-align-typedef-regexp (concat "\\<" verilog-identifier-re "_\\(t\\)\\>")))
         (message "Processing %s" file)
         (with-temp-file indented-file
-          (verilog-ext-test-indent-buffer file tree-sitter))))))
+          (insert-file-contents file)
+          (verilog-ext-test-indent-buffer tree-sitter))))))
 
 (defun verilog-ext-test-indent-file (file &optional tree-sitter)
   (let* ((verbose nil)
-         (filename-indent (verilog-ext-path-join verilog-ext-tests-examples-dir file))
-         (dump-file (verilog-ext-path-join verilog-ext-test-indent-dump-dir
-                                           (concat (file-name-nondirectory filename-indent) ".dump"))))
+         (filename-indent (verilog-ext-path-join verilog-ext-tests-common-dir file)))
     (when verbose
       (message "Indenting %s..." file))
     (cl-letf (((symbol-function 'message)
                (lambda (FORMAT-STRING &rest ARGS)
                  nil))) ; Mock `message' to silence all the indentation reporting
-      (with-temp-file dump-file
-        (verilog-ext-test-indent-buffer filename-indent tree-sitter)))))
+      (with-temp-buffer
+        (insert-file-contents filename-indent)
+        (verilog-ext-test-indent-buffer tree-sitter)
+        (buffer-substring-no-properties (point-min) (point-max))))))
 
-(defun verilog-ext-test-indent-compare (file &optional dump)
+(defun verilog-ext-test-indent-compare (file &optional tree-sitter)
   "Compare original and indented versions of FILE.
 Expects a file.sv in the examples dir and its indented version file.sv.indent in indent dir."
   (let* ((verbose nil)
-         (filename-indent-golden (verilog-ext-path-join verilog-ext-tests-indent-dir (concat file ".indent")))
-         (filename-indent (verilog-ext-path-join verilog-ext-tests-examples-dir file))
-         (dump-file (verilog-ext-path-join verilog-ext-test-indent-dump-dir
-                                           (concat (file-name-nondirectory filename-indent) ".dump"))))
+         (filename-indent (verilog-ext-path-join verilog-ext-tests-indent-dir
+                                                 (concat (file-name-sans-extension (file-name-nondirectory file))
+                                                         (when tree-sitter
+                                                           ".ts")
+                                                         ".indent.sv"))))
     (when verbose
       (message "Comparing %s" file))
-    (verilog-ext-test-indent-file file)
     ;; Comparison
-    (string= (with-temp-buffer
-               (insert-file-contents filename-indent-golden)
-               (buffer-substring-no-properties (point-min) (point-max)))
+    (string= (verilog-ext-test-indent-file file tree-sitter)
              (with-temp-buffer
-               (insert-file-contents dump-file)
+               (insert-file-contents filename-indent)
                (buffer-substring-no-properties (point-min) (point-max))))))
 
+;; (defun verilog-ext-test-indent-ert-explainer (file &optional tree-sitter)
+;;   (let* ((file-reference (verilog-ext-path-join verilog-ext-tests-indent-dir (concat (file-name-sans-extension file) ".indent.sv")))
+;;          (string-reference (with-temp-buffer
+;;                              (insert-file-contents file-reference)
+;;                              (buffer-substring-no-properties (point-min) (point-max))))
+;;          (string-actual (verilog-ext-test-indent-file file))
+;;          (dump-dir (verilog-ext-path-join verilog-ext-tests-indent-dir "dump"))
+;;          (dump-file (verilog-ext-path-join dump-dir file)))
+;;     (delete-directory dump-dir :recursive)
+;;     (make-directory dump-dir :parents)
+;;     (with-temp-file dump-file
+;;       (insert string-actual))
+;;     (when verilog-ext-test-indent-dump-diff-on-error
+;;       (shell-command (concat "diff " file-reference " " dump-file " > " (concat (file-name-sans-extension dump-file)) ".diff")))
+;;     (ert--explain-string-equal string-reference string-actual)))
+
+
+;; (put 'verilog-ext-test-indent-compare 'ert-explainer #'verilog-ext-test-indent-ert-explainer)
+
+
 (ert-deftest indent::generic ()
-  (delete-directory verilog-ext-test-indent-dump-dir :recursive)
-  (make-directory verilog-ext-test-indent-dump-dir :parents)
-  (dolist (file (directory-files verilog-ext-tests-examples-dir nil ".s?vh?$"))
-    (should (verilog-ext-test-indent-compare file))))
+  (dolist (file (directory-files verilog-ext-tests-common-dir nil ".s?vh?$"))
+    (should (verilog-ext-test-indent-compare (file-name-nondirectory file)))))
+
 
 
 (provide 'verilog-ext-tests-indent)

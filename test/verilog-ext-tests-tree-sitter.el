@@ -39,12 +39,12 @@
 
 
 (ert-deftest tree-sitter::indentation ()
-  (should (verilog-ext-test-font-lock-test-file "axi_demux.sv" :tree-sitter))
-  (should (verilog-ext-test-font-lock-test-file "axi_test.sv" :tree-sitter))
-  (should (verilog-ext-test-font-lock-test-file "instances.sv" :tree-sitter))
-  (should (verilog-ext-test-font-lock-test-file "tb_program.sv" :tree-sitter))
-  (should (verilog-ext-test-font-lock-test-file "ucontroller.sv" :tree-sitter))
-  (should (verilog-ext-test-font-lock-test-file "uvm_component.svh" :tree-sitter)))
+  (should (verilog-ext-test-indent-compare "axi_demux.sv" :tree-sitter))
+  (should (verilog-ext-test-indent-compare "axi_test.sv" :tree-sitter))
+  (should (verilog-ext-test-indent-compare "instances.sv" :tree-sitter))
+  (should (verilog-ext-test-indent-compare "tb_program.sv" :tree-sitter))
+  (should (verilog-ext-test-indent-compare "ucontroller.sv" :tree-sitter))
+  (should (verilog-ext-test-indent-compare "uvm_component.svh" :tree-sitter)))
 
 
 (provide 'verilog-ext-tests-tree-sitter)

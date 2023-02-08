@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // Title         : Testbench program routines
-// Project       : 
+// Project       :
 //-----------------------------------------------------------------------------
 // File          : tb_program.sv
 // Author        : Gonzalo Martinez Larumbe
@@ -8,9 +8,9 @@
 // Last modified : 2020/02/16
 //-----------------------------------------------------------------------------
 // Description :
-// 
+//
 //-----------------------------------------------------------------------------
-// Copyright (c) Gonzalo Martinez Larumbe  <gonzalomlarumbe@gmail.com> 
+// Copyright (c) Gonzalo Martinez Larumbe  <gonzalomlarumbe@gmail.com>
 //
 //------------------------------------------------------------------------------
 // Modification history :
@@ -80,13 +80,13 @@ module automatic tb_program (
         ROM['hF]  = 8'h20;
         // DMA TX
         ROM['h20] = {TYPE_3, LD_SRC_CONSTANT, DST_ACC}; // Load DMA TX registers:
-        ROM['h21] = 'hAB;				// Requires write to acc and 
-        ROM['h22] = {TYPE_3, WR_SRC_ACC, DST_MEM};	// from acc to mem.
-        ROM['h23] = DMA_TX_BUFFER_MSB;			// One for MSB and other
+        ROM['h21] = 'hAB;                               // Requires write to acc and
+        ROM['h22] = {TYPE_3, WR_SRC_ACC, DST_MEM};      // from acc to mem.
+        ROM['h23] = DMA_TX_BUFFER_MSB;                  // One for MSB and other
         ROM['h24] = {TYPE_3, LD_SRC_CONSTANT, DST_ACC}; // for LSB
-        ROM['h25] = 'hCD;				
-        ROM['h26] = {TYPE_3, WR_SRC_ACC, DST_MEM};	
-        ROM['h27] = DMA_TX_BUFFER_LSB;			
+        ROM['h25] = 'hCD;
+        ROM['h26] = {TYPE_3, WR_SRC_ACC, DST_MEM};
+        ROM['h27] = DMA_TX_BUFFER_LSB;
         // TX Enable
         ROM['h28] = {TYPE_4, 6'h0};
         // Infinite loop

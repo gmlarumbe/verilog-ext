@@ -33,8 +33,8 @@
            (print-length nil)
            (eval-expression-print-level nil)
            (eval-expression-print-length nil)
-           (default-directory (file-name-as-directory verilog-ext-tests-examples-dir)))
-       (insert-file-contents (verilog-ext-path-join verilog-ext-tests-examples-dir ,file))
+           (default-directory (file-name-as-directory verilog-ext-tests-common-dir)))
+       (insert-file-contents (verilog-ext-path-join verilog-ext-tests-common-dir ,file))
        (verilog-mode)
        ,@body)))
 
@@ -110,6 +110,18 @@ It did work locally though."
       (while (verilog-ext-find-function-task-bwd)
         (push (point) var)))
     (reverse var)))
+
+(defmacro verilog-ext-test-jump-parent-file (file &rest body)
+  (declare (indent 1) (debug t))
+  `(with-temp-buffer
+     (let ((print-level nil)
+           (print-length nil)
+           (eval-expression-print-level nil)
+           (eval-expression-print-length nil)
+           (default-directory (file-name-as-directory verilog-ext-tests-jump-parent-dir)))
+       (insert-file-contents (verilog-ext-path-join verilog-ext-tests-jump-parent-dir ,file))
+       (verilog-mode)
+       ,@body)))
 
 (defun verilog-ext-test-random-from-range (start end)
   (+ start (random (+ 1 (- end start)))))
@@ -261,49 +273,49 @@ It did work locally though."
              (lambda (command &optional mode name-function highlight-regexp)
                (butlast (split-string (shell-command-to-string command) "\n") 4))))
     (let ((verilog-ext-jump-to-parent-module-engine "ag")
-          (ag-arguments '("--smart-case" "--stats" "--nogroup")))
+          (ag-arguments '("--smart-case" "--stats" "--nogroup" "--ignore-dir=test/files/beautify" "--ignore-dir=test/files/indent"))) ; Ignore instances.sv beautified file
       ;; block0
-      (verilog-ext-test-navigation-file "jump-parent/block0.sv"
+      (verilog-ext-test-jump-parent-file "block0.sv"
         (should (equal (verilog-ext-jump-to-parent-module)
-                       '("[1;32mtest/examples/instances.sv[0m[K:[1;33m23[0m[K:5:    [30;43mblock0[0m[K I_BLOCK0 (" "1 matches" "1 files contained matches"))))
+                       '("[1;32mtest/files/common/instances.sv[0m[K:[1;33m23[0m[K:5:    [30;43mblock0[0m[K I_BLOCK0 (" "1 matches" "1 files contained matches"))))
       ;; block1
-      (verilog-ext-test-navigation-file "jump-parent/block1.sv"
+      (verilog-ext-test-jump-parent-file "block1.sv"
         (should (equal (verilog-ext-jump-to-parent-module)
-                       '("[1;32mtest/examples/instances.sv[0m[K:[1;33m30[0m[K:5:    [30;43mblock1[0m[K I_BLOCK1(" "1 matches" "1 files contained matches"))))
+                       '("[1;32mtest/files/common/instances.sv[0m[K:[1;33m30[0m[K:5:    [30;43mblock1[0m[K I_BLOCK1(" "1 matches" "1 files contained matches"))))
       ;; block2
-      (verilog-ext-test-navigation-file "jump-parent/block2.sv"
+      (verilog-ext-test-jump-parent-file "block2.sv"
         (should (equal (verilog-ext-jump-to-parent-module)
-                       '("[1;32mtest/examples/instances.sv[0m[K:[1;33m37[0m[K:5:    [30;43mblock2[0m[K #(" "1 matches" "1 files contained matches"))))
+                       '("[1;32mtest/files/common/instances.sv[0m[K:[1;33m37[0m[K:5:    [30;43mblock2[0m[K #(" "1 matches" "1 files contained matches"))))
       ;; block3
-      (verilog-ext-test-navigation-file "jump-parent/block3.sv"
+      (verilog-ext-test-jump-parent-file "block3.sv"
         (should (equal (verilog-ext-jump-to-parent-module)
-                       '("[1;32mtest/examples/instances.sv[0m[K:[1;33m48[0m[K:5:    [30;43mblock3[0m[K#(" "1 matches" "1 files contained matches"))))
+                       '("[1;32mtest/files/common/instances.sv[0m[K:[1;33m48[0m[K:5:    [30;43mblock3[0m[K#(" "1 matches" "1 files contained matches"))))
       ;; block_gen
-      (verilog-ext-test-navigation-file "jump-parent/block_gen.sv"
+      (verilog-ext-test-jump-parent-file "block_gen.sv"
         (should (equal (verilog-ext-jump-to-parent-module)
-                       '("[1;32mtest/examples/instances.sv[0m[K:[1;33m62[0m[K:13:            [30;43mblock_gen[0m[K #(" "1 matches" "1 files contained matches"))))
+                       '("[1;32mtest/files/common/instances.sv[0m[K:[1;33m62[0m[K:13:            [30;43mblock_gen[0m[K #(" "1 matches" "1 files contained matches"))))
       ;; test_if
-      (verilog-ext-test-navigation-file "jump-parent/test_if.sv"
+      (verilog-ext-test-jump-parent-file "test_if.sv"
         (should (equal (verilog-ext-jump-to-parent-module)
-                       '("[1;32mtest/examples/instances.sv[0m[K:[1;33m77[0m[K:5:    [30;43mtest_if[0m[K I_TEST_IF (.clk(clk), .rst_n(rst_n));" "1 matches" "1 files contained matches"))))
+                       '("[1;32mtest/files/common/instances.sv[0m[K:[1;33m77[0m[K:5:    [30;43mtest_if[0m[K I_TEST_IF (.clk(clk), .rst_n(rst_n));" "1 matches" "1 files contained matches"))))
       ;; test_if_params
-      (verilog-ext-test-navigation-file "jump-parent/test_if_params.sv"
+      (verilog-ext-test-jump-parent-file "test_if_params.sv"
         (should (equal (verilog-ext-jump-to-parent-module)
-                       '("[1;32mtest/examples/instances.sv[0m[K:[1;33m79[0m[K:5:    [30;43mtest_if_params[0m[K # (.param1(param1), .param2(param2)) ITEST_IF_PARAMS (.clk(clk), .rst_n(rst_n));" "1 matches" "1 files contained matches"))))
+                       '("[1;32mtest/files/common/instances.sv[0m[K:[1;33m79[0m[K:5:    [30;43mtest_if_params[0m[K # (.param1(param1), .param2(param2)) ITEST_IF_PARAMS (.clk(clk), .rst_n(rst_n));" "1 matches" "1 files contained matches"))))
       ;; test_if_params_array
-      (verilog-ext-test-navigation-file "jump-parent/test_if_params_array.sv"
+      (verilog-ext-test-jump-parent-file "test_if_params_array.sv"
         (should (equal (verilog-ext-jump-to-parent-module)
-                       '("[1;32mtest/examples/instances.sv[0m[K:[1;33m81[0m[K:5:    [30;43mtest_if_params_array[0m[K # (.param1(param1), .param2(param2)) ITEST_IF_PARAMS_ARRAY[5:0] (.clk(clk), .rst_n(rst_n));" "1 matches" "1 files contained matches"))))
+                       '("[1;32mtest/files/common/instances.sv[0m[K:[1;33m81[0m[K:5:    [30;43mtest_if_params_array[0m[K # (.param1(param1), .param2(param2)) ITEST_IF_PARAMS_ARRAY[5:0] (.clk(clk), .rst_n(rst_n));" "1 matches" "1 files contained matches"))))
       ;; test_if_params_empty
-      (verilog-ext-test-navigation-file "jump-parent/test_if_params_empty.sv"
+      (verilog-ext-test-jump-parent-file "test_if_params_empty.sv"
         (should (equal (verilog-ext-jump-to-parent-module)
-                       '("[1;32mtest/examples/instances.sv[0m[K:[1;33m83[0m[K:5:    [30;43mtest_if_params_empty[0m[K #() I_TEST_IF_PARAMS_EMPTY (.clk(clk), .rst_n(rst_n));" "1 matches" "1 files contained matches"))))
+                       '("[1;32mtest/files/common/instances.sv[0m[K:[1;33m83[0m[K:5:    [30;43mtest_if_params_empty[0m[K #() I_TEST_IF_PARAMS_EMPTY (.clk(clk), .rst_n(rst_n));" "1 matches" "1 files contained matches"))))
       ;; block_ws_0
-      (verilog-ext-test-navigation-file "jump-parent/block_ws_0.sv"
+      (verilog-ext-test-jump-parent-file "block_ws_0.sv"
         (should (equal (verilog-ext-jump-to-parent-module)
-                       '("[1;32mtest/examples/instances.sv[0m[K:[1;33m87[0m[K:5:    [30;43mblock_ws_0[0m[K" "1 matches" "1 files contained matches"))))
+                       '("[1;32mtest/files/common/instances.sv[0m[K:[1;33m87[0m[K:5:    [30;43mblock_ws_0[0m[K" "1 matches" "1 files contained matches"))))
       ;; block_ws_1 (TODO: Referenced in instances.sv:94 but not working with current regexp)
-      (verilog-ext-test-navigation-file "jump-parent/block_ws_1.sv"
+      (verilog-ext-test-jump-parent-file "block_ws_1.sv"
         (should (equal (verilog-ext-jump-to-parent-module)
                        '("0 matches" "0 files contained matches")))))))
 

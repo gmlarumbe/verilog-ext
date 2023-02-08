@@ -767,7 +767,7 @@ virtual class uvm_component extends uvm_report_object;
 
     extern function void print_config_with_audit(bit recurse = 0);
 
-static `ifndef UVM_ENABLE_DEPRECATED_API local `endif bit print_config_matches;
+    static `ifndef UVM_ENABLE_DEPRECATED_API local `endif bit print_config_matches;
 
     // Function: get_print_config_matches
     //
@@ -1232,9 +1232,9 @@ static `ifndef UVM_ENABLE_DEPRECATED_API local `endif bit print_config_matches;
 
     extern virtual protected
         // @uvm-ieee 1800.2-2020 auto 13.1.7.4
-function void do_begin_tr (uvm_transaction tr,
-    string stream_name,
-    int tr_handle);
+        function void do_begin_tr (uvm_transaction tr,
+            string stream_name,
+            int tr_handle);
 
 
     // Function -- NODOCS -- end_tr
@@ -1501,13 +1501,13 @@ function uvm_component::new (string name, uvm_component parent);
         bld = common.find(uvm_build_phase::get());
         if (bld == null)
             uvm_report_fatal("COMP/INTERNAL",
-"attempt to find build phase object failed",UVM_NONE);
+            "attempt to find build phase object failed",UVM_NONE);
         if (bld.get_state() == UVM_PHASE_DONE) begin
             uvm_report_fatal("ILLCRT", {"It is illegal to create a component ('",
-name,"' under '",
-(parent == null ? top.get_full_name() : parent.get_full_name()),
-"') after the build phase has ended."},
-UVM_NONE);
+            name,"' under '",
+            (parent == null ? top.get_full_name() : parent.get_full_name()),
+            "') after the build phase has ended."},
+            UVM_NONE);
         end
     end
 
@@ -1525,20 +1525,20 @@ UVM_NONE);
 
     if(uvm_report_enabled(UVM_MEDIUM+1, UVM_INFO, "NEWCOMP"))
         `uvm_info("NEWCOMP", {"Creating ",
-(parent==top?"uvm_top":parent.get_full_name()),".",name},UVM_MEDIUM+1)
+        (parent==top?"uvm_top":parent.get_full_name()),".",name},UVM_MEDIUM+1)
 
     if (parent.has_child(name) && this != parent.get_child(name)) begin
         if (parent == top) begin
             error_str = {"Name '",name,"' is not unique to other top-level ",
-"instances. If parent is a module, build a unique name by combining the ",
-"the module name and component name: $sformatf(\"\%m.\%s\",\"",name,"\")."};
+            "instances. If parent is a module, build a unique name by combining the ",
+            "the module name and component name: $sformatf(\"\%m.\%s\",\"",name,"\")."};
             `uvm_fatal("CLDEXT",error_str)
         end
         else
             `uvm_fatal("CLDEXT",
-$sformatf("Cannot set '%s' as a child of '%s', %s",
-name, parent.get_full_name(),
-"which already has a child by that name."))
+            $sformatf("Cannot set '%s' as a child of '%s', %s",
+            name, parent.get_full_name(),
+            "which already has a child by that name."))
         return;
     end
 
@@ -1558,12 +1558,12 @@ name, parent.get_full_name(),
 
     // Do local configuration settings
     if (!uvm_config_db #(uvm_bitstream_t)::get(this, "", "recording_detail", recording_detail))
-void'(uvm_config_db #(int)::get(this, "", "recording_detail", recording_detail));
+        void'(uvm_config_db #(int)::get(this, "", "recording_detail", recording_detail));
 
-m_rh.set_name(get_full_name());
-set_report_verbosity_level(parent.get_report_verbosity_level());
+            m_rh.set_name(get_full_name());
+            set_report_verbosity_level(parent.get_report_verbosity_level());
 
-m_set_cl_msg_args();
+            m_set_cl_msg_args();
 
 endfunction
 
@@ -1574,19 +1574,19 @@ endfunction
 function bit uvm_component::m_add_child(uvm_component child);
 
     if (m_children.exists(child.get_name()) &&
-m_children[child.get_name()] != child) begin
-    `uvm_warning("BDCLD",
-$sformatf("A child with the name '%0s' (type=%0s) already exists.",
-child.get_name(), m_children[child.get_name()].get_type_name()))
-    return 0;
-end
+    m_children[child.get_name()] != child) begin
+        `uvm_warning("BDCLD",
+        $sformatf("A child with the name '%0s' (type=%0s) already exists.",
+        child.get_name(), m_children[child.get_name()].get_type_name()))
+        return 0;
+    end
 
     if (m_children_by_handle.exists(child)) begin
         `uvm_warning("BDCHLD",
-$sformatf("A child with the name '%0s' %0s %0s'",
-child.get_name(),
-"already exists in parent under name '",
-m_children_by_handle[child].get_name()))
+        $sformatf("A child with the name '%0s' %0s %0s'",
+        child.get_name(),
+        "already exists in parent under name '",
+        m_children_by_handle[child].get_name()))
         return 0;
     end
 
@@ -1609,7 +1609,7 @@ endfunction
 
 function void uvm_component::get_children(ref uvm_component children[$]);
     foreach(m_children[i])
-children.push_back(m_children[i]);
+        children.push_back(m_children[i]);
 endfunction
 
 
@@ -1636,7 +1636,7 @@ function uvm_component uvm_component::get_child(string name);
     if (m_children.exists(name))
         return m_children[name];
     `uvm_warning("NOCHILD",{"Component with name '",name,
-"' is not a child of component '",get_full_name(),"'"})
+    "' is not a child of component '",get_full_name(),"'"})
     return null;
 endfunction
 
@@ -1745,7 +1745,7 @@ function uvm_component uvm_component::lookup( string name );
 
     if (!comp.has_child(leaf)) begin
         `uvm_warning("Lookup Error",
-$sformatf("Cannot find child %0s",leaf))
+        $sformatf("Cannot find child %0s",leaf))
         return null;
     end
 
@@ -1764,7 +1764,7 @@ function int unsigned uvm_component::get_depth();
     if(m_name == "") return 0;
     get_depth = 1;
     foreach(m_name[i])
-if(m_name[i] == ".") ++get_depth;
+        if(m_name[i] == ".") ++get_depth;
 endfunction
 
 
@@ -1809,7 +1809,7 @@ endfunction
 
 function void uvm_component::do_flush();
     foreach( m_children[s] )
-m_children[s].do_flush();
+        m_children[s].do_flush();
     flush();
 endfunction
 
@@ -1827,7 +1827,7 @@ endfunction
 
 function uvm_object  uvm_component::create (string name ="");
     `uvm_error("ILLCRT",
-"create cannot be called on a uvm_component. Use create_component instead.")
+    "create cannot be called on a uvm_component. Use create_component instead.")
     return null;
 endfunction
 
@@ -1860,7 +1860,7 @@ function uvm_component uvm_component::create_component (string requested_type_na
     uvm_coreservice_t cs = uvm_coreservice_t::get();
     uvm_factory factory=cs.get_factory();
     return factory.create_component_by_name(requested_type_name, get_full_name(),
-name, this);
+    name, this);
 endfunction
 
 
@@ -1872,7 +1872,7 @@ function uvm_object uvm_component::create_object (string requested_type_name,
     uvm_coreservice_t cs = uvm_coreservice_t::get();
     uvm_factory factory=cs.get_factory();
     return factory.create_object_by_name(requested_type_name,
-get_full_name(), name);
+    get_full_name(), name);
 endfunction
 
 
@@ -1916,9 +1916,9 @@ function void  uvm_component::set_inst_override (string relative_inst_path,
         full_inst_path = {get_full_name(), ".", relative_inst_path};
 
     factory.set_inst_override_by_name(
-original_type_name,
-override_type_name,
-full_inst_path);
+    original_type_name,
+    override_type_name,
+    full_inst_path);
 endfunction
 
 
@@ -1955,7 +1955,7 @@ endfunction
 function void uvm_component::set_report_id_verbosity_hier( string id, int verbosity);
     set_report_id_verbosity(id, verbosity);
     foreach( m_children[c] )
-m_children[c].set_report_id_verbosity_hier(id, verbosity);
+        m_children[c].set_report_id_verbosity_hier(id, verbosity);
 endfunction
 
 
@@ -1967,7 +1967,7 @@ function void uvm_component::set_report_severity_id_verbosity_hier( uvm_severity
              int verbosity);
     set_report_severity_id_verbosity(severity, id, verbosity);
     foreach( m_children[c] )
-m_children[c].set_report_severity_id_verbosity_hier(severity, id, verbosity);
+        m_children[c].set_report_severity_id_verbosity_hier(severity, id, verbosity);
 endfunction
 
 
@@ -1978,7 +1978,7 @@ function void uvm_component::set_report_severity_action_hier( uvm_severity sever
              uvm_action action);
     set_report_severity_action(severity, action);
     foreach( m_children[c] )
-m_children[c].set_report_severity_action_hier(severity, action);
+        m_children[c].set_report_severity_action_hier(severity, action);
 endfunction
 
 
@@ -1988,7 +1988,7 @@ endfunction
 function void uvm_component::set_report_id_action_hier( string id, uvm_action action);
     set_report_id_action(id, action);
     foreach( m_children[c] )
-m_children[c].set_report_id_action_hier(id, action);
+        m_children[c].set_report_id_action_hier(id, action);
 endfunction
 
 
@@ -2000,7 +2000,7 @@ function void uvm_component::set_report_severity_id_action_hier( uvm_severity se
              uvm_action action);
     set_report_severity_id_action(severity, id, action);
     foreach( m_children[c] )
-m_children[c].set_report_severity_id_action_hier(severity, id, action);
+        m_children[c].set_report_severity_id_action_hier(severity, id, action);
 endfunction
 
 
@@ -2011,7 +2011,7 @@ function void uvm_component::set_report_severity_file_hier( uvm_severity severit
              UVM_FILE file);
     set_report_severity_file(severity, file);
     foreach( m_children[c] )
-m_children[c].set_report_severity_file_hier(severity, file);
+        m_children[c].set_report_severity_file_hier(severity, file);
 endfunction
 
 
@@ -2021,7 +2021,7 @@ endfunction
 function void uvm_component::set_report_default_file_hier( UVM_FILE file);
     set_report_default_file(file);
     foreach( m_children[c] )
-m_children[c].set_report_default_file_hier(file);
+        m_children[c].set_report_default_file_hier(file);
 endfunction
 
 
@@ -2031,7 +2031,7 @@ endfunction
 function void uvm_component::set_report_id_file_hier( string id, UVM_FILE file);
     set_report_id_file(id, file);
     foreach( m_children[c] )
-m_children[c].set_report_id_file_hier(id, file);
+        m_children[c].set_report_id_file_hier(id, file);
 endfunction
 
 
@@ -2043,7 +2043,7 @@ function void uvm_component::set_report_severity_id_file_hier ( uvm_severity sev
              UVM_FILE file);
     set_report_severity_id_file(severity, id, file);
     foreach( m_children[c] )
-m_children[c].set_report_severity_id_file_hier(severity, id, file);
+        m_children[c].set_report_severity_id_file_hier(severity, id, file);
 endfunction
 
 
@@ -2053,7 +2053,7 @@ endfunction
 function void uvm_component::set_report_verbosity_level_hier(int verbosity);
     set_report_verbosity_level(verbosity);
     foreach( m_children[c] )
-m_children[c].set_report_verbosity_level_hier(verbosity);
+        m_children[c].set_report_verbosity_level_hier(verbosity);
 endfunction
 
 
@@ -2196,7 +2196,7 @@ function void uvm_component::set_domain(uvm_domain domain, int hier=1);
     define_domain(domain);
     if (hier)
         foreach (m_children[c])
-m_children[c].set_domain(domain);
+            m_children[c].set_domain(domain);
 endfunction
 
 // get_domain
@@ -2239,7 +2239,7 @@ endfunction
 
 function void uvm_component::do_resolve_bindings();
     foreach( m_children[s] )
-m_children[s].do_resolve_bindings();
+        m_children[s].do_resolve_bindings();
     resolve_bindings();
 endfunction
 
@@ -2316,7 +2316,7 @@ function void uvm_component::free_tr_stream(uvm_tr_stream stream);
 
     // Then make sure this name/type_name combo exists
     if (!m_streams.exists(stream.get_name()) ||
-!m_streams[stream.get_name()].exists(stream.get_stream_type_name()))
+    !m_streams[stream.get_name()].exists(stream.get_stream_type_name()))
         return;
 
     // Then make sure this name/type_name combo is THIS stream
@@ -2406,12 +2406,12 @@ function int uvm_component::m_begin_tr (uvm_transaction tr,
 
                 if (parent_recorder != null) begin
                     tr_database.establish_link(uvm_parent_child_link::get_link(parent_recorder,
-recorder));
+                    recorder));
                 end
 
                 if (link_recorder != null) begin
                     tr_database.establish_link(uvm_related_link::get_link(recorder,
-link_recorder));
+                    link_recorder));
                 end
                 m_tr_h[tr] = recorder;
             end
@@ -2499,8 +2499,8 @@ function int uvm_component::record_error_tr (string stream_name="main",
     if (stream != null) begin
 
         recorder = stream.open_recorder(label,
-error_time,
-etype);
+        error_time,
+        etype);
 
         if (recorder != null) begin
             if (label != "")
@@ -2552,8 +2552,8 @@ function int uvm_component::record_event_tr (string stream_name="main",
     handle = 0;
     if (stream != null) begin
         recorder = stream.open_recorder(label,
-event_time,
-etype);
+        event_time,
+        etype);
 
         if (recorder != null) begin
             if (label != "")
@@ -2714,7 +2714,7 @@ endfunction
 function void uvm_component::set_recording_enabled_hier(bit enabled);
     set_recording_enabled(enabled);
     foreach( m_children[c] )
-m_children[c].set_recording_enabled_hier(enabled);
+        m_children[c].set_recording_enabled_hier(enabled);
 endfunction
 
 
@@ -2728,15 +2728,15 @@ function void uvm_component::do_print(uvm_printer printer);
     if(uvm_verbosity'(recording_detail) != UVM_NONE)
         case (recording_detail)
             UVM_LOW : printer.print_generic("recording_detail", "uvm_verbosity",
-$bits(recording_detail), "UVM_LOW");
+            $bits(recording_detail), "UVM_LOW");
             UVM_MEDIUM : printer.print_generic("recording_detail", "uvm_verbosity",
-$bits(recording_detail), "UVM_MEDIUM");
+            $bits(recording_detail), "UVM_MEDIUM");
             UVM_HIGH : printer.print_generic("recording_detail", "uvm_verbosity",
-$bits(recording_detail), "UVM_HIGH");
+            $bits(recording_detail), "UVM_HIGH");
             UVM_FULL : printer.print_generic("recording_detail", "uvm_verbosity",
-$bits(recording_detail), "UVM_FULL");
+            $bits(recording_detail), "UVM_FULL");
             default : printer.print_field_int("recording_detail", recording_detail,
-$bits(recording_detail), UVM_DEC, , "integral");
+            $bits(recording_detail), UVM_DEC, , "integral");
         endcase
 
 endfunction
@@ -2769,9 +2769,9 @@ function void uvm_component::set_local(uvm_resource_base rsrc) ;
     //set the local properties
     if((rsrc != null) && (rsrc.get_name() == "recording_detail")) begin
         `uvm_resource_builtin_int_read(success,
-rsrc,
-recording_detail,
-this)
+        rsrc,
+        recording_detail,
+        this)
     end
 
     if (!success)
@@ -2831,7 +2831,7 @@ function void uvm_component::m_set_cl_verb;
 
         if (uvm_is_match(setting.comp, get_full_name()) ) begin
             if((setting.phase == "" || setting.phase == "build" ) ||
-(setting.phase == "time" && setting.offset == 0) )
+            (setting.phase == "time" && setting.offset == 0) )
                 begin
                     setting.used[this] = 1;
                     if(setting.id == "_ALL_")
@@ -2957,6 +2957,6 @@ endfunction
 
 function void uvm_component::m_do_pre_abort;
     foreach(m_children[i])
-m_children[i].m_do_pre_abort();
+        m_children[i].m_do_pre_abort();
     pre_abort();
 endfunction
