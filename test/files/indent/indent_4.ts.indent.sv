@@ -17,6 +17,6 @@ module foo;
         end // always_ff begin
     task
         t;
-        endtask // t
+    endtask // t
 
 endmodule // foo

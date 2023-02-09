@@ -121,7 +121,8 @@
   :after verilog-mode
   :demand)
 (verilog-ext-mode-setup)
-(add-hook 'verilog-mode-hook #'verilog-ext-mode)
+(add-hook 'verilog-mode-hook #'verilog-ext-mode) ; Applies also to verilog-ts-mode since it's derived
+(add-hook 'verilog-ts-mode-hook #'(lambda () (setq treesit-font-lock-level 4)))
 
 
 (provide 'verilog-ext-tests-setup)

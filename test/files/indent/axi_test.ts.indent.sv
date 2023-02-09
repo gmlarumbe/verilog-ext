@@ -77,8 +77,8 @@ package axi_test;
 
         /// Issue a beat on the AW channel.
         task send_aw (
-                 input logic [AW-1:0] addr,
-                 input prot_t         prot
+            input logic [AW-1:0] addr,
+            input prot_t         prot
         );
             axi.aw_addr  <= #TA addr;
             axi.aw_prot  <= #TA prot;
@@ -93,8 +93,8 @@ package axi_test;
 
         /// Issue a beat on the W channel.
         task send_w (
-                 input logic [DW-1:0] data,
-                 input logic [DW/8-1:0] strb
+            input logic [DW-1:0] data,
+            input logic [DW/8-1:0] strb
         );
             axi.w_data  <= #TA data;
             axi.w_strb  <= #TA strb;
@@ -109,7 +109,7 @@ package axi_test;
 
         /// Issue a beat on the B channel.
         task send_b (
-                 input axi_pkg::resp_t resp
+            input axi_pkg::resp_t resp
         );
             axi.b_resp  <= #TA resp;
             axi.b_valid <= #TA 1;
@@ -122,8 +122,8 @@ package axi_test;
 
         /// Issue a beat on the AR channel.
         task send_ar (
-                 input logic [AW-1:0] addr,
-                 input prot_t         prot
+            input logic [AW-1:0] addr,
+            input prot_t         prot
         );
             axi.ar_addr  <= #TA addr;
             axi.ar_prot  <= #TA prot;
@@ -138,8 +138,8 @@ package axi_test;
 
         /// Issue a beat on the R channel.
         task send_r (
-                 input logic [DW-1:0] data,
-                 input axi_pkg::resp_t resp
+            input logic [DW-1:0] data,
+            input axi_pkg::resp_t resp
         );
             axi.r_data  <= #TA data;
             axi.r_resp  <= #TA resp;
@@ -154,8 +154,8 @@ package axi_test;
 
         /// Wait for a beat on the AW channel.
         task recv_aw (
-                 output [AW-1:0] addr,
-                 output prot_t   prot
+            output [AW-1:0] addr,
+            output prot_t   prot
         );
             axi.aw_ready <= #TA 1;
             cycle_start();
@@ -168,8 +168,8 @@ package axi_test;
 
         /// Wait for a beat on the W channel.
         task recv_w (
-                 output [DW-1:0] data,
-                 output [DW/8-1:0] strb
+            output [DW-1:0] data,
+            output [DW/8-1:0] strb
         );
             axi.w_ready <= #TA 1;
             cycle_start();
@@ -182,7 +182,7 @@ package axi_test;
 
         /// Wait for a beat on the B channel.
         task recv_b (
-                 output axi_pkg::resp_t resp
+            output axi_pkg::resp_t resp
         );
             axi.b_ready <= #TA 1;
             cycle_start();
@@ -194,8 +194,8 @@ package axi_test;
 
         /// Wait for a beat on the AR channel.
         task recv_ar (
-                 output [AW-1:0] addr,
-                 output prot_t   prot
+            output [AW-1:0] addr,
+            output prot_t   prot
         );
             axi.ar_ready <= #TA 1;
             cycle_start();
@@ -208,8 +208,8 @@ package axi_test;
 
         /// Wait for a beat on the R channel.
         task recv_r (
-                 output [DW-1:0] data,
-                 output axi_pkg::resp_t resp
+            output [DW-1:0] data,
+            output axi_pkg::resp_t resp
         );
             axi.r_ready <= #TA 1;
             cycle_start();
@@ -371,7 +371,7 @@ package axi_test;
 
         /// Issue a beat on the AW channel.
         task send_aw (
-                 input ax_beat_t beat
+            input ax_beat_t beat
         );
             axi.aw_id     <= #TA beat.ax_id;
             axi.aw_addr   <= #TA beat.ax_addr;
@@ -406,7 +406,7 @@ package axi_test;
 
         /// Issue a beat on the W channel.
         task send_w (
-                 input w_beat_t beat
+            input w_beat_t beat
         );
             axi.w_data  <= #TA beat.w_data;
             axi.w_strb  <= #TA beat.w_strb;
@@ -425,7 +425,7 @@ package axi_test;
 
         /// Issue a beat on the B channel.
         task send_b (
-                 input b_beat_t beat
+            input b_beat_t beat
         );
             axi.b_id    <= #TA beat.b_id;
             axi.b_resp  <= #TA beat.b_resp;
@@ -442,7 +442,7 @@ package axi_test;
 
         /// Issue a beat on the AR channel.
         task send_ar (
-                 input ax_beat_t beat
+            input ax_beat_t beat
         );
             axi.ar_id     <= #TA beat.ax_id;
             axi.ar_addr   <= #TA beat.ax_addr;
@@ -475,7 +475,7 @@ package axi_test;
 
         /// Issue a beat on the R channel.
         task send_r (
-                 input r_beat_t beat
+            input r_beat_t beat
         );
             axi.r_id    <= #TA beat.r_id;
             axi.r_data  <= #TA beat.r_data;
@@ -496,7 +496,7 @@ package axi_test;
 
         /// Wait for a beat on the AW channel.
         task recv_aw (
-                 output ax_beat_t beat
+            output ax_beat_t beat
         );
             axi.aw_ready <= #TA 1;
             cycle_start();
@@ -520,7 +520,7 @@ package axi_test;
 
         /// Wait for a beat on the W channel.
         task recv_w (
-                 output w_beat_t beat
+            output w_beat_t beat
         );
             axi.w_ready <= #TA 1;
             cycle_start();
@@ -536,7 +536,7 @@ package axi_test;
 
         /// Wait for a beat on the B channel.
         task recv_b (
-                 output b_beat_t beat
+            output b_beat_t beat
         );
             axi.b_ready <= #TA 1;
             cycle_start();
@@ -551,7 +551,7 @@ package axi_test;
 
         /// Wait for a beat on the AR channel.
         task recv_ar (
-                 output ax_beat_t beat
+            output ax_beat_t beat
         );
             axi.ar_ready  <= #TA 1;
             cycle_start();
@@ -575,7 +575,7 @@ package axi_test;
 
         /// Wait for a beat on the R channel.
         task recv_r (
-                 output r_beat_t beat
+            output r_beat_t beat
         );
             axi.r_ready <= #TA 1;
             cycle_start();
@@ -592,7 +592,7 @@ package axi_test;
 
         /// Monitor the AW channel and return the next beat.
         task mon_aw (
-                 output ax_beat_t beat
+            output ax_beat_t beat
         );
             cycle_start();
             while (!(axi.aw_valid && axi.aw_ready)) begin cycle_end(); cycle_start(); end
@@ -614,7 +614,7 @@ package axi_test;
 
         /// Monitor the W channel and return the next beat.
         task mon_w (
-                 output w_beat_t beat
+            output w_beat_t beat
         );
             cycle_start();
             while (!(axi.w_valid && axi.w_ready)) begin cycle_end(); cycle_start(); end
@@ -628,7 +628,7 @@ package axi_test;
 
         /// Monitor the B channel and return the next beat.
         task mon_b (
-                 output b_beat_t beat
+            output b_beat_t beat
         );
             cycle_start();
             while (!(axi.b_valid && axi.b_ready)) begin cycle_end(); cycle_start(); end
@@ -641,7 +641,7 @@ package axi_test;
 
         /// Monitor the AR channel and return the next beat.
         task mon_ar (
-                 output ax_beat_t beat
+            output ax_beat_t beat
         );
             cycle_start();
             while (!(axi.ar_valid && axi.ar_ready)) begin cycle_end(); cycle_start(); end
@@ -663,7 +663,7 @@ package axi_test;
 
         /// Monitor the R channel and return the next beat.
         task mon_r (
-                 output r_beat_t beat
+            output r_beat_t beat
         );
             cycle_start();
             while (!(axi.r_valid && axi.r_ready)) begin cycle_end(); cycle_start(); end
@@ -1635,7 +1635,7 @@ package axi_test;
 
         // write data to a specific address
         task automatic write(input addr_t w_addr, input prot_t w_prot = prot_t'(0), input data_t w_data,
-                           input strb_t w_strb, output axi_pkg::resp_t b_resp);
+                             input strb_t w_strb, output axi_pkg::resp_t b_resp);
             $display("%0t %s> Write to ADDR: %h, PROT: %b DATA: %h, STRB: %h",
             $time(), this.name, w_addr, w_prot, w_data, w_strb);
             fork
@@ -1649,7 +1649,7 @@ package axi_test;
 
         // read data from a specific location
         task automatic read(input addr_t r_addr, input prot_t r_prot = prot_t'(0),
-                           output data_t r_data, output axi_pkg::resp_t r_resp);
+                            output data_t r_data, output axi_pkg::resp_t r_resp);
             $display("%0t %s> Read from ADDR: %h PROT: %b",
             $time(), this.name, r_addr, r_prot);
             this.drv.send_ar(r_addr, r_prot);
@@ -2032,7 +2032,7 @@ package axi_test;
                         end
                         end
                         end
-                        endtask : handle_write_resp
+        endtask : handle_write_resp
 
                             /// Handle read checking against the golden model
                             protected task automatic handle_read(input axi_id_t id);

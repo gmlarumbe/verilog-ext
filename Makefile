@@ -30,3 +30,7 @@ gen_indent:
 	$(ERT_TESTS) gen_indent_dir
 	$(ERT_TESTS) gen_indent_dir treesit
 
+gen_indent_ts:
+	$(ERT_TESTS) recompile
+	$(ERT_TESTS) gen_indent_dir treesit
+

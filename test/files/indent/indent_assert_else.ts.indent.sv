@@ -1,6 +1,6 @@
 module myassert(input clk,
-    input        reset,
-    input [15:0] data);
+                input        reset,
+                input [15:0] data);
 
     property myproperty;
         @(posedge clk)

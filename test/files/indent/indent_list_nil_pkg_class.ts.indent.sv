@@ -18,8 +18,8 @@ package foo;
         endfunction: new
 
         task T1 (
-                 input int a,
-                 input logic [3:0] b
+            input int a,
+            input logic [3:0] b
         );
             this.attribute1 = a;
             this.attribute2 = b;

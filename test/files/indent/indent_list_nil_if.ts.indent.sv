@@ -4,7 +4,7 @@ module foo (
 );
 
     function int foo2 (input a,
-                 output b);
+                       output b);
 
         if (some_long_name * some_other_long_name &&
         something_here < something_else &&

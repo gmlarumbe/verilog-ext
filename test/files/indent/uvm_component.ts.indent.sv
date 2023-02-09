@@ -816,7 +816,7 @@ virtual class uvm_component extends uvm_report_object;
 
     // @uvm-ieee 1800.2-2020 auto 13.1.6.1
     virtual function void raised (uvm_objection objection, uvm_object source_obj,
-                         string description, int count);
+                                  string description, int count);
     endfunction
 
 
@@ -831,7 +831,7 @@ virtual class uvm_component extends uvm_report_object;
 
     // @uvm-ieee 1800.2-2020 auto 13.1.6.2
     virtual function void dropped (uvm_objection objection, uvm_object source_obj,
-                         string description, int count);
+                                   string description, int count);
     endfunction
 
 
@@ -846,7 +846,7 @@ virtual class uvm_component extends uvm_report_object;
 
     // @uvm-ieee 1800.2-2020 auto 13.1.6.3
     virtual task all_dropped (uvm_objection objection, uvm_object source_obj,
-                     string description, int count);
+                              string description, int count);
     endtask
 
 
@@ -879,7 +879,7 @@ virtual class uvm_component extends uvm_report_object;
     // details on factory operation.
 
     extern function uvm_component create_component (string requested_type_name,
-               string name);
+                                                    string name);
 
 
     // Function -- NODOCS -- create_object
@@ -898,7 +898,7 @@ virtual class uvm_component extends uvm_report_object;
     // <uvm_factory> for details on factory operation.
 
     extern function uvm_object create_object (string requested_type_name,
-               string name="");
+                                              string name="");
 
 
     // Function -- NODOCS -- set_type_override_by_type
@@ -922,8 +922,8 @@ virtual class uvm_component extends uvm_report_object;
 
     extern static function void set_type_override_by_type
     (uvm_object_wrapper original_type,
-                      uvm_object_wrapper override_type,
-                      bit replace=1);
+     uvm_object_wrapper override_type,
+     bit replace=1);
 
 
     // Function -- NODOCS -- set_inst_override_by_type
@@ -978,8 +978,8 @@ virtual class uvm_component extends uvm_report_object;
     //|  endclass
 
     extern function void set_inst_override_by_type(string relative_inst_path,
-               uvm_object_wrapper original_type,
-               uvm_object_wrapper override_type);
+                                                   uvm_object_wrapper original_type,
+                                                   uvm_object_wrapper override_type);
 
 
     // Function -- NODOCS -- set_type_override
@@ -999,8 +999,8 @@ virtual class uvm_component extends uvm_report_object;
     // The ~override_type_name~ must refer to a preregistered type in the factory.
 
     extern static function void set_type_override(string original_type_name,
-                      string override_type_name,
-                      bit    replace=1);
+                                                  string override_type_name,
+                                                  bit    replace=1);
 
 
     // Function -- NODOCS -- set_inst_override
@@ -1023,8 +1023,8 @@ virtual class uvm_component extends uvm_report_object;
     // The ~override_type_name~ must refer to a preregistered type in the factory.
 
     extern function void set_inst_override(string relative_inst_path,
-               string original_type_name,
-               string override_type_name);
+                                           string original_type_name,
+                                           string override_type_name);
 
 
     // Function -- NODOCS -- print_override_info
@@ -1035,7 +1035,7 @@ virtual class uvm_component extends uvm_report_object;
     // provided arguments.
 
     extern function void print_override_info(string requested_type_name,
-               string name="");
+                                             string name="");
 
 
     //----------------------------------------------------------------------------
@@ -1053,7 +1053,7 @@ virtual class uvm_component extends uvm_report_object;
     // Function -- NODOCS -- set_report_id_verbosity_hier
 
     extern function void set_report_id_verbosity_hier (string id,
-               int verbosity);
+                                                       int verbosity);
 
     // Function -- NODOCS -- set_report_severity_id_verbosity_hier
     //
@@ -1067,20 +1067,20 @@ virtual class uvm_component extends uvm_report_object;
     // <uvm_report_handler>.
 
     extern function void set_report_severity_id_verbosity_hier(uvm_severity severity,
-               string id,
-               int verbosity);
+                                                               string id,
+                                                               int verbosity);
 
 
     // Function -- NODOCS -- set_report_severity_action_hier
 
     extern function void set_report_severity_action_hier (uvm_severity severity,
-               uvm_action action);
+                                                          uvm_action action);
 
 
     // Function -- NODOCS -- set_report_id_action_hier
 
     extern function void set_report_id_action_hier (string id,
-               uvm_action action);
+                                                    uvm_action action);
 
     // Function -- NODOCS -- set_report_severity_id_action_hier
     //
@@ -1094,8 +1094,8 @@ virtual class uvm_component extends uvm_report_object;
     // <uvm_report_handler>.
 
     extern function void set_report_severity_id_action_hier(uvm_severity severity,
-               string id,
-               uvm_action action);
+                                                            string id,
+                                                            uvm_action action);
 
 
 
@@ -1106,12 +1106,12 @@ virtual class uvm_component extends uvm_report_object;
     // Function -- NODOCS -- set_report_severity_file_hier
 
     extern function void set_report_severity_file_hier (uvm_severity severity,
-               UVM_FILE file);
+                                                        UVM_FILE file);
 
     // Function -- NODOCS -- set_report_id_file_hier
 
     extern function void set_report_id_file_hier (string id,
-               UVM_FILE file);
+                                                  UVM_FILE file);
 
     // Function -- NODOCS -- set_report_severity_id_file_hier
     //
@@ -1125,8 +1125,8 @@ virtual class uvm_component extends uvm_report_object;
     // mechanism, refer to <uvm_report_handler>.
 
     extern function void set_report_severity_id_file_hier(uvm_severity severity,
-               string id,
-               UVM_FILE file);
+                                                          string id,
+                                                          UVM_FILE file);
 
 
     // Function -- NODOCS -- set_report_verbosity_level_hier
@@ -1218,11 +1218,11 @@ virtual class uvm_component extends uvm_report_object;
 
     // @uvm-ieee 1800.2-2020 auto 13.1.7.3
     extern function int begin_tr (uvm_transaction tr,
-               string stream_name="main",
-               string label="",
-               string desc="",
-               time begin_time=0,
-               int parent_handle=0);
+                                  string stream_name="main",
+                                  string label="",
+                                  string desc="",
+                                  time begin_time=0,
+                                  int parent_handle=0);
 
     // Function -- NODOCS -- do_begin_tr
     //
@@ -1233,8 +1233,8 @@ virtual class uvm_component extends uvm_report_object;
     extern virtual protected
         // @uvm-ieee 1800.2-2020 auto 13.1.7.4
         function void do_begin_tr (uvm_transaction tr,
-            string stream_name,
-            int tr_handle);
+                                   string stream_name,
+                                   int tr_handle);
 
 
     // Function -- NODOCS -- end_tr
@@ -1263,8 +1263,8 @@ virtual class uvm_component extends uvm_report_object;
 
     // @uvm-ieee 1800.2-2020 auto 13.1.7.5
     extern function void end_tr (uvm_transaction tr,
-               time end_time=0,
-               bit free_handle=1);
+                                 time end_time=0,
+                                 bit free_handle=1);
 
 
     // Function -- NODOCS -- do_end_tr
@@ -1275,7 +1275,7 @@ virtual class uvm_component extends uvm_report_object;
 
     // @uvm-ieee 1800.2-2020 auto 13.1.7.6
     extern virtual protected function void do_end_tr (uvm_transaction tr,
-                                 int tr_handle);
+                                                      int tr_handle);
 
 
     // Function -- NODOCS -- record_error_tr
@@ -1294,11 +1294,11 @@ virtual class uvm_component extends uvm_report_object;
 
     // @uvm-ieee 1800.2-2020 auto 13.1.7.7
     extern function int record_error_tr (string stream_name="main",
-               uvm_object info=null,
-               string label="error_tr",
-               string desc="",
-               time   error_time=0,
-               bit    keep_active=0);
+                                         uvm_object info=null,
+                                         string label="error_tr",
+                                         string desc="",
+                                         time   error_time=0,
+                                         bit    keep_active=0);
 
 
     // Function -- NODOCS -- record_event_tr
@@ -1315,16 +1315,16 @@ virtual class uvm_component extends uvm_report_object;
 
     // @uvm-ieee 1800.2-2020 auto 13.1.7.8
     extern function int record_event_tr (string stream_name="main",
-               uvm_object info=null,
-               string label="event_tr",
-               string desc="",
-               time   event_time=0,
-               bit    keep_active=0);
+                                         uvm_object info=null,
+                                         string label="event_tr",
+                                         string desc="",
+                                         time   event_time=0,
+                                         bit    keep_active=0);
 
 
     // @uvm-ieee 1800.2-2020 auto 13.1.7.9
     extern virtual function uvm_tr_stream get_tr_stream(string name,
-                       string stream_type_name="");
+                                                        string stream_type_name="");
 
 
     // @uvm-ieee 1800.2-2020 auto 13.1.7.10
@@ -1397,8 +1397,8 @@ virtual class uvm_component extends uvm_report_object;
     extern virtual           function void flush ();
 
     extern local             function void m_extract_name(string name ,
-                                 output string leaf ,
-                                 output string remainder );
+                                                          output string leaf ,
+                                                          output string remainder );
 
     // overridden to disable
     extern virtual function uvm_object create (string name="");
@@ -1407,9 +1407,9 @@ virtual class uvm_component extends uvm_report_object;
     local uvm_tr_stream m_streams[string][string];
     local uvm_recorder m_tr_h[uvm_transaction];
     extern protected function int m_begin_tr (uvm_transaction tr,
-                         int parent_handle=0,
-                         string stream_name="main", string label="",
-                         string desc="", time begin_time=0);
+                                              int parent_handle=0,
+                                              string stream_name="main", string label="",
+                                              string desc="", time begin_time=0);
 
     string m_name;
 
@@ -1772,8 +1772,8 @@ endfunction
 // --------------
 
 function void uvm_component::m_extract_name(input string name ,
-             output string leaf ,
-             output string remainder );
+                                            output string leaf ,
+                                            output string remainder );
     int i , len;
     len = name.len();
 
@@ -1845,7 +1845,7 @@ endfunction
 // -------------------
 
 function void  uvm_component::print_override_info (string requested_type_name,
-             string name="");
+                                                   string name="");
     uvm_coreservice_t cs = uvm_coreservice_t::get();
     uvm_factory factory=cs.get_factory();
     factory.debug_create_by_name(requested_type_name, get_full_name(), name);
@@ -1856,7 +1856,7 @@ endfunction
 // ----------------
 
 function uvm_component uvm_component::create_component (string requested_type_name,
-             string name);
+                                                        string name);
     uvm_coreservice_t cs = uvm_coreservice_t::get();
     uvm_factory factory=cs.get_factory();
     return factory.create_component_by_name(requested_type_name, get_full_name(),
@@ -1868,7 +1868,7 @@ endfunction
 // -------------
 
 function uvm_object uvm_component::create_object (string requested_type_name,
-             string name="");
+                                                  string name="");
     uvm_coreservice_t cs = uvm_coreservice_t::get();
     uvm_factory factory=cs.get_factory();
     return factory.create_object_by_name(requested_type_name,
@@ -1880,8 +1880,8 @@ endfunction
 // -----------------
 
 function void uvm_component::set_type_override (string original_type_name,
-             string override_type_name,
-             bit    replace=1);
+                                                string override_type_name,
+                                                bit    replace=1);
     uvm_coreservice_t cs = uvm_coreservice_t::get();
     uvm_factory factory=cs.get_factory();
     factory.set_type_override_by_name(original_type_name,override_type_name, replace);
@@ -1892,8 +1892,8 @@ endfunction
 // -------------------------
 
 function void uvm_component::set_type_override_by_type (uvm_object_wrapper original_type,
-             uvm_object_wrapper override_type,
-             bit    replace=1);
+                                                        uvm_object_wrapper override_type,
+                                                        bit    replace=1);
     uvm_coreservice_t cs = uvm_coreservice_t::get();
     uvm_factory factory=cs.get_factory();
     factory.set_type_override_by_type(original_type, override_type, replace);
@@ -1904,8 +1904,8 @@ endfunction
 // -----------------
 
 function void  uvm_component::set_inst_override (string relative_inst_path,
-             string original_type_name,
-             string override_type_name);
+                                                 string original_type_name,
+                                                 string override_type_name);
     string full_inst_path;
     uvm_coreservice_t cs = uvm_coreservice_t::get();
     uvm_factory factory=cs.get_factory();
@@ -1926,8 +1926,8 @@ endfunction
 // -------------------------
 
 function void uvm_component::set_inst_override_by_type (string relative_inst_path,
-             uvm_object_wrapper original_type,
-             uvm_object_wrapper override_type);
+                                                        uvm_object_wrapper original_type,
+                                                        uvm_object_wrapper override_type);
     string full_inst_path;
     uvm_coreservice_t cs = uvm_coreservice_t::get();
     uvm_factory factory=cs.get_factory();
@@ -1963,8 +1963,8 @@ endfunction
 // ----------------------------------
 
 function void uvm_component::set_report_severity_id_verbosity_hier( uvm_severity severity,
-             string id,
-             int verbosity);
+                                                                    string id,
+                                                                    int verbosity);
     set_report_severity_id_verbosity(severity, id, verbosity);
     foreach( m_children[c] )
         m_children[c].set_report_severity_id_verbosity_hier(severity, id, verbosity);
@@ -1975,7 +1975,7 @@ endfunction
 // -------------------------
 
 function void uvm_component::set_report_severity_action_hier( uvm_severity severity,
-             uvm_action action);
+                                                              uvm_action action);
     set_report_severity_action(severity, action);
     foreach( m_children[c] )
         m_children[c].set_report_severity_action_hier(severity, action);
@@ -1996,8 +1996,8 @@ endfunction
 // ----------------------------------
 
 function void uvm_component::set_report_severity_id_action_hier( uvm_severity severity,
-             string id,
-             uvm_action action);
+                                                                 string id,
+                                                                 uvm_action action);
     set_report_severity_id_action(severity, id, action);
     foreach( m_children[c] )
         m_children[c].set_report_severity_id_action_hier(severity, id, action);
@@ -2008,7 +2008,7 @@ endfunction
 // -----------------------------
 
 function void uvm_component::set_report_severity_file_hier( uvm_severity severity,
-             UVM_FILE file);
+                                                            UVM_FILE file);
     set_report_severity_file(severity, file);
     foreach( m_children[c] )
         m_children[c].set_report_severity_file_hier(severity, file);
@@ -2039,8 +2039,8 @@ endfunction
 // --------------------------------
 
 function void uvm_component::set_report_severity_id_file_hier ( uvm_severity severity,
-             string id,
-             UVM_FILE file);
+                                                                string id,
+                                                                UVM_FILE file);
     set_report_severity_id_file(severity, id, file);
     foreach( m_children[c] )
         m_children[c].set_report_severity_id_file_hier(severity, id, file);
@@ -2255,7 +2255,7 @@ endfunction
 // ---------
 
 function void uvm_component::accept_tr (uvm_transaction tr,
-             time accept_time=0);
+                                        time accept_time=0);
     uvm_event#(uvm_object) e;
 
     if(tr == null)
@@ -2272,11 +2272,11 @@ endfunction
 // --------
 
 function int uvm_component::begin_tr (uvm_transaction tr,
-             string stream_name="main",
-             string label="",
-             string desc="",
-             time begin_time=0,
-             int parent_handle=0);
+                                      string stream_name="main",
+                                      string label="",
+                                      string desc="",
+                                      time begin_time=0,
+                                      int parent_handle=0);
     return m_begin_tr(tr, parent_handle, stream_name, label, desc, begin_time);
 endfunction
 
@@ -2300,7 +2300,7 @@ endfunction : set_tr_database
 // get_tr_stream
 // ------------
 function uvm_tr_stream uvm_component::get_tr_stream( string name,
-             string stream_type_name="" );
+                                                     string stream_type_name="" );
     uvm_tr_database db = get_tr_database();
     if (!m_streams.exists(name) || !m_streams[name].exists(stream_type_name))
         m_streams[name][stream_type_name] = db.open_stream(name, this.get_full_name(), stream_type_name);
@@ -2338,11 +2338,11 @@ endfunction : free_tr_stream
 // ----------
 
 function int uvm_component::m_begin_tr (uvm_transaction tr,
-             int parent_handle=0,
-             string stream_name="main",
-             string label="",
-             string desc="",
-             time begin_time=0);
+                                        int parent_handle=0,
+                                        string stream_name="main",
+                                        string label="",
+                                        string desc="",
+                                        time begin_time=0);
     uvm_event#(uvm_object) e;
     string    name;
     string    kind;
@@ -2435,8 +2435,8 @@ endfunction
 // ------
 
 function void uvm_component::end_tr (uvm_transaction tr,
-             time end_time=0,
-             bit free_handle=1);
+                                     time end_time=0,
+                                     bit free_handle=1);
     uvm_event#(uvm_object) e;
     uvm_recorder recorder;
 
@@ -2475,11 +2475,11 @@ endfunction
 // ---------------
 
 function int uvm_component::record_error_tr (string stream_name="main",
-             uvm_object info=null,
-             string label="error_tr",
-             string desc="",
-             time   error_time=0,
-             bit    keep_active=0);
+                                             uvm_object info=null,
+                                             string label="error_tr",
+                                             string desc="",
+                                             time   error_time=0,
+                                             bit    keep_active=0);
     uvm_recorder recorder;
     string etype;
     uvm_tr_stream stream;
@@ -2529,11 +2529,11 @@ endfunction
 // ---------------
 
 function int uvm_component::record_event_tr (string stream_name="main",
-             uvm_object info=null,
-             string label="event_tr",
-             string desc="",
-             time   event_time=0,
-             bit    keep_active=0);
+                                             uvm_object info=null,
+                                             string label="event_tr",
+                                             string desc="",
+                                             time   event_time=0,
+                                             bit    keep_active=0);
     uvm_recorder recorder;
     string etype;
     int handle;
@@ -2589,8 +2589,8 @@ endfunction
 // -----------
 
 function void uvm_component::do_begin_tr (uvm_transaction tr,
-             string stream_name,
-             int tr_handle);
+                                          string stream_name,
+                                          int tr_handle);
     return;
 endfunction
 
@@ -2599,7 +2599,7 @@ endfunction
 // ---------
 
 function void uvm_component::do_end_tr (uvm_transaction tr,
-             int tr_handle);
+                                        int tr_handle);
     return;
 endfunction
 

@@ -1,7 +1,7 @@
 module test (input logic clk,
-    input logic a,
-    output logic c,
-    output byte  d[4]);
+             input logic a,
+             output logic c,
+             output byte  d[4]);
 
     always_ff @(posedge clk) begin
         if (a == 1'b1) begin

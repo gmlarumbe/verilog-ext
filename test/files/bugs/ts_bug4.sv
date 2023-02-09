@@ -1,3 +1,5 @@
+// Syntax errors @ test/files/indent/indent_dpi.ts.indent.sv
+
 import "DPI-C" function string fna (input string str1);
 export "DPI" c_identifier = task task_identifier;
 import "DPI" context function string fnb (input string str1);
@@ -15,15 +17,4 @@ module testbench;
     import "DPI-C" function void dpiAesCBCEncrypt ();
 
     logic                                        a;
-endmodule // testbench
-
-/*
-    package ref_model;
-    import "DPI-C" xx_write_bmp_file =
-    function void write_bmp_file(input string filename);
-
-    import "DPI-C" xx_demosaic =
-    function void demosaic(regs regs,
-    inout pix_buf imgR, imgG, imgB);
-    endpackage
-    */
+endmodule : testbench

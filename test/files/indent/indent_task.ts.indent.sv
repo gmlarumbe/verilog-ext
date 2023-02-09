@@ -70,7 +70,7 @@ class a;
     endfunction //
 
         virtual function f;
-        endfunction //
+                endfunction //
 
     protected function f;
     endfunction //
