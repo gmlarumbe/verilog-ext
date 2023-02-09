@@ -34,7 +34,7 @@ recompile() {
     compile
 }
 
-update_indent_dir () {
+gen_indent_dir () {
     if [[ $# -ge 1 ]]; then
         run_elisp_cmd "(verilog-ext-test-indent-gen-expected-files :tree-sitter)"
     else
@@ -42,7 +42,7 @@ update_indent_dir () {
     fi
 }
 
-update_beautify_dir () {
+gen_beautify_dir () {
     run_elisp_cmd "(verilog-ext-test-beautify-gen-expected-files)"
 }
 

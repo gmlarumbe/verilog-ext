@@ -30,21 +30,17 @@
 
 
 (ert-deftest tree-sitter::font-lock ()
-  (should (verilog-ext-test-font-lock-test-file "axi_demux.sv" :tree-sitter))
-  (should (verilog-ext-test-font-lock-test-file "axi_test.sv" :tree-sitter))
-  (should (verilog-ext-test-font-lock-test-file "instances.sv" :tree-sitter))
-  (should (verilog-ext-test-font-lock-test-file "tb_program.sv" :tree-sitter))
-  (should (verilog-ext-test-font-lock-test-file "ucontroller.sv" :tree-sitter))
-  (should (verilog-ext-test-font-lock-test-file "uvm_component.svh" :tree-sitter)))
-
+  (let ((default-directory verilog-ext-tests-common-dir)
+        (faceup-test-explain t))
+    (dolist (file (directory-files verilog-ext-tests-common-dir nil ".s?vh?$"))
+      (should (verilog-ext-test-font-lock-test-file file :tree-sitter)))))
 
 (ert-deftest tree-sitter::indentation ()
-  (should (verilog-ext-test-indent-compare "axi_demux.sv" :tree-sitter))
-  (should (verilog-ext-test-indent-compare "axi_test.sv" :tree-sitter))
-  (should (verilog-ext-test-indent-compare "instances.sv" :tree-sitter))
-  (should (verilog-ext-test-indent-compare "tb_program.sv" :tree-sitter))
-  (should (verilog-ext-test-indent-compare "ucontroller.sv" :tree-sitter))
-  (should (verilog-ext-test-indent-compare "uvm_component.svh" :tree-sitter)))
+  (let ((test-files verilog-ext-tests-indent-test-files))
+    (delete-directory verilog-ext-tests-indent-dump-dir :recursive)
+    (make-directory verilog-ext-tests-indent-dump-dir :parents)
+    (dolist (file test-files)
+      (should (verilog-ext-test-indent-compare file :tree-sitter)))))
 
 
 (provide 'verilog-ext-tests-tree-sitter)

@@ -21,12 +21,12 @@ test_beautify:
 test_ts:
 	$(ERT_TESTS) recompile_run tree-sitter::
 
-update_beautify_dir:
+gen_beautify:
 	$(ERT_TESTS) recompile
-	$(ERT_TESTS) update_beautify_dir
+	$(ERT_TESTS) gen_beautify_dir
 
-update_indent_dir:
+gen_indent:
 	$(ERT_TESTS) recompile
-	$(ERT_TESTS) update_indent_dir
-	$(ERT_TESTS) update_indent_dir treesit
+	$(ERT_TESTS) gen_indent_dir
+	$(ERT_TESTS) gen_indent_dir treesit
 

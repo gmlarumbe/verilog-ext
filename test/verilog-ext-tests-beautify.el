@@ -25,69 +25,71 @@
 ;;; Code:
 
 
-(defvar verilog-ext-test-beautify-dump-diff-on-error nil)
+(defvar verilog-ext-tests-beautify-test-files
+  '("axi_demux.sv"
+    "instances.sv"
+    "ucontroller.sv"))
+(defvar verilog-ext-tests-beautify-dump-dir (verilog-ext-path-join verilog-ext-tests-beautify-dir "dump"))
+(defvar verilog-ext-tests-beautify-dump-diff-on-error t)
 
+
+(defun verilog-ext-tests-beautify-ref-file-from-orig (file)
+  (concat (file-name-nondirectory (file-name-sans-extension file)) ".beauty.sv"))
 
 (defun verilog-ext-test-beautify-gen-expected-files ()
   (let ((orig-dir verilog-ext-tests-common-dir)
         (dest-dir verilog-ext-tests-beautify-dir)
-        (files '("axi_demux.sv" "instances.sv" "ucontroller.sv"))  ; Only files with instances are relevant
-        (verilog-ext-time-stamp-pattern nil))                      ; Prevent auto-update of timestamp
+        (files verilog-ext-tests-beautify-test-files)  ; Only files with instances are relevant
+        (verilog-ext-time-stamp-pattern nil))          ; Prevent auto-update of timestamp
     (dolist (file files)
       (copy-file (verilog-ext-path-join orig-dir file)
-                 (verilog-ext-path-join dest-dir (concat (file-name-nondirectory (file-name-sans-extension file)) ".beauty.sv")) t))
+                 (verilog-ext-path-join dest-dir (verilog-ext-tests-beautify-ref-file-from-orig file)) t))
     (verilog-ext-beautify-dir-files dest-dir)))
 
 (defun verilog-ext-test-beautify-file (file)
-  (let ((debug nil))
+  (let ((debug nil)
+        (dump-file (verilog-ext-path-join verilog-ext-tests-beautify-dump-dir file)))
     (cl-letf (((symbol-function 'message)
                (lambda (FORMAT-STRING &rest ARGS)
                  nil))) ; Mock `message' to silence all the indentation reporting
-      (with-temp-buffer
+      (with-temp-file dump-file
         (when debug
           (clone-indirect-buffer-other-window "*debug*" t))
-        (insert-file-contents file)
+        (insert-file-contents (verilog-ext-path-join verilog-ext-tests-common-dir file))
         ;; Remove alignments between port connections
         (verilog-ext-replace-regexp-whole-buffer (concat "\\(?1:^\\s-*\\." verilog-identifier-re "\\)\\(?2:\\s-*\\)(") "\\1(")
         ;; Beautify
         (verilog-mode)
         (verilog-ext-beautify-current-buffer)
-        (buffer-substring-no-properties (point-min) (point-max))))))
+        dump-file))))
 
 (defun verilog-ext-test-beautify-compare (file)
-  "Compare raw and beautified versions of FILE.
-Expects a file.sv.raw and its beautified version file.sv.beauty in beautify dir."
-  (let ((filename-beauty (verilog-ext-path-join verilog-ext-tests-beautify-dir (concat (file-name-nondirectory (file-name-sans-extension file)) ".beauty.sv"))))
-    (equal (verilog-ext-test-beautify-file (verilog-ext-path-join verilog-ext-tests-common-dir file))
-           (with-temp-buffer
-             (insert-file-contents filename-beauty)
-             (buffer-substring-no-properties (point-min) (point-max))))))
-
-;; (defun verilog-ext-test-beautify-ert-explainer (file)
-;;   (let* ((file-reference (verilog-ext-path-join verilog-ext-tests-beautify-dir (concat (file-name-nondirectory (file-name-sans-extension file)) ".beauty.sv")))
-;;          (string-reference (with-temp-buffer
-;;                              (insert-file-contents file-reference)
-;;                              (buffer-substring-no-properties (point-min) (point-max))))
-;;          (file-orig (verilog-ext-path-join verilog-ext-tests-common-dir file))
-;;          (string-actual (verilog-ext-test-beautify-file file-orig))
-;;          (dump-dir (verilog-ext-path-join verilog-ext-tests-beautify-dir "dump"))
-;;          (dump-file (verilog-ext-path-join dump-dir file)))
-;;     (delete-directory dump-dir :recursive)
-;;     (make-directory dump-dir :parents)
-;;     (with-temp-file dump-file
-;;       (insert string-actual))
-;;     (when verilog-ext-test-beautify-dump-diff-on-error
-;;       (shell-command (concat "diff " file-reference " " dump-file " > " (concat (file-name-sans-extension dump-file)) ".diff")))
-;;     (ert--explain-string-equal string-reference string-actual)))
-
-
-;; (put 'verilog-ext-test-beautify-compare 'ert-explainer #'verilog-ext-test-beautify-ert-explainer)
-
+  "Compare beautified FILE.
+Reference beautified version: file.beauty.sv in beautify dir."
+  (let ((filename-beautified (verilog-ext-test-beautify-file file)) ; Dump file
+        (filename-ref (verilog-ext-path-join verilog-ext-tests-beautify-dir (verilog-ext-tests-beautify-ref-file-from-orig file))))
+    (if (equal (with-temp-buffer
+                 (insert-file-contents filename-beautified)
+                 (buffer-substring-no-properties (point-min) (point-max)))
+               (with-temp-buffer
+                 (insert-file-contents filename-ref)
+                 (buffer-substring-no-properties (point-min) (point-max))))
+        (progn
+          (delete-file filename-beautified)
+          t)
+      ;; Dump on error if enabled
+      (when verilog-ext-tests-beautify-dump-diff-on-error
+        (shell-command (concat
+                        "diff " filename-ref " " filename-beautified " > " (concat (file-name-sans-extension filename-beautified)) ".diff")))
+      nil)))
 
 (ert-deftest beautify::module-at-point ()
-  (should (verilog-ext-test-beautify-compare "ucontroller.sv"))
-  (should (verilog-ext-test-beautify-compare "instances.sv"))
-  (should (verilog-ext-test-beautify-compare "axi_demux.sv")))
+  (let ((test-files verilog-ext-tests-beautify-test-files))
+    (delete-directory verilog-ext-tests-beautify-dump-dir :recursive)
+    (make-directory verilog-ext-tests-beautify-dump-dir :parents)
+    (dolist (file test-files)
+      (should (verilog-ext-test-beautify-compare file)))))
+
 
 
 (provide 'verilog-ext-tests-beautify)
