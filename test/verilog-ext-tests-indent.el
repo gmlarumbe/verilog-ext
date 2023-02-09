@@ -25,7 +25,9 @@
 ;;; Code:
 
 
-(defvar verilog-ext-tests-indent-test-files (directory-files verilog-ext-tests-common-dir t ".s?vh?$"))
+(defvar verilog-ext-tests-indent-test-files
+  (append (directory-files verilog-ext-tests-common-dir t ".s?vh?$")
+          (directory-files (verilog-ext-path-join verilog-ext-tests-files-dir "verilog-mode") t ".s?vh?$")))
 (defvar verilog-ext-tests-indent-dump-dir (verilog-ext-path-join verilog-ext-tests-indent-dir "dump"))
 (defvar verilog-ext-tests-indent-dump-diff-on-error t)
 
