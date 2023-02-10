@@ -3977,6 +3977,8 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
 \\{verilog-ext-mode-map}"
   :lighter " vX"
   :global nil
+  (unless (derived-mode-p 'verilog-mode)
+    (error "Verilog-ext only works with `verilog-mode' or `verilog-ts-mode'"))
   ;; Update list of open buffers/directories (Verilog AUTO, flycheck)
   (if verilog-ext-mode
       (progn
