@@ -30,7 +30,7 @@
 
 (require 'treesit)
 
-;; TODO :Is this needed?
+;; Copied from `c-ts-mode'
 (declare-function treesit-parser-create "treesit.c")
 (declare-function treesit-induce-sparse-tree "treesit.c")
 (declare-function treesit-node-parent "treesit.c")
@@ -187,8 +187,8 @@ Snippet fetched from `treesit--indent-1'."
 ;; There are some keywords that are not recognized by tree-sitter grammar.
 ;; For these ones, use regexp matching patterns inside tree-sitter (:match "^foo$")
 (defconst verilog-ts-keywords
-  '("alias" "and" "assert" "assign" "assume" "before" "binsof" "break" "checker"
-    "class" "class" "clocking" "config" "const" "constraint" "cover"
+  '("alias" "and" "assert" "assign" "assume" "before" "binsof" "break" "case"
+    "checker" "class" "class" "clocking" "config" "const" "constraint" "cover"
     "covergroup" "coverpoint" "cross" "default" "defparam" "disable" "do" "else"
     "endcase" "endchecker" "endclass" "endclocking" "endconfig" "endfunction"
     "endgenerate" "endgroup" "endinterface" "endmodule" "endpackage"
@@ -271,7 +271,7 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
        'verilog-ext-font-lock-width-type-face
        override start end))))
 
-(setq verilog--treesit-settings
+(defvar verilog--treesit-settings
   (treesit-font-lock-rules
    :feature 'comment
    :language 'verilog
@@ -345,15 +345,30 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
      (type_declaration
       (simple_identifier) @font-lock-constant-face)
      ("typedef" "class" (simple_identifier) @font-lock-constant-face)
-     ;; Coverpoint label
+     ;; Coverpoint & cross labels
      (cover_point
       (cover_point_identifier (simple_identifier) @font-lock-constant-face))
-     ;; inside {[min_range:max_range]}
-     ((open_value_range) @font-lock-constant-face)
+     (cover_cross
+      (cross_identifier (simple_identifier) @font-lock-constant-face))
      ;; Loop variables (foreach[i])
      (loop_variables1
       (index_variable_identifier
        (index_variable_identifier (simple_identifier) @font-lock-constant-face)))
+     ;; inside {[min_range:max_range]}
+     ((open_value_range
+       (value_range
+        (expression) @font-lock-constant-face)))
+     ;; Bins values
+     ((bins_or_options
+       (expression
+        (primary
+         (concatenation
+          (expression) @font-lock-constant-face)))))
+     ;; Bins ranges
+     ((covergroup_value_range
+       (expression) @font-lock-constant-face))
+     ;; Queue dimension
+     (("$") @font-lock-constant-face)
      ;; Numbers with radix (4'hF)
      ((integral_number) @verilog-ts--fontify-width-num)
      )
@@ -449,6 +464,10 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
       (interface_identifier (simple_identifier) @verilog-ext-font-lock-module-face))
      (checker_instantiation ; Some module/interface instances might wrongly be detected as checkers
       (checker_identifier (simple_identifier) @verilog-ext-font-lock-module-face))
+     (udp_instantiation (simple_identifier) @verilog-ext-font-lock-module-face ; Some module/interface instances might wrongly be detected as UDP
+      (udp_instance
+       (name_of_instance
+        (instance_identifier (simple_identifier) @verilog-ext-font-lock-instance-face))))
      ;; Instance names
      (name_of_instance
       (instance_identifier (simple_identifier) @verilog-ext-font-lock-instance-face))
@@ -554,7 +573,7 @@ Snippet fetched from `treesit--indent-1'."
          (node-text (when node
                       (treesit-node-text node :no-props))))
     (when (and node-text
-               (eq 0 (string-match "`uvm_field_" node-text)))
+               (or (eq 0 (string-match "`[ou]vm_field_" node-text))))
       node-text)))
 
 (defun verilog-ts--default-indent (&rest _)
@@ -571,6 +590,25 @@ Return non-nil if the first ansi-port is in the same line as the opening parenth
          (first-port-node (treesit-node-child indent-node 1)) ; ansi_port_declaration
          (first-port-node-line (line-number-at-pos (treesit-node-start first-port-node))))
     (eq indent-node-line first-port-node-line)))
+
+(defun verilog-ts--parameter-port-after-paren (&rest _)
+  "A tree-sitter simple indent matcher.
+Return non-nil if the first parameter is in the same line as the opening parenthesis."
+  (let* ((node (verilog-ts--node-at-bol))
+         (indent-node (verilog-ts--node-has-parent-recursive node "parameter_port_list"))
+         (indent-node-line (line-number-at-pos (treesit-node-start indent-node)))
+         (first-port-node (treesit-node-child indent-node 2)) ; parameter_port_declaration
+         (first-port-node-line (line-number-at-pos (treesit-node-start first-port-node))))
+    (eq indent-node-line first-port-node-line)))
+
+(defun verilog-ts--continued-parameter-port (&rest _)
+  "A tree-sitter simple indent matcher.
+Return non-nil if matches continued declaration of parameter ports.
+parameter A = 0,
+          B = 1,
+          C = 2"
+  (let ((child-node (treesit-node-child (verilog-ts--node-at-bol) 0)))
+    (string= (treesit-node-type child-node) "data_type")))
 
 (defun verilog-ts--end-indent-anchor (node parent &rest _)
   "A tree-sitter simple indent anchor.
@@ -645,21 +683,60 @@ Indent ansi_ports depending on first port:
       (skip-chars-forward "( \t")
       (point))))
 
-        ;; ;; Default parent-bol 4
-        ;; (goto-char (treesit-node-start parent))
-        ;; (back-to-indentation)
-        ;; (forward-char verilog-ts-indent-level) ; DANGER: If the line doesn't have the amount of spaces of `verilog-ts-indent-level' it will fail!
-        ;; (point)))))
+(defun verilog-ts--ansi-port (node parent &rest _)
+  "A tree-sitter simple indent anchor.
+Indent ansi_ports according to module definition."
+  (let ((indent-node (verilog-ts--node-has-parent-recursive node "module_declaration")))
+    (save-excursion
+      (goto-char (treesit-node-start indent-node))
+      (point))))
 
-;; TODO: Requires using an additional matcher with higher priority to "ansi_port_declaration"
-;; that checks if the port is after the parenthesis (done above).
-;; If that is the case, then apply directly the anchor with 0 offset.
-;; Otherwise use a different matcher, the ansi_port_adeclaration default
-;; with parent-bol and offset 4
+(defun verilog-ts--coverpoint-bins-anchor (node parent &rest _)
+  "A tree-sitter simple indent anchor.
+Indent bins with respect to label of coverpoint."
+  (let ((indent-node (verilog-ts--node-has-parent-recursive node "cover_point")))
+    (save-excursion
+      (goto-char (treesit-node-start indent-node)))))
+
+(defun verilog-ts--cross-bins-anchor (node parent &rest _)
+  "A tree-sitter simple indent anchor.
+Indent cross bins with respect to label of coverpoint."
+  (let ((indent-node (verilog-ts--node-has-parent-recursive node "cover_cross")))
+    (save-excursion
+      (goto-char (treesit-node-start indent-node)))))
+
+(defun verilog-ts--continued-parameter-anchor (node parent &rest _)
+  "A tree-sitter simple indent anchor.
+Indent continued line parameters in port declarations."
+  (let* ((param-parent-node (verilog-ts--node-has-parent-recursive node "parameter_port_list"))
+         (param-decl-node (treesit-search-forward node
+                                                  (lambda (node)
+                                                    (string= (treesit-node-type node) "parameter_declaration"))
+                                                  :backward))
+         (param-decl-start-node (treesit-search-subtree param-decl-node
+                                                        (lambda (node)
+                                                          (string= (treesit-node-type node) "list_of_param_assignments"))))
+         (param-decl-start-node (treesit-node-start param-decl-start-node)))
+    (when param-decl-start-node
+      (save-excursion
+        (goto-char param-decl-start-node)))))
+
+(defun verilog-ts--parameter-port-anchor (node parent &rest _)
+  "A tree-sitter simple indent anchor.
+Indent parameters depending on first parameter:
+ - module foo # (parameter int a = 0 -> Will indent the rest of the ports right below the first one.
+ - module foo #(
+     parameter int a = 0, -> Will indent the rest of the ports with respect to parent-bol (module)."
+  (let ((indent-node (treesit-search-subtree (verilog-ts--node-has-parent-recursive node "parameter_port_list")
+                                             (lambda (node)
+                                               (string= (treesit-node-type node) "parameter_port_declaration")))))
+    (save-excursion
+      (goto-char (treesit-node-start indent-node))
+      (skip-chars-forward "( \t")
+      (point))))
 
 
-
-(setq verilog-ts--indent-rules
+(defvar verilog-ts--indent-rules
   `((verilog
      ;; Unit scope
      (verilog-ts--unit-scope point-min 0) ; Place first for highest precedence
@@ -689,17 +766,19 @@ Indent ansi_ports depending on first port:
      ((node-is "concurrent_assertion_item") parent-bol ,verilog-ts-indent-level) ; default disable iff (!rst_ni);
      ((node-is "super") parent-bol ,verilog-ts-indent-level)
      ;; ANSI Port/parameter declaration
-     ;; ((node-is "ansi_port_declaration") parent-bol ,verilog-ts-indent-level)
      ((and (node-is "ansi_port_declaration")
            verilog-ts--ansi-port-after-paren)
       verilog-ts--ansi-port-anchor 0)
-     ((node-is "ansi_port_declaration") parent-bol ,verilog-ts-indent-level)
-     ((node-is "parameter_port_declaration") parent-bol ,verilog-ts-indent-level)
+     ((node-is "ansi_port_declaration") verilog-ts--ansi-port ,verilog-ts-indent-level) ; Fallback of previous rule
      ((node-is "module_or_generate_item") parent-bol ,verilog-ts-indent-level)
      ((node-is "interface_or_generate_item") parent-bol ,verilog-ts-indent-level)
      ((node-is "list_of_param_assignments") parent-bol ,verilog-ts-indent-level) ; First instance parameter (without parameter keyword)
-     ((node-is "parameter_port_declaration") parent-bol ,verilog-ts-indent-level) ; First instance parameter (without parameter keyword)
-     ;; Non ANSI ports
+     ((and (node-is "parameter_port_declaration")
+           verilog-ts--continued-parameter-port)
+      verilog-ts--continued-parameter-anchor 0)
+     ((and (node-is "parameter_port_declaration")
+           verilog-ts--parameter-port-after-paren)
+      verilog-ts--parameter-port-anchor 0)
      ((node-is "parameter_port_declaration") parent-bol ,verilog-ts-indent-level) ; First instance parameter (without parameter keyword)
      ;; import packages
      ((and (node-is "package_or_generate_item_declaration")
@@ -708,6 +787,7 @@ Indent ansi_ports depending on first port:
      ;; Instance port/parameters
      ((node-is "list_of_port_connections") parent-bol ,verilog-ts-indent-level)      ; First port connection
      ((node-is "named_port_connection") parent-bol 0)         ; Rest of ports with respect to first port
+     ((node-is "ordered_port_connection") parent-bol 0)         ; Rest of ports with respect to first port
      ((node-is "list_of_parameter_assignments") parent-bol ,verilog-ts-indent-level) ; First instance parameter
      ((node-is "named_parameter_assignment") parent-bol 0)    ; Rest of instance parameters with respect to first parameter
      ;; Block end
@@ -719,7 +799,7 @@ Indent ansi_ports depending on first port:
           (node-is ")")
           (node-is "]"))
       parent-bol 0)
-     ;; Opening
+     ;; Opening. TODO: I think these are never hit?
      ((or (node-is "{")
           (node-is "("))
       parent-bol 0)
@@ -736,9 +816,17 @@ Indent ansi_ports depending on first port:
      ((node-is "enum_name_declaration") parent-bol ,verilog-ts-indent-level)
      ((node-is "generate_region") parent-bol ,verilog-ts-indent-level)
      ((node-is "hierarchical_instance") parent-bol 0) ; Instance name in separate line
+     ((node-is "constraint_expression") parent-bol ,verilog-ts-indent-level) ; Instance name in separate line
+     ((node-is "bins_or_options") verilog-ts--coverpoint-bins-anchor ,verilog-ts-indent-level) ; Instance name in separate line
+     ((node-is "cross_body_item") verilog-ts--cross-bins-anchor ,verilog-ts-indent-level) ; Instance name in separate line
+     ((node-is "dist_list") parent-bol ,verilog-ts-indent-level) ; Instance name in separate line
+     ((node-is "dist_item") verilog-ts--grandparent-bol-indent-anchor ,verilog-ts-indent-level) ; Instance name in separate line
      ;; Continued lines
      ((node-is "expression") verilog-ts--expression-anchor 0)
      ((node-is "constant_expression") parent-bol 0)
+     ((node-is "variable_decl_assignment") parent 0)
+     ((node-is "param_assignment") parent 0)
+     ((node-is "module_ansi_header") parent-bol 0) ; Opening bracket of module ports/parmeters
      ;; Blank lines
      (verilog-ts--blank-line parent-bol ,verilog-ts-indent-level)
      ;; Default indent

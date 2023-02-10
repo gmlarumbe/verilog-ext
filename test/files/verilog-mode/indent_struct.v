@@ -1,7 +1,7 @@
 module foo;
 
-a = { g + c; };
-a = c;
+assign a = { g + c };
+assign a = c;
 
 typedef struct {
 reg r;

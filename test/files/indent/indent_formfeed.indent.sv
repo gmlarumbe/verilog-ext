@@ -1,9 +1,9 @@
 
 module x;
 
-    foo;
+    foo foo;
 endmodule
 
-bar;
+bar bar;
 module z;
 endmodule

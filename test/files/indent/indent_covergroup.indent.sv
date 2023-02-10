@@ -9,8 +9,8 @@ module coverage;
 
     foo           = bar;
 
-    sequence bar
-        b         = c;
+    sequence bar;
+        b         | c;
     endsequence // bar
     j     = taskt;
     function foo;
@@ -19,28 +19,29 @@ module coverage;
         end
     endfunction // foo
 
-    randsequence bar
-        b               = c;
-    endsequence // bar
+    // randsequence bar
+    //   b              = c;
+    // endsequence // bar
 
     case (foo)
         1: a;
         2:b;
     endcase // case (foo)
 
-    casex (foo)
-        1: a;
-        2:b;
-    endcase // case (foo)
+    always begin
+        casex (foo)
+            1: a;
+            2:b;
+        endcase // case (foo)
 
-    casez (foo)
-        1: a;
-        2:b;
-    endcase // case (foo)
-
-    randcase (foo)
-        1: a;
-        2:b;
-    endcase // case (foo)
+        casez (foo)
+            1: a;
+            2:b;
+        endcase // case (foo)
+    end
+    // randcase (foo)
+    //   1: a;
+    //   2:b;
+    // endcase // case (foo)
 
 endmodule // coverage

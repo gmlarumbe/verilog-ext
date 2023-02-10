@@ -1,4 +1,7 @@
 // my simple if else example, indented by verilog-mode
+// TS: Added module plus procedural block to avoid syntax errors
+module asdf;
+initial begin
 if (x == 1)
  begin
  test1 <= 1;
@@ -9,6 +12,9 @@ else
      test1 <= 2;
  test2 <= 1;
  end
+end
+endmodule
+// TS: Added module plus procedural block to avoid syntax errors
 
 // code from IEEE spec, pg. 164
 class MyBus extends Bus;

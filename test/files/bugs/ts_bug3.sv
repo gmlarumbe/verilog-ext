@@ -1,12 +1,12 @@
-// Tree-sitter syntax error: forever @event
-// should be valid syntax
-//
-// test/files/indent/indent_begin_clapp.ts.indent.sv
+// No support for macros/ifdefs inside port definitions
 
-module x;
-
-    forever @E
-    begin
-        end
-
+module foo;
+    `ifdef LABEL_A
+    CHIP CPU (
+        .clkin(clkin),
+        `ifdef LABEL_B
+        .bclko(bclko),
+        `endif
+        .cmode(cmode),
+    );
 endmodule

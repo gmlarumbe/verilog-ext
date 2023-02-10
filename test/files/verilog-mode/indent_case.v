@@ -15,6 +15,8 @@ module testcaseindent();
    endcase // case (a)
    
    
+   // TS: Added procedural block for unique/priority cases
+    initial begin
    unique case (a)
      1: begin
 	asdf;
@@ -45,4 +47,7 @@ module testcaseindent();
      3: asdfasd;
    endcase // case (a)
    
+    end
+   // TS: Added procedural block for unique/priority cases
+
 endmodule // test_case_indent

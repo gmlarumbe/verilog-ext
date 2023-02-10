@@ -13,7 +13,7 @@ module x;
 initial begin
 startc_c <= (valid && (state == THE_START));
 end_c <= (
-valid,
+valid &&
 (state == THE_END)
 );
 valid_c <= { valid ,

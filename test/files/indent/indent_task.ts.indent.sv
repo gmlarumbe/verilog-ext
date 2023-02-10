@@ -51,26 +51,30 @@ class a;
     virtual task foo;
     endtask // endtask
 
-    generate g;
-    endgenerate
+    // TS: Commented out generate inside class
+    // generate g;
+    // endgenerate
 
-        covergroup g;
+    covergroup g;
     endgroup // g
 
-        property p;
-    endproperty
+    // TS: Commented out:
+    //  - SystemVerilog assertion, property or sequence declarations are illegal as a function declaration item.
+    // property p;
+    // endproperty
 
-        sequence s;
-    endsequence // s
+    // sequence s;
+    // endsequence // s
 
-        clocking c;
-    endclocking // c
+    // TS: Commented out: Clocking block can be declared in interface, module or program block.
+    // clocking c;
+    // endclocking // c
 
-        function f;
+    function f;
     endfunction //
 
-        virtual function f;
-                endfunction //
+    virtual function f;
+    endfunction //
 
     protected function f;
     endfunction //

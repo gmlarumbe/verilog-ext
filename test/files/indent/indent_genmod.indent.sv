@@ -14,7 +14,7 @@ module indent;
     end endgenerate
 
     // Without the '=0', the AUTOINST line indents properly
-    generate for (genvar i; i<4; i++) begin : gen_inst1
+    generate for (genvar i=0; i<4; i++) begin : gen_inst1
         subindent s
             (/*AUTOINST*/
             // Outputs

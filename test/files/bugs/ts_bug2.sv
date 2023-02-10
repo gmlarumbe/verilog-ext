@@ -1,46 +1,12 @@
-// verilog-ts-mode indentation bug:
-// Snippet from test/files/indent/indent_task.ts.indent.sv:54
-//   Indents wrongly due to errors during parsing.
-//   Not sure if generate is allowed inside class.
-//   Property/sequence/clocking also have parsing errors
+// Tree-sitter syntax error: forever @event
+// should be valid syntax
+//
+// test/files/indent/indent_begin_clapp.ts.indent.sv
 
-class a;
-    virtual function void foo();
-        foo  = 2;
-    endfunction // void
-    extern function void bar();
-    function fred();
-        aaa;
-    endfunction // fred
+module x;
 
-    task foo;
-    endtask // endtask
+    forever @E
+    begin
+        end
 
-    virtual task foo;
-    endtask // endtask
-
-    generate g;
-    endgenerate
-
-        covergroup g;
-    endgroup // g
-
-        property p;
-    endproperty
-
-        sequence s;
-    endsequence // s
-
-        clocking c;
-    endclocking // c
-
-        function f;
-    endfunction //
-
-        virtual function f;
-                endfunction //
-
-    protected function f;
-    endfunction //
-
-endclass // a
+endmodule

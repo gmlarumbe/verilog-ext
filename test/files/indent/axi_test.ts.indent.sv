@@ -736,11 +736,11 @@ package axi_test;
         axi_driver_t drv;
 
         int unsigned          r_flight_cnt[N_AXI_IDS-1:0],
-            w_flight_cnt[N_AXI_IDS-1:0],
-            tot_r_flight_cnt,
-            tot_w_flight_cnt;
+                              w_flight_cnt[N_AXI_IDS-1:0],
+                              tot_r_flight_cnt,
+                              tot_w_flight_cnt;
         logic [N_AXI_IDS-1:0] atop_resp_b,
-            atop_resp_r;
+                              atop_resp_r;
 
         len_t                 max_len;
         burst_t               allowed_bursts[$];
@@ -748,8 +748,8 @@ package axi_test;
         semaphore cnt_sem;
 
         ax_beat_t aw_queue[$],
-            w_queue[$],
-            excl_queue[$];
+                  w_queue[$],
+                  excl_queue[$];
 
         typedef struct packed {
             addr_t     addr_begin;
@@ -1238,7 +1238,7 @@ package axi_test;
         // Issue n_reads random read and n_writes random write transactions to an address range.
         task run(input int n_reads, input int n_writes);
             automatic logic  ar_done = 1'b0,
-                aw_done = 1'b0;
+                             aw_done = 1'b0;
             fork
                 begin
                     send_ars(n_reads);
@@ -1521,7 +1521,7 @@ package axi_test;
         string         name;
         axi_driver_t   drv;
         addr_t         aw_queue[$],
-            ar_queue[$];
+                       ar_queue[$];
         logic          b_queue[$];
         logic          w_queue[$];
 
@@ -1685,7 +1685,7 @@ package axi_test;
         string         name;
         axi_driver_t   drv;
         addr_t         aw_queue[$],
-            ar_queue[$];
+                       ar_queue[$];
         logic          b_queue[$];
 
         function new(
@@ -1814,7 +1814,7 @@ package axi_test;
 
         axi_driver_t          drv;
         mailbox aw_mbx = new, w_mbx = new, b_mbx = new,
-            ar_mbx = new, r_mbx = new;
+                ar_mbx = new, r_mbx = new;
 
         function new(
             virtual AXI_BUS_DV #(

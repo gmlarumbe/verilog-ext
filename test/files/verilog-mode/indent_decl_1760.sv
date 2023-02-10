@@ -6,9 +6,9 @@ output logic b
 for (genvar i=0; i<2; i++) begin : g_slice
 
 submod
-u_sub_0 #(
+#(
 .RESET_POL (RESET_POL)
-)(
+)u_sub_0(
 .clk     (clk),
 .reset_n (reset_n),
 .d       (d[i]),
@@ -16,9 +16,9 @@ u_sub_0 #(
 );
 
 submod
-u_sub_1 #(
+#(
 .RESET_POL (RESET_POL)
-)(
+)u_sub_1(
 .clk     (clk),
 .reset_n (reset_n),
 .d       (q_0[i]),

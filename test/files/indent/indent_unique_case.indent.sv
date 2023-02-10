@@ -1,8 +1,8 @@
 module foo;
     // syntaxify the unique keyword correctly please...
-    always_comb (*) begin
+    always_comb begin
         case (f)
-            1             : 2;
+            1             : f;
         endcase // case (f)
 
         unique case(vlcnum)

@@ -27,19 +27,25 @@ module myassert(input clk,
     else begin
         o;
     end // else: !if(a)
-    assert (a) begin
-        o;
-    end // assert (a)
-    else begin
-        o;
-    end // else: !assert (a)
 
-    assert (statement) begin
-        $display("assertion passed"); //this code is correctly indented
-    end // assert (statement)
-    else begin // this whole section should be moved to the left
-        $error("assertion failed");
-    end // else: !assert (statement)
+    // TS: Add procedural block for non-concurrent assertion
+    always @(posedge clk) begin
+        assert (a) begin
+            o;
+        end // assert (a)
+        else begin
+            o;
+        end // else: !assert (a)
+
+        assert (statement) begin
+            $display("assertion passed"); //this code is correctly indented
+        end // assert (statement)
+        else begin // this whole section should be moved to the left
+            $error("assertion failed");
+        end // else: !assert (statement)
+
+        // TS: Add procedural block for non-concurrent assertion
+    end
 
     //Also, any statements following the assert,
     //cover, and assume property statements get

@@ -7,8 +7,9 @@ module ovm;
         constraint c2 { data < 16'h1000; }
         // OVM automation macros for general objects
         `ovm_object_utils_begin(simple_item)
-            a = b;
-            c = d;
+            // TS: Commented these lines inside OVM macro
+            // a = b;
+            // c = d;
             `ovm_field_int(addr, OVM_ALL_ON)
             `ovm_field_int(data, OVM_ALL_ON)
             `ovm_field_int(delay, OVM_ALL_ON)

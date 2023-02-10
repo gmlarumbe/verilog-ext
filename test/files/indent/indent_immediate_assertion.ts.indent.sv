@@ -1,13 +1,15 @@
 // Issue 949 - Indenting SVA assert final block broken
 module tb;
-begin
-    a0: assert final (data0 == 1) else
-        $error;
-end
-    endmodule
+    // TS: Add procedural block for deferred immediate assertion
+    initial
+        begin
+            a0: assert final (data0 == 1) else
+                $error;
+        end
+endmodule
 
 
-    // Now check for other types of immediate assertion
+// Now check for other types of immediate assertion
 module tb;
     always @(abcd) begin
 

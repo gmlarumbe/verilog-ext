@@ -42,11 +42,11 @@ module ram_controller ();
         .RAM_DEPTH(256)
     ) ram (
         clk,
-            address,
-            data,
-            cs,
-            we,
-            oe
+        address,
+        data,
+        cs,
+        we,
+        oe
     )
         ;
 

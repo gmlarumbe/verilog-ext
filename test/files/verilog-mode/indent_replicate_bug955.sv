@@ -9,4 +9,4 @@ module test (input a, input b, output c);
                end // <-- this end will be improperly indented unless
             // 's' is replaced with e.g. 4
         end
-end
+endmodule

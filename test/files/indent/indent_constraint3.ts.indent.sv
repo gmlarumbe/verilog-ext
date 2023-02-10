@@ -15,7 +15,7 @@ class data;
         if(foo < 87)
             data2 == 10;
         if(data2 == 76) {
-        data3 == 8;
+            data3 == 8;
         }
     }
 

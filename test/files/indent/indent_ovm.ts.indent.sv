@@ -7,11 +7,12 @@ module ovm;
         constraint c2 { data < 16'h1000; }
         // OVM automation macros for general objects
         `ovm_object_utils_begin(simple_item)
-        a = b;
-        c = d;
-        `ovm_field_int(addr, OVM_ALL_ON)
-        `ovm_field_int(data, OVM_ALL_ON)
-        `ovm_field_int(delay, OVM_ALL_ON)
+        // TS: Commented these lines inside OVM macro
+        // a = b;
+        // c = d;
+            `ovm_field_int(addr, OVM_ALL_ON)
+            `ovm_field_int(data, OVM_ALL_ON)
+            `ovm_field_int(delay, OVM_ALL_ON)
         `ovm_object_utils_end
         // Constructor
         function new (string name = "simple_item");
@@ -27,18 +28,18 @@ module ovm;
         int       queue[$];
         `ovm_object_utils(mydata)
         `ovm_object_utils_begin(mydata) //requires ctor with default args
-        `ovm_field_string(str, OVM_DEFAULT)
-        `ovm_field_object(subdata, OVM_DEFAULT)
-        `ovm_field_int(field, OVM_DEC) //use decimal radix
-        `ovm_field_enum(myenum, e1, OVM_DEFAULT)
-        `ovm_field_queue_int(queue, OVM_DEFAULT)
+            `ovm_field_string(str, OVM_DEFAULT)
+            `ovm_field_object(subdata, OVM_DEFAULT)
+            `ovm_field_int(field, OVM_DEC) //use decimal radix
+            `ovm_field_enum(myenum, e1, OVM_DEFAULT)
+            `ovm_field_queue_int(queue, OVM_DEFAULT)
         `ovm_object_utils_end
         `ovm_object_param_utils_begin(mydata) //requires ctor with default args
-        `ovm_field_string(str, OVM_DEFAULT)
-        `ovm_field_object(subdata, OVM_DEFAULT)
-        `ovm_field_int(field, OVM_DEC) //use decimal radix
-        `ovm_field_enum(myenum, e1, OVM_DEFAULT)
-        `ovm_field_queue_int(queue, OVM_DEFAULT)
+            `ovm_field_string(str, OVM_DEFAULT)
+            `ovm_field_object(subdata, OVM_DEFAULT)
+            `ovm_field_int(field, OVM_DEC) //use decimal radix
+            `ovm_field_enum(myenum, e1, OVM_DEFAULT)
+            `ovm_field_queue_int(queue, OVM_DEFAULT)
         `ovm_object_utils_end
     endclass
     class my_trans extends ovm_sequence_item;
@@ -47,7 +48,7 @@ module ovm;
 
         //---> Configuration
         `ovm_object_utils_begin(my_trans)
-        `ovm_field_array_int ( data, OVM_ALL_ON)
+            `ovm_field_array_int ( data, OVM_ALL_ON)
         `ovm_object_utils_end
 
         function new (string name = "my_trans", ovm_sequencer_base        sequencer = null, ovm_sequence parent_seq = null);

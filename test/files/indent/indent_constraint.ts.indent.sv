@@ -1,14 +1,20 @@
 // my simple if else example, indented by verilog-mode
-if (x == 1)
-    begin
-    test1 <= 1;
-test2 <= 2;
-end
-else
-    begin
-    test1 <= 2;
-test2 <= 1;
-end
+// TS: Added module plus procedural block to avoid syntax errors
+module asdf;
+    initial begin
+        if (x == 1)
+            begin
+                test1 <= 1;
+                test2 <= 2;
+            end
+        else
+            begin
+                test1 <= 2;
+                test2 <= 1;
+            end
+    end
+endmodule
+// TS: Added module plus procedural block to avoid syntax errors
 
 // code from IEEE spec, pg. 164
 class MyBus extends Bus;
@@ -62,9 +68,9 @@ covergroup cg @(posedge clk );
     //
     c : cross a, b
         {
-            bins c1 = ! binsof(a) intersect {[100:200]}; // 4 cross products
-            bins c2 = binsof(a.a2) || binsof(b.b2); // 7 cross products
-            bins c3 = binsof(a.a1) && binsof(b.b4); // 1 cross product
+        bins c1 = ! binsof(a) intersect {[100:200]}; // 4 cross products
+        bins c2 = binsof(a.a2) || binsof(b.b2); // 7 cross products
+        bins c3 = binsof(a.a1) && binsof(b.b4); // 1 cross product
         }
 endgroup
 
@@ -73,24 +79,24 @@ endgroup
 covergroup cg @(posedge clk );
     a : coverpoint v_a
         {
-            bins a1 = { [0:63] };
-            bins a2 = { [64:127] };
-            bins a3 = { [128:191] };
-            bins a4 = { [192:255] };
+        bins a1 = { [0:63] };
+        bins a2 = { [64:127] };
+        bins a3 = { [128:191] };
+        bins a4 = { [192:255] };
         }
     // foo
     b : coverpoint v_b
         {
-            bins b1 = {0};
-            bins b2 = { [1:84] };
-            bins b3 = { [85:169] };
-            bins b4 = { [170:255] };
+        bins b1 = {0};
+        bins b2 = { [1:84] };
+        bins b3 = { [85:169] };
+        bins b4 = { [170:255] };
         }
     c : cross a, b
         {
-            bins c1 = ! binsof(a) intersect {[100:200]}; // 4 cross products
-            bins c2 = binsof(a.a2) || binsof(b.b2); // 7 cross products
-            bins c3 = binsof(a.a1) && binsof(b.b4); // 1 cross product
+        bins c1 = ! binsof(a) intersect {[100:200]}; // 4 cross products
+        bins c2 = binsof(a.a2) || binsof(b.b2); // 7 cross products
+        bins c3 = binsof(a.a1) && binsof(b.b4); // 1 cross product
         }
 endgroup
 
@@ -136,11 +142,11 @@ endmodule // foo
 class myclass;
     constraint c {
         foreach(items[i]) {
-        if(write) {
-        items[i].op_code == WRITE;
-        } else if(read) {
-        items[i].op_code == READ;
-        }
+            if(write) {
+                items[i].op_code == WRITE;
+            } else if(read) {
+                items[i].op_code == READ;
+            }
         }
     }
 endclass // myclass

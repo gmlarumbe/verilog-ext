@@ -30,7 +30,7 @@ module indent;
             if (`asdf [aa]) begin : gen_jj
 
                 always_ff @ (negedge cc [aa][bb]) begin
-                    if (dd [aa][bb])) begin
+                    if (dd [aa][bb]) begin
                         for (uint_t d_idx = 0; d_idx < 16; d_idx++)
                             ee [aa][bb].push_front (tx_dfe_out [aa][bb]  [15 - d_idx]);
                     end

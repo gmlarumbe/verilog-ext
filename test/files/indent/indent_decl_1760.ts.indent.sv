@@ -6,23 +6,23 @@ module test (
     for (genvar i=0; i<2; i++) begin : g_slice
 
         submod
-            u_sub_0 #(
-            .RESET_POL (RESET_POL)
-            )(
+            #(
+                .RESET_POL (RESET_POL)
+            )u_sub_0(
                 .clk     (clk),
-                    .reset_n (reset_n),
-                    .d       (d[i]),
-                    .q       (q_0[i])
+                .reset_n (reset_n),
+                .d       (d[i]),
+                .q       (q_0[i])
             );
 
-                submod
-            u_sub_1 #(
+        submod
+            #(
                 .RESET_POL (RESET_POL)
-            )(
+            )u_sub_1(
                 .clk     (clk),
-                    .reset_n (reset_n),
-                    .d       (q_0[i]),
-                    .q       (q[i])
+                .reset_n (reset_n),
+                .d       (q_0[i]),
+                .q       (q[i])
             );
 
     end

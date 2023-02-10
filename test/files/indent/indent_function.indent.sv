@@ -11,10 +11,14 @@ class C;
     endfunction // int
     // pure virtual functions have no endfunction.
     C a;
-    initial begin
-        $display("hello world");
-        $display("a of f is %d, g is %d", a.f(),a.g());
-    end
+
+    // TS: Commented out initial inside class
+    // initial begin
+    //    $display("hello world");
+    //    $display("a of f is %d, g is %d", a.f(),a.g());
+    // end
+    // TS: Commented out initial inside class
+
     function int C::g();
         g  = 18;
     endfunction // g

@@ -10,10 +10,10 @@ covergroup cg @(posedge clk);
     }
     b: coverpoint v_b iff ( g )
         {
-            bins b1 = {0};
-            bins b2 = { [1:84] };
-            bins b3 = { [85:169] };
-            bins b4 = { [170:255] };
+        bins b1 = {0};
+        bins b2 = { [1:84] };
+        bins b3 = { [85:169] };
+        bins b4 = { [170:255] };
         }
     c: coverpoint v_c iff ( !g ) {
         bins c1 = {0};

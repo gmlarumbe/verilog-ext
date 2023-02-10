@@ -30,9 +30,11 @@ endtask
     function f();
         g;
     endfunction // f
-    generate g;
-        /* a lot of stuff */
-    endgenerate
+
+    // TS: Commented out generate inside class
+    // generate g;
+    //    /* a lot of stuff */
+    // endgenerate
     task t();
         /**/
         /**/
@@ -58,9 +60,11 @@ endtask
     extern protected task ep_t();
     extern protected virtual task epv_t();
     extern protected virtual task main();
-    generate g;
-        /**/
-    endgenerate
+
+    // TS: Commented out generate inside class
+    // generate g;
+    //    /**/
+    // endgenerate
 
     extern virtual function void reconfigure(burst_drv_cfg cfg);
     extern virtual function void reset_xactor(reset_e rst_type = SOFT_RST);

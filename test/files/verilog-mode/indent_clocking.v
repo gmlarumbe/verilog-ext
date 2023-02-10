@@ -5,7 +5,7 @@ module t;
       end
    endclocking
    default clocking clocking_identifier;
-      property foo (a)
+      property foo (a);
 	a   = b;
       endproperty
       cover property (prop) $display("**COVERAGE**");

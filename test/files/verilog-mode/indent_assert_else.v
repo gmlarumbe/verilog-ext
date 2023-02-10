@@ -27,6 +27,9 @@ module myassert(input clk,
    else begin
       o;
    end // else: !if(a)
+
+   // TS: Add procedural block for non-concurrent assertion
+   always @(posedge clk) begin
    assert (a) begin
       o;
    end // assert (a)
@@ -41,6 +44,9 @@ module myassert(input clk,
       $error("assertion failed");
    end // else: !assert (statement)
    
+   // TS: Add procedural block for non-concurrent assertion
+   end
+    
    //Also, any statements following the assert,
    //cover, and assume property statements get
    // indented too far to the right.

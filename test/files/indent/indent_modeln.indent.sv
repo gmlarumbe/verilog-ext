@@ -1,5 +1,3 @@
-//-*- mode: Verilog; verilog-indent-level:3; indent-tabs-mode: nil; tab-width: 1 -*-
-
 typedef class b4_c;
 
 class i_sb_c extends base_sb_c;
