@@ -1,4 +1,5 @@
-[![Build Status](https://github.com/gmlarumbe/verilog-ext/workflows/ERT/badge.svg)](https://github.com/gmlarumbe/verilog-ext/actions)
+[![Build Status](https://github.com/gmlarumbe/verilog-ext/workflows/ERT/badge.svg)](https://github.com/gmlarumbe/verilog-ext/actions/workflows/build.yml)
+[![Build Status](https://github.com/gmlarumbe/verilog-ext/workflows/melpazoid/badge.svg)](https://github.com/gmlarumbe/verilog-ext/actions/workflows/melpazoid.yml)
 
 # verilog-ext.el - SystemVerilog Extensions for Emacs #
 
