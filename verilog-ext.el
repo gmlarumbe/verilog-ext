@@ -4022,6 +4022,8 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
   (add-hook 'ripgrep-search-finished-hook #'verilog-ext-navigation-ag-rg-hook)
   ;; Hideshow
   (verilog-ext-hideshow-setup)
+  ;; Code formatter
+  (verilog-ext-code-formatter-setup)
   ;; Flycheck
   (verilog-ext-flycheck-setup)
   ;; Lsp
