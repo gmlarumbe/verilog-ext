@@ -141,6 +141,11 @@ https://chipsalliance.github.io/verible/lint.html"
   :type 'string
   :group 'verilog-ext)
 
+(defcustom verilog-ext-time-stamp-enable t
+  "Enable `verilog-ext-time-stamp-mode'."
+  :type 'boolean
+  :group 'verilog-ext)
+
 (defcustom verilog-ext-time-stamp-regex "^// Last modified : "
   "Timestamp regexp."
   :type 'string
@@ -170,6 +175,12 @@ specified by `time-stamp-format' between them."
 and the following match of `time-stamp-end', then writes the time stamp
 specified by `time-stamp-format' between them."
   :type 'string
+  :group 'verilog-ext)
+
+(defcustom verilog-ext-block-end-comments-to-names-enable t
+  "Enable `verilog-ext-block-end-comments-to-names-mode'.
+See `verilog-ext-block-end-comments-to-names' for examples."
+  :type 'boolean
   :group 'verilog-ext)
 
 
@@ -1748,7 +1759,6 @@ user typedefs."
 
 (defun verilog-ext-typedef-project-update ()
   "Update typedef list of current project.
-
 If `verilog-ext-align-typedef-uvm-dir' is non nil, also include it
 for the search of typedefs"
   (interactive)
@@ -1821,7 +1831,6 @@ Compiles them with various verilog regexps."
 ;;  - Interactively for module at point
 ;;  - Interactively for current buffer
 ;;  - In batch for files of current directory
-
 (defun verilog-ext-module-at-point--align (thing)
   "Align THING of current module at point (ports/parameters)."
   (let ((case-fold-search nil)
@@ -2095,7 +2104,6 @@ and methods.  These are collected with `verilog-ext-imenu-classes-index'."
        "endgenerate"
        "`endif"))))
 
-;; Config
 (defun verilog-ext-hideshow-setup ()
   "Configure hideshow."
   (dolist (mode '((verilog-mode    . verilog-forward-sexp-function)
@@ -4036,7 +4044,7 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
     (define-key map (kbd "C-<tab>") 'verilog-ext-hs-toggle-hiding)
     ;; Features
     (define-key map (kbd "M-i") 'verilog-ext-imenu-list)
-    (define-key map (kbd "C-c f") 'verilog-ext-code-format)
+    (define-key map (kbd "C-c C-l") 'verilog-ext-code-format)
     (define-key map (kbd "C-c C-p") 'verilog-ext-preprocess)
     (define-key map (kbd "C-c C-f") 'verilog-ext-flycheck-mode-toggle)
     (define-key map (kbd "C-c C-t") 'verilog-ext-hydra/body)
@@ -4051,11 +4059,15 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
     (define-key map (kbd "C-M-u") 'verilog-ext-nav-up-dwim)
     (define-key map (kbd "C-M-p") 'verilog-ext-nav-prev-dwim)
     (define-key map (kbd "C-M-n") 'verilog-ext-nav-next-dwim)
+    ;; Module at point
+    (define-key map (kbd "C-c M-.") 'verilog-ext-jump-to-module-at-point-def)
+    (define-key map (kbd "C-c M-?") 'verilog-ext-jump-to-module-at-point-ref)
     ;; Jump to parent module
     (define-key map (kbd "C-M-.") 'verilog-ext-jump-to-parent-module)
     ;; Port connections
-    (define-key map (kbd "C-c C-c") 'verilog-ext-toggle-connect-port)
-    (define-key map (kbd "C-c C-l") 'verilog-ext-connect-ports-recursively)
+    (define-key map (kbd "C-c C-c c") 'verilog-ext-clean-port-blanks)
+    (define-key map (kbd "C-c C-c t") 'verilog-ext-toggle-connect-port)
+    (define-key map (kbd "C-c C-c r") 'verilog-ext-connect-ports-recursively)
     map)
   "Key map for the `verilog-ext'.")
 
@@ -4095,8 +4107,10 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
         (setq verilog-library-directories verilog-ext-dir-list)
         (setq verilog-ext-flycheck-verilator-include-path verilog-ext-dir-list)
         (add-hook 'kill-buffer-hook #'verilog-ext-kill-buffer-hook nil :local)
-        (verilog-ext-block-end-comments-to-names-mode)
-        (verilog-ext-time-stamp-mode)
+        (when verilog-ext-block-end-comments-to-names-enable
+          (verilog-ext-block-end-comments-to-names-mode))
+        (when verilog-ext-time-stamp-enable
+          (verilog-ext-time-stamp-mode))
         ;; `verilog-mode'-only customization (exclude `verilog-ts-mode')
         (when (eq major-mode 'verilog-mode)
           ;; Imenu
