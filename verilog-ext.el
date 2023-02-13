@@ -532,29 +532,44 @@ positions."
   "Make verilog `kill-word' command stop at underscores.
 Optional ARG sets number of words to kill."
   (interactive "p")
-  (let ((table (make-syntax-table verilog-mode-syntax-table)))
-    (modify-syntax-entry ?_ "_" table)
-    (with-syntax-table table
-      (kill-word arg))))
+  (cond ((eq major-mode 'verilog-mode)
+         (let ((table (make-syntax-table verilog-mode-syntax-table)))
+           (modify-syntax-entry ?_ "_" table)
+           (with-syntax-table table
+             (kill-word arg))))
+        ((eq major-mode 'verilog-ts-mode)
+         (kill-word arg))
+        (t
+         (error "Wrong major-mode to run `verilog-ext-kill-word'"))))
 
 (defun verilog-ext-backward-kill-word (&optional arg)
   "Make verilog `backward-kill-word' command stop at underscores.
 Optional ARG sets number of words to kill."
   (interactive "p")
-  (let ((table (make-syntax-table verilog-mode-syntax-table)))
-    (modify-syntax-entry ?_ "_" table)
-    (with-syntax-table table
-      (backward-kill-word arg))))
+  (cond ((eq major-mode 'verilog-mode)
+         (let ((table (make-syntax-table verilog-mode-syntax-table)))
+           (modify-syntax-entry ?_ "_" table)
+           (with-syntax-table table
+             (backward-kill-word arg))))
+        ((eq major-mode 'verilog-ts-mode)
+         (backward-kill-word arg))
+        (t
+         (error "Wrong major-mode to run `verilog-ext-backward-kill-word'"))))
 
 (defun verilog-ext-indent-region (start end &optional column)
   "Wrapper for `indent-region'.
 Prevents indentation issues with compiler directives with a modified syntax
 table.
 Pass the args START, END and optional COLUMN to `indent-region'."
-  (let ((table (make-syntax-table verilog-mode-syntax-table)))
-    (modify-syntax-entry ?` "w" table)
-    (with-syntax-table table
-      (indent-region start end column))))
+  (cond ((eq major-mode 'verilog-mode)
+         (let ((table (make-syntax-table verilog-mode-syntax-table)))
+           (modify-syntax-entry ?` "w" table)
+           (with-syntax-table table
+             (indent-region start end column))))
+        ((eq major-mode 'verilog-ts-mode)
+         (indent-region start end column))
+        (t
+         (error "Wrong major-mode to run `verilog-ext-backward-kill-word'"))))
 
 (defun verilog-ext-indent-block-at-point ()
   "Indent current block at point."
@@ -684,19 +699,29 @@ and `time-stamp-end' for custom scenarios."
   "Make verilog word navigation commands stop at underscores.
 Move forward ARG words."
   (interactive "p")
-  (let ((table (make-syntax-table verilog-mode-syntax-table)))
-    (modify-syntax-entry ?_ "_" table)
-    (with-syntax-table table
-      (forward-word arg))))
+  (cond ((eq major-mode 'verilog-mode)
+         (let ((table (make-syntax-table verilog-mode-syntax-table)))
+           (modify-syntax-entry ?_ "_" table)
+           (with-syntax-table table
+             (forward-word arg))))
+        ((eq major-mode 'verilog-ts-mode)
+         (forward-word arg))
+        (t
+         (error "Wrong major-mode to run `verilog-ext-forward-word'"))))
 
 (defun verilog-ext-backward-word (&optional arg)
   "Make verilog word navigation commands stop at underscores.
 Move backward ARG words."
   (interactive "p")
-  (let ((table (make-syntax-table verilog-mode-syntax-table)))
-    (modify-syntax-entry ?_ "_" table)
-    (with-syntax-table table
-      (backward-word arg))))
+  (cond ((eq major-mode 'verilog-mode)
+         (let ((table (make-syntax-table verilog-mode-syntax-table)))
+           (modify-syntax-entry ?_ "_" table)
+           (with-syntax-table table
+             (backward-word arg))))
+        ((eq major-mode 'verilog-ts-mode)
+         (backward-word arg))
+        (t
+         (error "Wrong major-mode to run `verilog-ext-backward-word'"))))
 
 (defun verilog-ext-tab (&optional arg)
   "Run corresponding TAB function depending on `major-mode'.
