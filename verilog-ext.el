@@ -99,14 +99,6 @@ Either `rg' or `ag' are implemented."
   :type 'string
   :group 'verilog-ext)
 
-(defcustom verilog-ext-flycheck-eldoc-toggle nil
-  "Disable `eldoc-mode' if flycheck is enabled and viceversa.
-Avoids collisions in the minibufer between eldoc (ggtags) and flycheck."
-  :type '(choice
-          (const :tag "Enable" t)
-          (const :tag "Disable" nil))
-  :group 'verilog-ext)
-
 (defcustom verilog-ext-flycheck-verible-rules nil
   "List of strings containing verible liner rules.
 Use - or + prefixes depending on enabling/disabling of rules.
@@ -3574,11 +3566,7 @@ to avoid minibuffer collisions."
           (flycheck-mode 1)
           (message "[%s] Flycheck enabled" verilog-ext-flycheck-linter))
       (flycheck-mode -1)
-      (message "Flycheck disabled"))
-    (when verilog-ext-flycheck-eldoc-toggle
-      (if flycheck-mode
-          (eldoc-mode -1)
-        (eldoc-mode 1)))))
+      (message "Flycheck disabled"))))
 
 
 ;;;; Verilator
