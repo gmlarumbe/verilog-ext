@@ -6,7 +6,7 @@
 ;; URL: https://github.com/gmlarumbe/verilog-ext
 ;; Version: 0.1.0
 ;; Keywords: Verilog, IDE, Tools
-;; Package-Requires: ((emacs "28.1") (verilog-mode "2022.12.18.181110314") (eglot "1.9") (lsp-mode "8.0.1") (ag "0.48") (ripgrep "0.4.0") (ggtags "0.9.0") (hydra "0.15.0") (apheleia "3.1") (yasnippet "0.14.0") (company "0.9.13") (flycheck "33-cvs") (imenu-list "0.9") (outshine "3.1-pre"))
+;; Package-Requires: ((emacs "28.1") (verilog-mode "2022.12.18.181110314") (eglot "1.9") (lsp-mode "8.0.1") (ag "0.48") (ripgrep "0.4.0") (hydra "0.15.0") (apheleia "3.1") (yasnippet "0.14.0") (company "0.9.13") (flycheck "33-cvs") (imenu-list "0.9") (outshine "3.1-pre"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@
 ;;  - Support for many linters in `flycheck'
 ;;  - Improve `imenu': detect instances and support methods inside classes
 ;;  - Navigate through instances in a module
-;;  - Jump to definition/reference of module at point via `ggtags' and `xref'
+;;  - Jump to definition/reference of module at point
 ;;  - Beautify modules: indent and align parameters and ports (interactively and in batch)
 ;;  - Extended collection of custom and `yasnippet' templates insertion via `hydra'
 ;;  - Setup `company' to complete with verilog keywords
@@ -49,7 +49,6 @@
 (require 'ripgrep)
 (require 'imenu-list)
 (require 'outshine)
-(require 'ggtags)
 (require 'hydra)
 (require 'apheleia)
 (require 'yasnippet)
@@ -347,8 +346,6 @@ Return nil if no module was found."
   "Find current project root, depending on available packages."
   (or (and (project-current)
            (project-root (project-current)))
-      (when (featurep 'ggtags)
-        (ggtags-current-project-root))
       default-directory))
 
 (defun verilog-ext-class-declaration-is-typedef-p ()
@@ -1266,12 +1263,6 @@ moves the cursor to current instance if pointing at one."
   "Jump to definition of module at point.
 If REF is non-nil show references instead."
   (interactive)
-  (unless (executable-find "global")
-    (error "Couldn't find executable `global' in PATH"))
-  (unless (member 'ggtags--xref-backend xref-backend-functions)
-    (error "Error: ggtags not configured as an xref backend.  Is ggtags-mode enabled?"))
-  (unless (ggtags-current-project-root)
-    (error "Error: `ggtags-project-root' not set.  Are GTAGS/GRTAGS/GPATH files created?"))
   (let ((module (car (verilog-ext-instance-at-point))))
     (if module
         (progn
@@ -1526,7 +1517,7 @@ Otherwise move to previous paragraph."
 ;; `verilog-align-typedef-regexp' in some other Elisp configuration file.
 ;;
 ;; Usage example:
-;;  - Go to project directory, set by projectile, ggtags, project or current dir
+;;  - Go to project directory, returned by `verilog-ext-project-root'.
 ;;
 ;;  - Set the variable `verilog-ext-align-typedef-uvm-dir' to include UVM directories:
 ;;      (setq verilog-ext-align-typedef-uvm-dir "/home/user/UVM/1800.2-2020-1.1/src/")
@@ -3378,7 +3369,7 @@ Similar to `verilog-match-translate-off' but including
 ;;; Hierarchy
 ;; - Extract hierarchy of current file with `verilog-ext-vhier-current-file'
 ;; - Visualize and navigate it with `verilog-ext-vhier-mode'
-;;  Requires `outshine' and `ggtags'.
+;;  Requires `outshine'
 
 ;;;; Navigation
 (define-minor-mode verilog-ext-vhier-mode
@@ -3435,10 +3426,6 @@ Move through headings and point at the beginning of the tag."
     (error "Vhier mode not enabled on current buffer"))
   (unless (executable-find "global")
     (error "Vhier mode requires global to work"))
-  (unless (featurep 'ggtags)
-    (error "Ggtags not available, required for jumping to a file"))
-  (unless (ggtags-find-project)
-    (error "Associated GTAGS file not found.  Make sure hierarchy file is in the same folder as its matching GTAGS file"))
   (delete-other-windows)
   (split-window-right)
   (shrink-window-horizontally 40)
