@@ -79,6 +79,36 @@ Either `rg' or `ag' are implemented."
   :type 'string
   :group 'verilog-ext)
 
+(defcustom verilog-ext-formatter-column-limit 100
+  "Verible code formatter column limit.
+See https://chipsalliance.github.io/verible/verilog_format.html."
+  :type 'integer
+  :group 'verilog-ext)
+
+(defcustom verilog-ext-formatter-indentation-spaces verilog-indent-level
+  "Verible code formatter indentation spaces.
+See https://chipsalliance.github.io/verible/verilog_format.html."
+  :type 'integer
+  :group 'verilog-ext)
+
+(defcustom verilog-ext-formatter-line-break-penalty 2
+  "Verible code formatter line break penalty.
+See https://chipsalliance.github.io/verible/verilog_format.html."
+  :type 'integer
+  :group 'verilog-ext)
+
+(defcustom verilog-ext-formatter-over_column-limit-penalty 100
+  "Verible code formatter line break penalty.
+See https://chipsalliance.github.io/verible/verilog_format.html."
+  :type 'integer
+  :group 'verilog-ext)
+
+(defcustom verilog-ext-formatter-wrap-spaces 4
+  "Verible code formatter wrap spaces.
+See https://chipsalliance.github.io/verible/verilog_format.html."
+  :type 'integer
+  :group 'verilog-ext)
+
 (defcustom verilog-ext-templ-resetn "Rst_n"
   "Name of active low reset for templates."
   :type 'string
@@ -592,17 +622,33 @@ Pass the args START, END and optional COLUMN to `indent-region'."
   "Setup `apheleia' with Verible code formatter."
   (interactive)
   (unless (and (alist-get 'verilog-mode apheleia-mode-alist)
+               (alist-get 'verilog-ts-mode apheleia-mode-alist)
                (alist-get 'verible apheleia-formatters))
-    (setq apheleia-mode-alist (assq-delete-all 'verilog-mode apheleia-mode-alist))
-    (push '(verilog-mode . verible) apheleia-mode-alist)
+    (dolist (mode '(verilog-mode verilog-ts-mode))
+      (setq apheleia-mode-alist (assq-delete-all mode apheleia-mode-alist))
+      (push `(,mode . verible) apheleia-mode-alist))
     (setq apheleia-formatters (assq-delete-all 'verible apheleia-formatters))
     (push '(verible . ("verible-verilog-format"
-                       "--indentation_spaces" (number-to-string verilog-indent-level)
+                       "--column_limit" (number-to-string verilog-ext-formatter-column-limit)
+                       "--indentation_spaces" (number-to-string verilog-ext-formatter-indentation-spaces)
+                       "--line_break_penalty" (number-to-string verilog-ext-formatter-line-break-penalty)
+                       "--over_column_limit_penalty" (number-to-string verilog-ext-formatter-over_column-limit-penalty)
+                       "--wrap_spaces" (number-to-string verilog-ext-formatter-wrap-spaces)
                        "-"))
           apheleia-formatters))
   (if (called-interactively-p 'any)
       (message "Configured %s" (alist-get 'verilog-mode apheleia-mode-alist))
     (alist-get 'verilog-mode apheleia-mode-alist)))
+
+(defun verilog-ext-code-format ()
+  "Run Verible code formatter."
+  (interactive)
+  (unless (executable-find "verible-verilog-format")
+    (error "Binary verible-verilog-format not found.  Visit https://github.com/chipsalliance/verible to download/install it"))
+  (unless (and (assoc major-mode apheleia-mode-alist)
+               (assoc 'verible apheleia-formatters))
+    (error "Code formatter not setup.  Did you run `verilog-ext-mode-setup'?"))
+  (apheleia-format-buffer 'verible))
 
 (defun verilog-ext-clean-port-blanks ()
   "Cleans blanks inside port connections of current block."
@@ -3990,6 +4036,7 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
     (define-key map (kbd "C-<tab>") 'verilog-ext-hs-toggle-hiding)
     ;; Features
     (define-key map (kbd "M-i") 'verilog-ext-imenu-list)
+    (define-key map (kbd "C-c f") 'verilog-ext-code-format)
     (define-key map (kbd "C-c C-p") 'verilog-ext-preprocess)
     (define-key map (kbd "C-c C-f") 'verilog-ext-flycheck-mode-toggle)
     (define-key map (kbd "C-c C-t") 'verilog-ext-hydra/body)
