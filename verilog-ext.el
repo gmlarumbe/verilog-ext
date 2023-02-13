@@ -2784,7 +2784,8 @@ endmodule // tb_<module_name>
 
 ;;; Completion
 ;; Verilog extension for `company' and placeholder for `completion-at-point' improvements.
-(add-to-list 'company-keywords-alist (append '(verilog-mode) verilog-keywords))
+(dolist (mode '(verilog-mode verilog-ts-mode))
+  (add-to-list 'company-keywords-alist (append `(,mode) verilog-keywords)))
 
 ;;; Syntax highlighting
 ;; Improved syntax highlighting based on `font-lock' keywords overriding.
