@@ -2022,6 +2022,61 @@ and methods.  These are collected with `verilog-ext-imenu-classes-index'."
   (goto-char (point-min)))
 
 
+;;; Hideshow
+(defconst verilog-ext-hs-block-start-keywords-re
+  (eval-when-compile
+    (verilog-regexp-words
+     '("begin"
+       "fork"
+       "clocking"
+       "function"
+       "covergroup"
+       "property"
+       "task"
+       "generate"
+       "`ifdef" "`ifndef"))))
+
+(defconst verilog-ext-hs-block-end-keywords-re
+  (eval-when-compile
+    (verilog-regexp-words
+     '("end"
+       "join" "join_any" "join_none"
+       "endclocking"
+       "endfunction"
+       "endgroup"
+       "endproperty"
+       "endtask"
+       "endgenerate"
+       "`endif"))))
+
+;; Config
+(defun verilog-ext-hideshow-setup ()
+  "Configure hideshow."
+  (dolist (mode '((verilog-mode    . verilog-forward-sexp-function)
+                  (verilog-ts-mode . verilog-forward-sexp-function))) ; TODO: Eventually replace with `verilog-ts-mode' forward-sexp function
+    (add-to-list 'hs-special-modes-alist `(,(car mode)
+                                           ,verilog-ext-hs-block-start-keywords-re
+                                           ,verilog-ext-hs-block-end-keywords-re
+                                           nil
+                                           ,(cdr mode)))))
+
+(defun verilog-ext-hs-toggle-hiding (&optional e)
+  "Wrapper for `hs-toggle-hiding' with proper syntax table.
+Toggle hiding/showing of a block.
+See `hs-hide-block' and `hs-show-block'.
+Argument E should be the event that triggered this action."
+  (interactive (list last-nonmenu-event))
+  (cond ((eq major-mode 'verilog-mode)
+         (let ((table (make-syntax-table verilog-mode-syntax-table)))
+           (modify-syntax-entry ?` "w" table)
+           (with-syntax-table table
+             (hs-toggle-hiding e))))
+        ((eq major-mode 'verilog-ts-mode)
+         (hs-toggle-hiding e))
+        (t
+         (error "Wrong major-mode to run `verilog-ext-hideshow-toggle'"))))
+
+
 ;;; Templates
 ;; Custom and `yasnippet' templates for insertion with `hydra'.
 (defmacro verilog-ext-template (&rest body)
@@ -3931,6 +3986,7 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
     (define-key map (kbd "M-f") 'verilog-ext-forward-word)
     (define-key map (kbd "M-b") 'verilog-ext-backward-word)
     (define-key map (kbd "C-<backspace>") 'verilog-ext-backward-kill-word)
+    (define-key map (kbd "C-<tab>") 'verilog-ext-hs-toggle-hiding)
     ;; Features
     (define-key map (kbd "M-i") 'verilog-ext-imenu-list)
     (define-key map (kbd "C-c C-p") 'verilog-ext-preprocess)
@@ -3963,6 +4019,8 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
   ;; Jump to parent module ag/ripgrep hooks
   (add-hook 'ag-search-finished-hook #'verilog-ext-navigation-ag-rg-hook)
   (add-hook 'ripgrep-search-finished-hook #'verilog-ext-navigation-ag-rg-hook)
+  ;; Hideshow
+  (verilog-ext-hideshow-setup)
   ;; Flycheck
   (verilog-ext-flycheck-setup)
   ;; Lsp
