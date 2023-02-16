@@ -34,6 +34,14 @@ recompile() {
     compile
 }
 
+gen_font_lock () {
+    if [[ $# -ge 1 ]]; then
+        run_elisp_cmd "(verilog-ext-test-font-lock-update-dir :tree-sitter)"
+    else
+        run_elisp_cmd "(verilog-ext-test-font-lock-update-dir)"
+    fi
+}
+
 gen_indent_dir () {
     if [[ $# -ge 1 ]]; then
         run_elisp_cmd "(verilog-ext-test-indent-gen-expected-files :tree-sitter)"

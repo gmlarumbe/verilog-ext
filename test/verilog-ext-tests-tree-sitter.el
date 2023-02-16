@@ -33,7 +33,7 @@
   (let ((default-directory verilog-ext-tests-common-dir)
         (faceup-test-explain t))
     (dolist (file (directory-files verilog-ext-tests-common-dir nil ".s?vh?$"))
-      (should (verilog-ext-test-font-lock-test-file file :tree-sitter)))))
+      (should (eq t (verilog-ext-test-font-lock-test-file file :tree-sitter))))))
 
 (ert-deftest tree-sitter::indentation ()
   (let ((test-files verilog-ext-tests-indent-test-files))

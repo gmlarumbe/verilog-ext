@@ -41,18 +41,17 @@
 (declare-function treesit-node-type "treesit.c")
 
 (eval-when-compile
-  (require 'verilog-mode)
-  (require 'verilog-ext))
+  (require 'verilog-mode))
 
 
 (defcustom verilog-ts-mode-hook nil
   "Hook run after Verilog Tree-sitter mode is loaded."
   :type 'hook
-  :group 'verilog-ext)
+  :group 'verilog-ts)
 
 (defcustom verilog-ts-indent-level 4
   "Tree-sitter indentation of Verilog statements with respect to containing block."
-  :group 'verilog-ext
+  :group 'verilog-ts
   :type 'integer)
 (put 'verilog-ts-indent-level 'safe-local-variable #'integerp)
 
@@ -184,6 +183,160 @@ Snippet fetched from `treesit--indent-1'."
 
 
 ;;; Font-lock
+;;;; Faces
+(defgroup verilog-ts-faces nil
+  "Verilog-ts faces."
+  :group 'verilog-ts)
+
+(defvar verilog-ts-font-lock-grouping-keywords-face 'verilog-ts-font-lock-grouping-keywords-face)
+(defface verilog-ts-font-lock-grouping-keywords-face
+  '((t (:foreground "dark olive green")))
+  "Face for grouping keywords: begin, end."
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-punctuation-face 'verilog-ts-font-lock-punctuation-face)
+(defface verilog-ts-font-lock-punctuation-face
+  '((t (:foreground "burlywood")))
+  "Face for punctuation symbols, e.g:
+!,;:?'=<>*"
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-punctuation-bold-face 'verilog-ts-font-lock-punctuation-bold-face)
+(defface verilog-ts-font-lock-punctuation-bold-face
+  '((t (:inherit verilog-ts-font-lock-punctuation-face :weight extra-bold)))
+  "Face for bold punctuation symbols, such as &^~+-/|."
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-brackets-face 'verilog-ts-font-lock-brackets-face)
+(defface verilog-ts-font-lock-brackets-face
+  '((t (:foreground "goldenrod")))
+  "Face for brackets []."
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-parenthesis-face 'verilog-ts-font-lock-parenthesis-face)
+(defface verilog-ts-font-lock-parenthesis-face
+  '((t (:foreground "dark goldenrod")))
+  "Face for parenthesis ()."
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-curly-braces-face 'verilog-ts-font-lock-curly-braces-face)
+(defface verilog-ts-font-lock-curly-braces-face
+  '((t (:foreground "DarkGoldenrod2")))
+  "Face for curly braces {}."
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-port-connection-face 'verilog-ts-font-lock-port-connection-face)
+(defface verilog-ts-font-lock-port-connection-face
+  '((t (:foreground "bisque2")))
+  "Face for port connections of instances.
+.portA (signalA),
+.portB (signalB)
+);"
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-dot-name-face 'verilog-ts-font-lock-dot-name-face)
+(defface verilog-ts-font-lock-dot-name-face
+  '((t (:foreground "gray70")))
+  "Face for dot-name regexps:
+- Interface signals, classes attributes/methods and hierarchical refs.
+
+axi_if.Ready <= 1'b1;
+obj.method();"
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-braces-content-face 'verilog-ts-font-lock-braces-content-face)
+(defface verilog-ts-font-lock-braces-content-face
+  '((t (:foreground "yellow green")))
+  "Face for content between braces: arrays, bit vector width and indexing."
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-width-num-face 'verilog-ts-font-lock-width-num-face)
+(defface verilog-ts-font-lock-width-num-face
+  '((t (:foreground "chartreuse2")))
+  "Face for the bit width number expressions.
+{1}'b1,
+{4}'hF,
+{3}'o7,"
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-width-type-face 'verilog-ts-font-lock-width-type-face)
+(defface verilog-ts-font-lock-width-type-face
+  '((t (:foreground "sea green" :weight bold)))
+  "Face for the bit width type expressions.
+1'{b}1,
+4'{h}F,
+3'{o}7,"
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-module-face 'verilog-ts-font-lock-module-face)
+(defface verilog-ts-font-lock-module-face
+  '((t (:foreground "green1")))
+  "Face for module names."
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-instance-face 'verilog-ts-font-lock-instance-face)
+(defface verilog-ts-font-lock-instance-face
+  '((t (:foreground "medium spring green")))
+  "Face for instance names."
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-time-event-face 'verilog-ts-font-lock-time-event-face)
+(defface verilog-ts-font-lock-time-event-face
+  '((t (:foreground "deep sky blue" :weight bold)))
+  "Face for time-events: @ and #."
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-time-unit-face 'verilog-ts-font-lock-time-unit-face)
+(defface verilog-ts-font-lock-time-unit-face
+  '((t (:foreground "light steel blue")))
+  "Face for time-units: ms, us, ns, ps, fs (delays and timescale/timeprecision)."
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-preprocessor-face 'verilog-ts-font-lock-preprocessor-face)
+(defface verilog-ts-font-lock-preprocessor-face
+  '((t (:foreground "pale goldenrod")))
+  "Face for preprocessor compiler directives (`include, `define, UVM macros...)."
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-modport-face 'verilog-ts-font-lock-modport-face)
+(defface verilog-ts-font-lock-modport-face
+  '((t (:foreground "light blue")))
+  "Face for interface modports."
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-direction-face 'verilog-ts-font-lock-direction-face)
+(defface verilog-ts-font-lock-direction-face
+  '((t (:foreground "RosyBrown3")))
+  "Face for direction of ports/functions/tasks args."
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-typedef-face 'verilog-ts-font-lock-typedef-face)
+(defface verilog-ts-font-lock-typedef-face
+  '((t (:foreground "light blue")))
+  "Face for user defined types."
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-translate-off-face 'verilog-ts-font-lock-translate-off-face)
+(defface verilog-ts-font-lock-translate-off-face
+  '((t (:background "gray20" :slant italic)))
+  "Face for pragmas between comments, e.g:
+* translate_off / * translate_on"
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-uvm-classes-face 'verilog-ts-font-lock-uvm-classes-face)
+(defface verilog-ts-font-lock-uvm-classes-face
+  '((t (:foreground "light blue")))
+  "Face for UVM classes."
+  :group 'verilog-ts-faces)
+
+(defvar verilog-ts-font-lock-xilinx-attributes-face 'verilog-ts-font-lock-xilinx-attributes-face)
+(defface verilog-ts-font-lock-xilinx-attributes-face
+  '((t (:foreground "orange1")))
+  "Face for Xilinx Vivado RTL synthesis attributes."
+  :group 'verilog-ts-faces)
+
+
+;;;; Keywords
 ;; There are some keywords that are not recognized by tree-sitter grammar.
 ;; For these ones, use regexp matching patterns inside tree-sitter (:match "^foo$")
 (defconst verilog-ts-keywords
@@ -258,19 +411,20 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
       ;; Width
       (treesit-fontify-with-override
        (treesit-node-start node) apostrophe-pos
-       'verilog-ext-font-lock-width-num-face
+       'verilog-ts-font-lock-width-num-face
        override start end)
       ;; Apostrophe
       (treesit-fontify-with-override
        apostrophe-pos (1+ apostrophe-pos)
-       'verilog-ext-font-lock-punctuation-face
+       'verilog-ts-font-lock-punctuation-face
        override start end)
       ;; Radix
       (treesit-fontify-with-override
        type-pos (1+ type-pos)
-       'verilog-ext-font-lock-width-type-face
+       'verilog-ts-font-lock-width-type-face
        override start end))))
 
+;;;; Treesit-settings
 (defvar verilog--treesit-settings
   (treesit-font-lock-rules
    :feature 'comment
@@ -291,22 +445,22 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
    :language 'verilog
    '(;; Arrays
      ((packed_dimension
-       (constant_range) @verilog-ext-font-lock-braces-content-face))
+       (constant_range) @verilog-ts-font-lock-braces-content-face))
      ((unpacked_dimension
-       (constant_range) @verilog-ext-font-lock-braces-content-face))
+       (constant_range) @verilog-ts-font-lock-braces-content-face))
      (select1
-      (constant_range) @verilog-ext-font-lock-braces-content-face)
+      (constant_range) @verilog-ts-font-lock-braces-content-face)
      ((unpacked_dimension
-       (constant_expression) @verilog-ext-font-lock-braces-content-face))
+       (constant_expression) @verilog-ts-font-lock-braces-content-face))
      (bit_select1
-      (expression) @verilog-ext-font-lock-braces-content-face)
+      (expression) @verilog-ts-font-lock-braces-content-face)
      (constant_select1
-      (constant_expression) @verilog-ext-font-lock-braces-content-face)
+      (constant_expression) @verilog-ts-font-lock-braces-content-face)
      (constant_bit_select1
-      (constant_expression) @verilog-ext-font-lock-braces-content-face)
+      (constant_expression) @verilog-ts-font-lock-braces-content-face)
      (indexed_range
-      (expression) @verilog-ext-font-lock-braces-content-face
-      (constant_expression) @verilog-ext-font-lock-braces-content-face)
+      (expression) @verilog-ts-font-lock-braces-content-face
+      (constant_expression) @verilog-ts-font-lock-braces-content-face)
      ;; Timeunit
      ((time_unit) @font-lock-constant-face)
      ;; Enum labels
@@ -317,21 +471,21 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
      (parameter_value_assignment
       (list_of_parameter_assignments
        (named_parameter_assignment
-        (parameter_identifier (simple_identifier) @verilog-ext-font-lock-port-connection-face))))
+        (parameter_identifier (simple_identifier) @verilog-ts-font-lock-port-connection-face))))
      (ordered_parameter_assignment ; Ordered parameters (e.g. parameterized class type declaration)
       (_ordered_parameter_assignment
-       (data_type (simple_identifier) @verilog-ext-font-lock-port-connection-face)))
+       (data_type (simple_identifier) @verilog-ts-font-lock-port-connection-face)))
      ;; Interface signals (members)
      (expression
       (primary
-       (simple_identifier) @verilog-ext-font-lock-dot-name-face
+       (simple_identifier) @verilog-ts-font-lock-dot-name-face
        (select1
         (member_identifier
          (simple_identifier)))))
      ;; Interface signals with index
      (expression
       (primary
-       (simple_identifier) @verilog-ext-font-lock-dot-name-face
+       (simple_identifier) @verilog-ts-font-lock-dot-name-face
        (constant_bit_select1)))
      ;; Case item label (not radix)
      (case_item_expression
@@ -340,7 +494,7 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
      ;; Attributes
      (["(*" "*)"] @font-lock-constant-face)
      (attribute_instance
-      (attr_spec (simple_identifier) @verilog-ext-font-lock-xilinx-attributes-face))
+      (attr_spec (simple_identifier) @verilog-ts-font-lock-xilinx-attributes-face))
      ;; Typedefs
      (type_declaration
       (simple_identifier) @font-lock-constant-face)
@@ -375,7 +529,7 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
 
    :feature 'keyword
    :language 'verilog
-   `((["begin" "end" "this"] @verilog-ext-font-lock-grouping-keywords-face)
+   `((["begin" "end" "this"] @verilog-ts-font-lock-grouping-keywords-face)
      ([,@verilog-ts-keywords] @font-lock-keyword-face)
      ;; INFO: Still not well implemented in the grammar (new as a method call without and with arguments)
      (expression ; W/o args
@@ -392,35 +546,35 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
    :feature 'operator
    :language 'verilog
    `(;; INFO: Some of these might be redundant
-     ([,@verilog-ts-operators-arithmetic] @verilog-ext-font-lock-punctuation-bold-face)
-     ([,@verilog-ts-operators-relational] @verilog-ext-font-lock-punctuation-face)
-     ([,@verilog-ts-operators-equality] @verilog-ext-font-lock-punctuation-face)
-     ([,@verilog-ts-operators-shift] @verilog-ext-font-lock-punctuation-face)
-     ([,@verilog-ts-operators-bitwise] @verilog-ext-font-lock-punctuation-bold-face)
-     ([,@verilog-ts-operators-logical] @verilog-ext-font-lock-punctuation-bold-face)
+     ([,@verilog-ts-operators-arithmetic] @verilog-ts-font-lock-punctuation-bold-face)
+     ([,@verilog-ts-operators-relational] @verilog-ts-font-lock-punctuation-face)
+     ([,@verilog-ts-operators-equality] @verilog-ts-font-lock-punctuation-face)
+     ([,@verilog-ts-operators-shift] @verilog-ts-font-lock-punctuation-face)
+     ([,@verilog-ts-operators-bitwise] @verilog-ts-font-lock-punctuation-bold-face)
+     ([,@verilog-ts-operators-logical] @verilog-ts-font-lock-punctuation-bold-face)
      ;; Operators (LRM 11.3):
-     ((assignment_operator) @verilog-ext-font-lock-punctuation-face)
-     ((unary_operator) @verilog-ext-font-lock-punctuation-face)
-     ;; ((binary_operator) @verilog-ext-font-lock-punctuation-face)
-     ;; ((inc_or_dec_operator) @verilog-ext-font-lock-punctuation-face)
-     ;; ((stream_operator) @verilog-ext-font-lock-punctuation-face)
-     ((event_trigger) @verilog-ext-font-lock-punctuation-face)
+     ((assignment_operator) @verilog-ts-font-lock-punctuation-face)
+     ((unary_operator) @verilog-ts-font-lock-punctuation-face)
+     ;; ((binary_operator) @verilog-ts-font-lock-punctuation-face)
+     ;; ((inc_or_dec_operator) @verilog-ts-font-lock-punctuation-face)
+     ;; ((stream_operator) @verilog-ts-font-lock-punctuation-face)
+     ((event_trigger) @verilog-ts-font-lock-punctuation-face)
      )
 
    :feature 'punctuation
    :language 'verilog
-   `(([,@verilog-ts-punctuation] @verilog-ext-font-lock-punctuation-face)
-     (["."] @verilog-ext-font-lock-punctuation-bold-face)
-     (["(" ")"] @verilog-ext-font-lock-parenthesis-face)
-     (["[" "]"] @verilog-ext-font-lock-brackets-face)
-     (["{" "}"] @verilog-ext-font-lock-curly-braces-face)
-     (["@" "#" "##" "@*"] @verilog-ext-font-lock-time-event-face))
+   `(([,@verilog-ts-punctuation] @verilog-ts-font-lock-punctuation-face)
+     (["."] @verilog-ts-font-lock-punctuation-bold-face)
+     (["(" ")"] @verilog-ts-font-lock-parenthesis-face)
+     (["[" "]"] @verilog-ts-font-lock-brackets-face)
+     (["{" "}"] @verilog-ts-font-lock-curly-braces-face)
+     (["@" "#" "##" "@*"] @verilog-ts-font-lock-time-event-face))
 
    :feature 'directives-macros
    :language 'verilog
-   `(([,@verilog-ts-directives] @verilog-ext-font-lock-preprocessor-face)
+   `(([,@verilog-ts-directives] @verilog-ts-font-lock-preprocessor-face)
      (text_macro_identifier
-      (simple_identifier) @verilog-ext-font-lock-preprocessor-face))
+      (simple_identifier) @verilog-ts-font-lock-preprocessor-face))
 
    :feature 'declaration
    :language 'verilog
@@ -438,7 +592,7 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
       (class_type
        (class_identifier (simple_identifier) @font-lock-type-face))) ; Parent class
      ;; Ports
-     (["input" "output" "inout" "ref"] @verilog-ext-font-lock-direction-face)
+     (["input" "output" "inout" "ref"] @verilog-ts-font-lock-direction-face)
      ;; Ports with user types
      (ansi_port_declaration
       (net_port_header1
@@ -448,33 +602,33 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
      (ansi_port_declaration
       (interface_port_header
        (interface_identifier
-        (simple_identifier) @verilog-ext-font-lock-dot-name-face)
+        (simple_identifier) @verilog-ts-font-lock-dot-name-face)
        (modport_identifier
         (modport_identifier
-         (simple_identifier) @verilog-ext-font-lock-modport-face))))
+         (simple_identifier) @verilog-ts-font-lock-modport-face))))
      )
 
    :feature 'instance
    :language 'verilog
    '(;; Module names
-     (module_instantiation (simple_identifier) @verilog-ext-font-lock-module-face)
+     (module_instantiation (simple_identifier) @verilog-ts-font-lock-module-face)
      (program_instantiation
-      (program_identifier (simple_identifier) @verilog-ext-font-lock-module-face))
+      (program_identifier (simple_identifier) @verilog-ts-font-lock-module-face))
      (interface_instantiation
-      (interface_identifier (simple_identifier) @verilog-ext-font-lock-module-face))
+      (interface_identifier (simple_identifier) @verilog-ts-font-lock-module-face))
      (checker_instantiation ; Some module/interface instances might wrongly be detected as checkers
-      (checker_identifier (simple_identifier) @verilog-ext-font-lock-module-face))
-     (udp_instantiation (simple_identifier) @verilog-ext-font-lock-module-face ; Some module/interface instances might wrongly be detected as UDP
+      (checker_identifier (simple_identifier) @verilog-ts-font-lock-module-face))
+     (udp_instantiation (simple_identifier) @verilog-ts-font-lock-module-face ; Some module/interface instances might wrongly be detected as UDP
       (udp_instance
        (name_of_instance
-        (instance_identifier (simple_identifier) @verilog-ext-font-lock-instance-face))))
+        (instance_identifier (simple_identifier) @verilog-ts-font-lock-instance-face))))
      ;; Instance names
      (name_of_instance
-      (instance_identifier (simple_identifier) @verilog-ext-font-lock-instance-face))
+      (instance_identifier (simple_identifier) @verilog-ts-font-lock-instance-face))
      ;; Port names
      (named_port_connection ; 'port_identifier standalone also matches port declarations of a module
-      (port_identifier (simple_identifier) @verilog-ext-font-lock-port-connection-face))
-     (formal_port_identifier (simple_identifier) @verilog-ext-font-lock-port-connection-face)
+      (port_identifier (simple_identifier) @verilog-ts-font-lock-port-connection-face))
+     (formal_port_identifier (simple_identifier) @verilog-ts-font-lock-port-connection-face)
      )
 
    :feature 'types
@@ -521,7 +675,7 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
        (function_identifier (simple_identifier) @font-lock-function-name-face)))
      (class_scope ; Definition of extern defined methods
       (class_type
-       (class_identifier (simple_identifier) @verilog-ext-font-lock-dot-name-face)))
+       (class_identifier (simple_identifier) @verilog-ts-font-lock-dot-name-face)))
      )
 
    :feature 'funcall
@@ -529,7 +683,7 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
    '(;; System task/function
      ((system_tf_identifier) @font-lock-builtin-face)
      ;; Method calls (class name)
-     (method_call (simple_identifier) @verilog-ext-font-lock-dot-name-face)
+     (method_call (simple_identifier) @verilog-ts-font-lock-dot-name-face)
      )
 
    :feature 'extra

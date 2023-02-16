@@ -52,32 +52,44 @@ At some point tried with `with-temp-buffer' without success."
           (outshine-mode -1)
           (message "Disabling outshine-mode for file %s" file))
         (message "Processing %s" file)
-        (faceup-write-file (concat verilog-ext-tests-faceup-dir
-                                   (file-name-nondirectory file)
-                                   (when tree-sitter
-                                     ".ts")
-                                   ".faceup"))))))
+        ;; It is needed to explicitly fontify for batch-mode updates, since by
+        ;; default batch mode does not enable font-lock.  Initially tried with
+        ;; `font-lock-ensure' but gave different results for tree-sitter.  Plus,
+        ;; `faceup-write-file' calls internally `font-lock-fontify-region' so
+        ;; it's more consistent
+        (font-lock-fontify-region (point-min) (point-max))
+        (faceup-write-file (verilog-ext-path-join verilog-ext-tests-faceup-dir
+                                                  (concat (file-name-nondirectory file)
+                                                          (when tree-sitter
+                                                            ".ts")
+                                                          ".faceup")))))))
 
 (defun verilog-ext-test-font-lock-test-file (file &optional tree-sitter)
   "Test that Verilog FILE fontifies as the .faceup file describes."
   (let ((verilog-align-typedef-regexp nil)
         (mode (if tree-sitter
                   'verilog-ts-mode
-                'verilog-mode)))
-    (faceup-test-font-lock-file mode
-                                (verilog-ext-path-join verilog-ext-tests-common-dir file)
-                                (verilog-ext-path-join verilog-ext-tests-faceup-dir (concat file
-                                                                                            (when tree-sitter
-                                                                                              ".ts")
-                                                                                            ".faceup")))))
+                'verilog-mode))
+        result)
+    (setq result (faceup-test-font-lock-file mode
+                                             (verilog-ext-path-join verilog-ext-tests-common-dir file)
+                                             (verilog-ext-path-join verilog-ext-tests-faceup-dir (concat file
+                                                                                                         (when tree-sitter
+                                                                                                           ".ts")
+                                                                                                         ".faceup"))))
+    (if (eq t result)
+        t ; Propagate 't for the test to pass
+      ;; In case of failure, show also which file failed
+      (push file result)
+      result)))
 
-(faceup-defexplainer verilog-ext-test-font-lock-test-file)
+
 
 (ert-deftest font-lock::generic ()
   (let ((default-directory verilog-ext-tests-common-dir)
         (faceup-test-explain t))
     (dolist (file (directory-files verilog-ext-tests-common-dir nil ".s?vh?$"))
-      (should (verilog-ext-test-font-lock-test-file file)))))
+      (should (eq t (verilog-ext-test-font-lock-test-file file))))))
 
 
 (provide 'verilog-ext-tests-font-lock)
