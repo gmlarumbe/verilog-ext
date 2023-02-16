@@ -206,12 +206,12 @@ See `verilog-ext-block-end-comments-to-names' for examples."
   (concat "\\<\\(?1:module\\|interface\\)\\>\\(\\s-+\\<automatic\\>\\)?\\s-+\\(?3:" verilog-identifier-sym-re "\\)"))
 (defconst verilog-ext-task-re
   (concat "\\(?1:\\(?:\\(?:static\\|pure\\|virtual\\|local\\|protected\\)\\s-+\\)*task\\)\\s-+\\(?:\\(?:static\\|automatic\\)\\s-+\\)?"
-          "\\(?:\\(?2:\\w+\\)::\\)?"
+          "\\(?:\\(?2:" verilog-identifier-sym-re "\\)::\\)?"
           "\\(?3:" verilog-identifier-sym-re "\\)"))
 (defconst verilog-ext-function-re
   (concat "\\(?1:\\(?:\\(?:static\\|pure\\|virtual\\|local\\|protected\\)\\s-+\\)*function\\)\\s-+\\(?:\\(?:static\\|automatic\\)\\s-+\\)?"
-          "\\(?:\\w+\\s-+\\)?\\(?:\\(?:un\\)signed\\s-+\\)?" ; Optional Return type
-          "\\(?:\\(?2:\\w+\\)::\\)?"
+          "\\(?:" verilog-identifier-sym-re "\\s-+\\)?\\(?:\\(?:un\\)signed\\s-+\\)?" ; Optional Return type
+          "\\(?:\\(?2:" verilog-identifier-sym-re "\\)::\\)?"
           "\\(?3:" verilog-identifier-sym-re "\\)"))
 (defconst verilog-ext-class-re (concat "\\(?1:\\<class\\>\\)\\s-+\\(?3:" verilog-identifier-sym-re "\\)"))
 (defconst verilog-ext-top-re (concat "\\<\\(?1:package\\|program\\|module\\|interface\\)\\>\\(\\s-+\\<automatic\\>\\)?\\s-+\\(?3:" verilog-identifier-sym-re "\\)"))
