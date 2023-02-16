@@ -39,6 +39,7 @@
 
 ;;; Code:
 
+(require 'which-func)
 (require 'verilog-mode)
 (require 'xref)
 (require 'make-mode)
@@ -134,6 +135,11 @@ See https://chipsalliance.github.io/verible/verilog_format.html."
 Use - or + prefixes depending on enabling/disabling of rules.
 https://chipsalliance.github.io/verible/lint.html"
   :type '(repeat string)
+  :group 'verilog-ext)
+
+(defcustom verilog-ext-which-func-enable t
+  "Enable `which-func' enhanced version."
+  :type 'boolean
   :group 'verilog-ext)
 
 (defcustom verilog-ext-align-typedef-uvm-dir nil
@@ -2160,6 +2166,51 @@ and methods.  These are collected with `verilog-ext-imenu-classes-index'."
   (imenu-list)
   (goto-char (point-min)))
 
+
+
+;;; Which-func
+(defvar-local verilog-ext-which-func-extra nil
+  "Variable to hold extra information for `which-func'.")
+
+(defun verilog-ext-which-func-shorten-block (block-type)
+  "Return shortened name of BLOCK-TYPE, if possible."
+  (cond ((string= "function"  block-type) "func")
+        ((string= "task"      block-type) "task")
+        ((string= "class"     block-type) "cls")
+        ((string= "module"    block-type) "mod")
+        ((string= "interface" block-type) "itf")
+        ((string= "package"   block-type) "pkg")
+        ((string= "program"   block-type) "pgm")
+        ((string= "generate"  block-type) "gen")
+        (t block-type)))
+
+(defun verilog-ext-which-func-function ()
+  "Retrieve `which-func' candidates."
+  (let (data)
+    (cond ((and verilog-ext-file-allows-instances
+                (setq data (verilog-ext-instance-at-point)))
+           (setq verilog-ext-which-func-extra (cadr data))
+           (car data))
+          ((setq data (verilog-ext-block-at-point))
+           (setq verilog-ext-which-func-extra (alist-get 'name data))
+           (verilog-ext-which-func-shorten-block (alist-get 'type data)))
+          (t
+           (setq verilog-ext-which-func-extra nil)
+           ""))))
+
+(defun verilog-ext-which-func ()
+  "Hook for `verilog-mode' to enable `which-func'."
+  (setq-local which-func-functions '(verilog-ext-which-func-function))
+  (setq-local which-func-format
+              `("["
+                (:propertize which-func-current
+                 face (which-func :weight bold)
+                 mouse-face mode-line-highlight)
+                ":"
+                (:propertize verilog-ext-which-func-extra
+                 face which-func
+                 mouse-face mode-line-highlight)
+                "]")))
 
 ;;; Hideshow
 (defconst verilog-ext-hs-block-start-keywords-re
@@ -4191,6 +4242,8 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
         (setq verilog-library-directories verilog-ext-dir-list)
         (setq verilog-ext-flycheck-verilator-include-path verilog-ext-dir-list)
         (add-hook 'kill-buffer-hook #'verilog-ext-kill-buffer-hook nil :local)
+        (when verilog-ext-which-func-enable
+          (verilog-ext-which-func))
         (when verilog-ext-block-end-comments-to-names-enable
           (verilog-ext-block-end-comments-to-names-mode))
         (when verilog-ext-time-stamp-enable
