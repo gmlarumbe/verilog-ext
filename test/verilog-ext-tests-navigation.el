@@ -322,35 +322,34 @@ It did work locally though."
 
 (defvar verilog-ext-test-navigation-defun-level-up
   '(("tb_program.sv" ((855 . nil)
-                      (1068 . nil)
+                      (1068 . ("(" . 884))
                       (1143 . ("tb_program" . 856))
-                      (1684 . ("begin" . 1605))
+                      (1684 . ("unnamed" . 1605))
                       (1829 . ("tb_program" . 856))
                       (2589 . ("init_rom" . 1871))
                       (3495 . ("init_values" . 3477))
-                      (4413 . ("begin" . 4311))
+                      (4413 . ("unnamed" . 4311))
                       (4635 . ("tb_program" . 856))
                       (4658 . nil)))
     ("axi_test.sv" ((883 . nil)
                     (936 . nil)
                     (954 . ("axi_test" . 936))
                     (1074 . ("(" . 1042))
-                    ;; (1218 . ("axi_lite_driver" . 1019)) ; TODO: Known ERROR! due to verilog-beg-of-statement if class/module with parameter list
+                    (1218 . ("axi_lite_driver" . 1019))
                     (1272 . ("(" . 1243))
                     (1433 . ("new" . 1314))
-                    ;; (1471 . ("axi_lite_driver" . 1019)) ; TODO: Known ERROR! due to verilog-beg-of-statement if class/module with parameter list
+                    (1471 . ("axi_lite_driver" . 1019))
                     (1636 . ("reset_master" . 1476))
                     (5977 . ("axi_test" . 936))
                     (21939 . ("(" . 21908))
                     (22413 . ("begin" . 22407))
-                    (86894 . nil)))
+                    (86894 . nil)
+                    ))
     ("uvm_component.svh" ((1357 . nil)
                           (1516 . nil)
                           (1883 . ("uvm_component" . 1836))
                           (2595 . ("(" . 2583))
-                          ;; TODO: ERROR: Detects function due to embedded comment in extern function definition,
-                          ;; verilog-beg-of-statement should detect extern, but it doesn't due to the comment
-                          ;; (58464 . ("uvm_component" . 1836))
+                          (58464 . ("uvm_component" . 1836))
                           (58659 . ("uvm_component" . 1836))
                           (58685 . nil)
                           (59192 . ("new" . 59107))
@@ -376,8 +375,8 @@ It did work locally though."
                 (setq block (cadr pos-type))
                 (setq end-pos (cddr pos-type)))
             (setq block nil))
+          (should (string= (verilog-ext-defun-level-up) block))
           (when block
-            (should (string= (verilog-ext-defun-level-up) block))
             (should (equal (point) end-pos))))))))
 
 (defvar verilog-ext-test-navigation-defun-level-down
