@@ -4218,6 +4218,8 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
   (verilog-ext-hideshow-setup)
   ;; Code formatter
   (verilog-ext-code-formatter-setup)
+  ;; Yasnippet
+  (verilog-ext-add-snippets)
   ;; Flycheck
   (verilog-ext-flycheck-setup)
   ;; Lsp
