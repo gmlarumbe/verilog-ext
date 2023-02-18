@@ -50,40 +50,17 @@
 (setq straight-use-package-by-default t)
 
 
-;;;; Install dependencies
-(message "Installing ggtags")
-(use-package ggtags)
-(message "Installing ag")
-(use-package ag)
-(message "Installing ripgrep")
-(use-package ripgrep)
-(message "Installing company")
-(use-package company)
-(message "Installing yasnippet")
-(use-package yasnippet)
-(message "Installing hydra")
-(use-package hydra)
-(message "Installing outshine")
-(use-package outshine)
-(message "Installing flycheck")
-(use-package flycheck)
-(message "Installing faceup for font-lock ERT regressions")
-(use-package faceup)
-(message "Setting up align")
+;;;; Setup built-in dependencies
 (use-package align
   :straight nil
   :config
   (setq align-default-spacing 1)
   (setq align-to-tab-stop nil))
-(message "Installing apheleia")
-(use-package apheleia)
-(message "Installing lsp-mode")
-(use-package lsp-mode)
-(message "Installing eglot")
-(use-package eglot)
-(message "Overwriting verilog-mode with latest version")
+
+;; Overwrite with latest version instead of the one pointed by Package-Requires:
 (use-package verilog-mode
   :straight (:repo "veripool/verilog-mode")
+  ;; :straight nil ; TODO: Uncomment/replace when gnu archive has a newer version where tests pass
   :config
   (defvar verilog-ext-test-indent-level 4)
   (setq verilog-indent-level             verilog-ext-test-indent-level)
@@ -114,15 +91,18 @@
   (setq verilog-align-typedef-regexp (concat "\\<" verilog-identifier-re "_\\(t\\|if\\|vif\\)\\>")))
 
 
-;;;; Install package
+;;;; Setup package
 (message "Installing and setting up verilog-ext")
 (use-package verilog-ext
-  :straight (:host github :repo "gmlarumbe/verilog-ext")
+  :straight (:host github :repo "gmlarumbe/verilog-ext"
+             :files ("verilog-ext.el" "verilog-ts-mode.el" "snippets"))
   :after verilog-mode
-  :demand)
-(verilog-ext-mode-setup)
-(add-hook 'verilog-mode-hook #'verilog-ext-mode) ; Applies also to verilog-ts-mode since it's derived
-(add-hook 'verilog-ts-mode-hook #'(lambda () (setq treesit-font-lock-level 4)))
+  :hook ((verilog-mode . verilog-ext-mode))
+  :demand
+  :config
+  (verilog-ext-mode-setup)
+  (add-hook 'verilog-ts-mode-hook #'(lambda () ; Applies also to verilog-ts-mode since it's derived
+                                      (setq treesit-font-lock-level 4))))
 
 
 (provide 'verilog-ext-tests-setup)
