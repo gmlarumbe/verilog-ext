@@ -75,7 +75,7 @@ Either `rg' or `ag' are implemented."
                  (const :tag "ripgrep"         "rg"))
   :group 'verilog-ext)
 
-(defcustom verilog-ext-snippets-dir (concat user-emacs-directory "verilog-ext/snippets")
+(defcustom verilog-ext-snippets-dir (expand-file-name "snippets" (file-name-directory (or load-file-name (buffer-file-name))))
   "Yasnippet verilog-ext snippets directory."
   :type 'string
   :group 'verilog-ext)
