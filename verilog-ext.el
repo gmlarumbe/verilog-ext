@@ -4176,6 +4176,7 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
     (define-key map (kbd "M-f") 'verilog-ext-forward-word)
     (define-key map (kbd "M-b") 'verilog-ext-backward-word)
     (define-key map (kbd "C-<backspace>") 'verilog-ext-backward-kill-word)
+    (define-key map (kbd "M-DEL") 'verilog-ext-backward-kill-word)
     (define-key map (kbd "C-<tab>") 'verilog-ext-hs-toggle-hiding)
     ;; Features
     (define-key map (kbd "M-i") 'verilog-ext-imenu-list)
