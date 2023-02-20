@@ -46,10 +46,9 @@
 ;;;; Tests
 (require 'verilog-ext)
 
-(defvar verilog-ext-tests-root-dir (file-name-directory (locate-library "verilog-ext")))
-(defvar verilog-ext-tests-test-dir (if (string-prefix-p (expand-file-name straight-base-dir) verilog-ext-tests-root-dir)
+(defvar verilog-ext-tests-test-dir (if (bound-and-true-p straight-base-dir)
                                        (verilog-ext-path-join (expand-file-name straight-base-dir) "straight/repos/verilog-ext/test")
-                                     (verilog-ext-path-join verilog-ext-tests-root-dir "test")))
+                                     (file-name-directory (or load-file-name (buffer-file-name)))))
 (defvar verilog-ext-tests-files-dir (verilog-ext-path-join verilog-ext-tests-test-dir "files"))
 (defvar verilog-ext-tests-beautify-dir (verilog-ext-path-join verilog-ext-tests-files-dir "beautify"))
 (defvar verilog-ext-tests-common-dir (verilog-ext-path-join verilog-ext-tests-files-dir "common"))

@@ -1,4 +1,4 @@
-;;; verilog-ext-tests-setup.el --- Verilog Tests Setup  -*- lexical-binding: t -*-
+;;; verilog-ext-tests-setup-straight.el --- Verilog Tests Setup with straight.el  -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2022-2023 Gonzalo Larumbe
 
@@ -105,6 +105,6 @@
                                       (setq treesit-font-lock-level 4))))
 
 
-(provide 'verilog-ext-tests-setup)
+(provide 'verilog-ext-tests-setup-straight)
 
-;;; verilog-ext-tests-setup.el ends here
+;;; verilog-ext-tests-setup-straight.el ends here

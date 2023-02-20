@@ -1,4 +1,4 @@
-name: ERT
+name: ERT-straight
 
 on:
   push:
