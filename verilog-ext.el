@@ -1668,40 +1668,7 @@ Otherwise move to previous paragraph."
     (backward-paragraph)))
 
 ;;; Typedef
-;; Some functions to extract typedefs/classes from a set of directories and
-;; update some variables accordingly.
-;;
-;; This enables the fontification and alignment via
-;; `verilog-pretty-declarations' and `verilog-pretty-expr' of these types.
-;;
-;; To make it efficient it is required to update this regexp with `regexp-opt',
-;; but doing it frequently to update the variable (e.g. on file opening, closing
-;; or saving) gives a poor performance.  Hence the best approach is to run
-;; `verilog-ext-typedef-batch-update' and update manually the value of
-;; `verilog-align-typedef-regexp' in some other Elisp configuration file.
-;;
-;; Usage example:
-;;  - Go to project directory, returned by `verilog-ext-project-root'.
-;;
-;;  - Set the variable `verilog-ext-align-typedef-uvm-dir' to include UVM directories:
-;;      (setq verilog-ext-align-typedef-uvm-dir "/home/user/UVM/1800.2-2020-1.1/src/")
-;;
-;;  - M-x `verilog-ext-typedef-project-update' RET
-;;
-;;  - Wait for processing (might take some minutes depending on the number of files)
-;;
-;;  - Check if variables were updated:
-;;     - C-h v `verilog-ext-align-typedef-words'
-;;     - C-h v `verilog-ext-align-typedef-words-re'
-;;     - C-h v `verilog-align-typedef-regexp'
-;;
-;;  - Update your init file with one of the two following options:
-;;      a) Copy the value of `verilog-ext-align-typedef-words-re' and set it to `verilog-align-typedef-regexp'
-;;      b) Copy the value of `verilog-ext-align-typedef-words', remove any undesired word and:
-;;        - (setq verilog-align-typedef-regexp
-;;             (eval-when-compile
-;;                (verilog-regexp-words <pasted-value>)))
-;;
+;; For more info, see: https://github.com/gmlarumbe/verilog-ext/wiki/Typedefs
 (defconst verilog-ext-range-optional-re
   (concat "\\(\\s-*" verilog-range-re "\\)?"))
 (defconst verilog-ext-range-or-class-params-optional-re
