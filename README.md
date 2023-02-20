@@ -1,162 +1,141 @@
 [![Build Status](https://github.com/gmlarumbe/verilog-ext/workflows/ERT/badge.svg)](https://github.com/gmlarumbe/verilog-ext/actions/workflows/build.yml)
 [![Build Status](https://github.com/gmlarumbe/verilog-ext/workflows/melpazoid/badge.svg)](https://github.com/gmlarumbe/verilog-ext/actions/workflows/melpazoid.yml)
+[![MELPA](https://melpa.org/packages/verilog-ext-badge.svg)](https://melpa.org/#/verilog-ext)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 # verilog-ext.el - SystemVerilog Extensions for Emacs #
 
-This package includes some extensions on top of the great Emacs [verilog-mode](https://github.com/veripool/verilog-mode).
+This package provides some extensions on top of the great Emacs [verilog-mode](https://github.com/veripool/verilog-mode):
 
-* Tree-sitter support (requires Emacs 29)
+* Tree-sitter powered `verilog-ts-mode`
 * Improve syntax highlighting
 * Hierarchy extraction and navigation
 * LSP configuration for `lsp-mode` and `eglot`
 * Support for many linters via `flycheck`
 * Improve `imenu` entries: detect instances, classes and methods
-* Code navigation functions for RTL and Verification environments
 * Beautify modules and instances
+* Code navigation functions for RTL and Verification environments
 * Extended collection of custom and `yasnippet` templates insertion via `hydra`
+* Code formatter via `apheleia`
+* Code folding via `hideshow`
+* Enhanced support for `which-func`
 * Many additional misc utilities
 
 ## Installation ##
 
-### Requirements ###
+### MELPA ###
 
-#### Verilog-mode ####
+`verilog-ext` is available on MELPA.
 
-Latest `verilog-mode` version is required since `verilog-ext` relies on much of its functionality to work correctly.
-Using [straight](https://github.com/radian-software/straight.el) and [use-package](https://github.com/jwiegley/use-package):
-```emacs-lisp
-(straight-use-package 'use-package)
-(use-package verilog-mode
-  :straight (:repo "veripool/verilog-mode"))
-```
-For other installation methods refer to [verilog-mode](https://github.com/veripool/verilog-mode) installation options.
+See [Getting Started](https://melpa.org/partials/getting-started.html) for instructions on how to setup and download packages.
 
-#### Binaries and Emacs Lisp packages ####
+`verilog-ts-mode` is not yet available on MELPA. See [notes](https://github.com/gmlarumbe/verilog-ext/wiki/Tree-sitter#notes) for more info.
 
-`verilog-ext` makes use of several binaries as backend engines to support IDE-like functionality. In addition, some third party Emacs Lisp packages serve as frontends for those binaries.
+### straight.el ###
 
-List of required binaries:
-- Definitions and references navigation: `global`, `gtags`, `universal-ctags`, `python`, `pygments`
-- Jump to parent module: `ag`, `ripgrep`
-- Hierarchy extraction: `vhier`
-- Linting: `verilator`, `iverilog`, `verible-verilog-lint`, `slang`, `svlint`, `xrun`/`hal`
-- LSP: `hdl_checker`, `svlangserver`, `verible-verilog-ls`, `svls`, `veridian`
-
-Installation of required Emacs-lisp packages:
-```emacs-lisp
-(use-package projectile)
-(use-package ggtags)
-(use-package ag)
-(use-package ripgrep)
-(use-package company)
-(use-package yasnippet)
-(use-package hydra)
-(use-package outshine)
-(use-package flycheck)
-(use-package apheleia)
-(use-package lsp-mode)
-(use-package eglot)
-```
-
-### verilog-ext ###
-
-#### straight.el ####
-
-For the time being `verilog-ext` is still work in progress and is not yet available at [MELPA](https://melpa.org/).
-To install it via [straight](https://github.com/radian-software/straight.el):
+To install it via [straight](https://github.com/radian-software/straight.el) with `use-package`:
 
 ```emacs-lisp
 (straight-use-package 'use-package)
-(use-package
-    :straight (:repo "gmlarumbe/verilog-ext"))
+
+(use-package verilog-ext
+  :straight (:host github :repo "gmlarumbe/verilog-ext"
+             :files ("verilog-ext.el" "verilog-ts-mode.el" "snippets")))
 ```
 
-#### Manually ####
+### Manually ###
+
+First download `verilog-ext` in the desired directory (e.g. `~/.emacs.d`):
+
 ```shell
 $ cd ~/.emacs.d
 $ git clone https://github.com/gmlarumbe/verilog-ext
 ```
+
 And add the following snippet to your `.emacs` or `init.el`:
+
 ```emacs-lisp
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/verilog-ext"))
 (require 'verilog-ext)
 ```
 
-### tree-sitter ###
-Requires Emacs 29, installation of `tree-sitter` and Verilog grammar.
-
-To install `tree-sitter` there are different options:
-
-* Via [npm](https://www.npmjs.com/package/tree-sitter)
-* Manually:
-```shell
-$ git clone https://github.com/tree-sitter/tree-sitter.git
-$ cd tree-sitter
-$ make && sudo make install
-```
-
-Installation of grammar can be automated through the script:
-```shell
-$ .github/scripts/install-ts-grammar.sh
-```
-That will install `libtree-sitter-verilog.so` at `$HOME/.emacs.d/tree-sitter`.
-
-
 ## Basic config ##
-By default `verilog-ext` does not create any keybindings. Following snippet shows a configuration example with `use-package`:
-```emacs-lisp
+
+The most basic configuration just requires setup of the minor-mode and to add it as a hook for `verilog-mode`:
+
+```elisp
+(verilog-ext-mode-setup)
+(add-hook 'verilog-mode-hook #'verilog-ext-mode)
+```
+
+If installed and loaded via `use-package`:
+
+```elisp
 (use-package verilog-ext
-  :straight (:host github :repo "gmlarumbe/verilog-ext")
   :after verilog-mode
   :demand
-  :bind (:map verilog-mode-map
-         ;; Default keys override
-         ("TAB"           . verilog-ext-electric-verilog-tab)
-         ("M-d"           . verilog-ext-kill-word)
-         ("M-f"           . verilog-ext-forward-word)
-         ("M-b"           . verilog-ext-backward-word)
-         ("C-<backspace>" . verilog-ext-backward-kill-word)
-         ;; Features
-         ("M-i"           . verilog-ext-imenu-list)
-         ("C-c C-p"       . verilog-ext-preprocess)
-         ("C-c C-f"       . verilog-ext-flycheck-mode-toggle)
-         ("C-c C-t"       . verilog-ext-hydra/body)
-         ("C-c C-v"       . verilog-ext-vhier-current-file)
-         ;; Code beautifying
-         ("C-M-i"         . verilog-ext-indent-block-at-point)
-         ("C-c b"         . verilog-ext-module-at-point-beautify)
-         ;; Dwim navigation
-         ("C-M-a"         . verilog-ext-nav-beg-of-defun-dwim)
-         ("C-M-e"         . verilog-ext-nav-end-of-defun-dwim)
-         ("C-M-d"         . verilog-ext-nav-down-dwim)
-         ("C-M-u"         . verilog-ext-nav-up-dwim)
-         ("C-M-p"         . verilog-ext-nav-prev-dwim)
-         ("C-M-n"         . verilog-ext-nav-next-dwim)
-         ;; Module navigation
-         ("C-M-."         . verilog-ext-jump-to-parent-module)
-         ;; Port connections
-         ("C-c c"         . verilog-ext-toggle-connect-port)
-         ("C-c C-c"       . verilog-ext-connect-ports-recursively))
-  :init
-  (setq verilog-ext-snippets-dir "~/.emacs.d/straight/repos/verilog-ext/snippets")
-  (setq verilog-ext-flycheck-eldoc-toggle t)
-  (setq verilog-ext-flycheck-verible-rules '("-line-length"))
+  :hook ((verilog-mode . verilog-ext-mode))
   :config
-  (verilog-ext-flycheck-set-linter 'verilog-verible)
-  (verilog-ext-add-snippets))
+  (verilog-ext-mode-setup))
 ```
+
+
+## Keybindings ##
+
+Enabling of `verilog-ext-mode` minor-mode creates the following keybindings:
+
+* Features:
+  * <kbd>M-i</kbd> `verilog-ext-imenu-list`
+  * <kbd>C-c C-l</kbd> `verilog-ext-code-format`
+  * <kbd>C-c C-p</kbd> `verilog-ext-preprocess`
+  * <kbd>C-c C-f</kbd> `verilog-ext-flycheck-mode-toggle`
+  * <kbd>C-c C-t</kbd> `verilog-ext-hydra/body`
+  * <kbd>C-c C-v</kbd> `verilog-ext-vhier-current-file`
+  * <kbd>C-\<tab\></kbd> `verilog-ext-hs-toggle-hiding`
+
+* Code beautifying
+  * <kbd>C-M-i</kbd> `verilog-ext-indent-block-at-point`
+  * <kbd>C-c C-b</kbd> `verilog-ext-module-at-point-beautify`
+
+* Dwim navigation
+  * <kbd>C-M-a</kbd> `verilog-ext-nav-beg-of-defun-dwim`
+  * <kbd>C-M-e</kbd> `verilog-ext-nav-end-of-defun-dwim`
+  * <kbd>C-M-d</kbd> `verilog-ext-nav-down-dwim`
+  * <kbd>C-M-u</kbd> `verilog-ext-nav-up-dwim`
+  * <kbd>C-M-p</kbd> `verilog-ext-nav-prev-dwim`
+  * <kbd>C-M-n</kbd> `verilog-ext-nav-next-dwim`
+
+* Module at point
+  * <kbd>C-c M-.</kbd> `verilog-ext-jump-to-module-at-point-def`
+  * <kbd>C-c M-?</kbd> `verilog-ext-jump-to-module-at-point-ref`
+
+* Jump to parent module
+  * <kbd>C-M-.</kbd> `verilog-ext-jump-to-parent-module`
+
+* Port connections
+  * <kbd>C-c C-c c</kbd> `verilog-ext-clean-port-blanks`
+  * <kbd>C-c C-c t</kbd> `verilog-ext-toggle-connect-port`
+  * <kbd>C-c C-c r</kbd> `verilog-ext-connect-ports-recursively`
+
+* Syntax table override functions:
+  * <kbd>TAB</kbd> `verilog-ext-tab`
+  * <kbd>M-d</kbd> `verilog-ext-kill-word`
+  * <kbd>M-f</kbd> `verilog-ext-forward-word`
+  * <kbd>M-b</kbd> `verilog-ext-backward-word`
+  * <kbd>C-\<backspace\></kbd> `verilog-ext-backward-kill-word`
+
 
 # Features #
 
 ## Tree-sitter ##
-The package includes the major-mode `verilog-ts-mode` for syntax highligting and indentation.
-There is some WIP, e.g. Imenu or navigation functions.
+The package provides the major-mode `verilog-ts-mode` for syntax highligting and indentation. It is derived from `verilog-mode` making AUTOs and other utilities still available.
+
+`verilog-ts-mode` is still work in progress and aims to provide the same functionality as `verilog-ext` but much faster and efficiently.
+
+For more information see the [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Tree-sitter).
+
 
 ## Syntax highlighting ##
-Improved fontification via:
-
-  * Tree-sitter: requires Emacs 29
-  * Font-lock override
 
 <img src="https://user-images.githubusercontent.com/51021955/208774894-a0f3159e-0f41-45db-be28-8a8706ad49ec.gif" width=400 height=300>
 
@@ -164,16 +143,12 @@ For face customization: <kbd>M-x</kbd> `customize-group` <kbd>RET</kbd> `verilog
 
 
 ## Hierarchy extraction ##
-Extract hierarchy of module at current buffer via [Verilog-Perl](https://github.com/veripool/verilog-perl) `vhier`.
-
-Visualize with `outline-minor-mode` and `outshine`.
 
 <img src="https://user-images.githubusercontent.com/51021955/209574234-eda2d151-87b4-44db-8edd-e41e2e1b79d4.gif" width=400 height=300>
 
-Functions:
+Hierarchy extraction of module at current buffer via [Verilog-Perl](https://github.com/veripool/verilog-perl) `vhier`.
 
-* `verilog-ext-vhier-current-file` for hierarchy extraction
-* `vhier-outshine-mode` for hierarchy navigation
+For configuration information, see the [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Hierarchy).
 
 
 ## Language Server Protocol ##
@@ -186,22 +161,7 @@ Auto-configure various SystemVerilog language servers for `lsp-mode` and `eglot`
 - [svls](https://github.com/dalance/svls)
 - [veridian](https://github.com/vivekmalneedi/veridian)
 
-Make sure that Language Server binary is in the $PATH:
-```shell
-$ which svlangserver
-/usr/local/bin/svlangserver
-```
-
-Interactively:
-<kbd>M-x</kbd> `verilog-ext-lsp-set-server`<kbd>RET</kbd> `ve-svlangserver`
-
-Programatically:
-```elisp
-;; For `lsp-mode':
-(verilog-ext-lsp-set-server 've-svlangserver)
-;; For `eglot':
-(verilog-ext-eglot-set-server 've-svlangserver)
-```
+For configuration instructions, see the [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Language-Server-Protocol)
 
 ## Linting ##
 Support via `flycheck` for the following linters:
@@ -213,10 +173,7 @@ Support via `flycheck` for the following linters:
 * [Svlint](https://github.com/dalance/svlint)
 * Cadence HAL
 
-Functions:
-
-* `verilog-ext-flycheck-mode-toggle`: enable/disable current linter. Select linter with `prefix-arg`/(`C-u`).
-
+For configuration and usage instructions, see the [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Linting)
 
 ## Imenu ##
 Support detection of instances and methods inside classes.
@@ -229,57 +186,33 @@ Support detection of instances and methods inside classes.
 
 <img src="https://user-images.githubusercontent.com/51021955/208780855-52166bf0-5897-48d1-83e8-698d0b1d6269.gif" width=400 height=300>
 
-* `imenu-list` is a recommended package to visualize different levels of nesting in the hierarchy.
+Find more information [here](https://github.com/gmlarumbe/verilog-ext/wiki/Imenu).
 
 
 ## Navigation ##
 
-### Instance navigation ###
-Navigate through instances inside a module forward/backwards.
-Jump to parent module via `ag`/`ripgrep`.
-
 <img src="https://user-images.githubusercontent.com/51021955/208782492-b2ff09b3-f662-4d22-a46c-64eb69f9f7b9.gif" width=400 height=300>
 
-Functions:
+* Navigate instances inside a module
+* Jump to definition/references of module at point
+* Jump to parent module
+* Context aware dwim functions for RTL/Verification environments
 
-* `verilog-ext-find-module-instance-fwd`
-* `verilog-ext-find-module-instance-bwd`
-* `verilog-ext-jump-to-parent-module`
-* `verilog-ext-instance-at-point`
-
-### Jump to definition/reference ###
-Jump to definition/reference of module at point via `ggtags` and `xref`.
-
-Functions:
-
-* `verilog-ext-jump-to-module-at-point`
-* `verilog-ext-jump-to-module-at-point-def`
-* `verilog-ext-jump-to-module-at-point-ref`
-
-### Dwim
-
-Context aware functions (do what I mean) depending on the file being edited.
-Modules (RTL) navigate through instances while classes (Verification) navigate through methods/defuns.
-
-Functions:
-
-* `verilog-ext-nav-down-dwim`
-* `verilog-ext-nav-up-dwim`
-* `verilog-ext-nav-beg-of-defun-dwim`
-* `verilog-ext-nav-end-of-defun-dwim`
-* `verilog-ext-nav-next-dwim`
-* `verilog-ext-nav-prev-dwim`
+For detailed info see the [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Navigation).
 
 
 ## Beautify instances ##
-Indent and align parameters and ports, interactively and in batch.
+Indent and align parameters and ports.
 
 <img src="https://user-images.githubusercontent.com/51021955/208781782-dbf45c3e-df3f-405a-aacc-1d190ab87ae9.gif" width=400 height=300>
 
-Functions:
+Interactive functions:
 
-* `verilog-ext-module-at-point-beautify`
+* `verilog-ext-module-at-point-beautify`: <kbd>C-c C-b</kbd>
 * `verilog-ext-beautify-current-buffer`
+
+Batch-mode functions:
+
 * `verilog-ext-beautify-files`
 * `verilog-ext-beautify-files-current-dir`
 
@@ -301,40 +234,66 @@ Functions:
 
 Functions:
 
+* `verilog-ext-hydra/body`: <kbd>C-c C-t</kbd>
 
-* `verilog-ext-hydra/body`
+## Code formatter ##
 
-## Misc ##
-* Code formatter setup via [apheleia](https://github.com/radian-software/apheleia)
+Code-formatter setup via [apheleia](https://github.com/radian-software/apheleia) and [`verible-verilog-format`](https://github.com/chipsalliance/verible).
 
-   - `verilog-ext-code-formatter-setup`
+* See configuration in the [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Code-formatter).
 
-* Preprocess files based on binary: `verilator`, `iverilog` or `vppreproc`
+  <img src="https://user-images.githubusercontent.com/51021955/220176079-f31ba086-7e64-434f-bb23-9c08e3f3ed6d.gif" width=400 height=300>
 
-   - `verilog-ext-preprocess`
 
-* Setup `company` to complete with verilog keywords
+## Code folding ##
 
-* Wrapper functions to stop cursor at underscores without breaking indentation
+* Code folding via `hideshow`: <kbd>C-\<tab\></kbd>
 
-  - `verilog-ext-forward-word`
-  - `verilog-ext-backward-word`
-  - `verilog-ext-kill-word`
-  - `verilog-ext-backward-kill-word`
+  <img src="https://user-images.githubusercontent.com/51021955/220174477-06beb019-3b2f-4329-8897-88e739ed5ea7.gif" width=400 height=300>
 
-* Typedef handling for syntax-higlighting and alignment via `verilog-pretty-declarations`
 
-  - `verilog-ext-typedef-project-update`
+## Which-func ##
+
+* Enhanced `which-func` support: show current block/instance at point in the mode-line
+
+  <img src="https://user-images.githubusercontent.com/51021955/220174496-b35c99fd-2eb8-424b-9eca-49b9a1d6aa54.gif" width=400 height=300>
+
+
+## Port connections ##
 
 * Toggle connections of ports under instance at point
 
-  - `verilog-ext-toggle-connect-port`
-  - `verilog-ext-connect-ports-recursively`
-  - `verilog-ext-clean-port-blanks`
+  <img src="https://user-images.githubusercontent.com/51021955/220176192-d823ba19-099f-4484-abc7-8269fd92928b.gif" width=400 height=300>
+
+  * `verilog-ext-toggle-connect-port`: <kbd>C-c C-c t</kbd>
+  * `verilog-ext-connect-ports-recursively`: <kbd>C-c C-c r</kbd>
+  * `verilog-ext-clean-port-blanks`: <kbd>C-c C-c c</kbd>
+
+
+
+
+## Misc ##
+
+* Preprocess files based on binary: `verilator`, `iverilog` or `vppreproc`
+
+   - `verilog-ext-preprocess`: <kbd>C-c C-p</kbd>
+
+* Setup `company` to complete with SystemVerilog keywords
+
+* Wrapper functions to stop cursor at underscores without breaking indentation
+
+  - `verilog-ext-forward-word`: <kbd>M-f</kbd>
+  - `verilog-ext-backward-word`: <kbd>M-b</kbd>
+  - `verilog-ext-kill-word`: <kbd>M-d</kbd>
+  - `verilog-ext-backward-kill-word`: <kbd>C-\<backspace\></kbd> and <kbd>M-DEL</kbd>
+
+* Typedef handling for syntax-higlighting and alignment via `verilog-pretty-declarations`
+
+  - `verilog-ext-typedef-project-update`: see [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Typedefs)
 
 * Timestamp mode updating (after setting header timestamp regexp)
 
-    - `verilog-ext-time-stamp-mode`
+    - `verilog-ext-time-stamp-mode`: see [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Timestamp)
 
 * Auto convert block comments to names:
 
@@ -365,14 +324,10 @@ To run a subset of tests (e.g. navigation):
 
 ```shell
 $ cd ~/.emacs.d/verilog-ext
-$ tests/scripts/ert-tests.sh run_tests navigation::
+$ tests/scripts/ert-tests.sh recompile_run navigation::
 ```
-
-If there is a missing dependency, check the file `tests/scripts/setup-env.sh` used by GitHub Actions to configure your environment.
-
 
 ## Other packages
 
 * [vhdl-ext](https://github.com/gmlarumbe/vhdl-ext): VHDL Extensions for Emacs
   * Analog package to edit VHDL sources
-
