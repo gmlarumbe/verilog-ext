@@ -78,7 +78,13 @@ run_tests () {
 
     if [[ $# -ge 1 ]]; then
         SELECTOR=$1
-        CMD="(ert-run-tests-batch-and-exit \"$SELECTOR\")"
+
+        if [[ "$SELECTOR" == "t" ]]; then # Don't double-quote t symbol
+            CMD="(ert-run-tests-batch-and-exit t)"
+        else
+            CMD="(ert-run-tests-batch-and-exit \"$SELECTOR\")"
+        fi
+
     else
         CMD="(ert-run-tests-batch-and-exit)"
     fi
