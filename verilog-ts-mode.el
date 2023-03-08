@@ -889,15 +889,20 @@ Indent parameters depending on first parameter:
       (skip-chars-forward "( \t")
       (point))))
 
+(defun verilog-ts--point-min-anchor (node parent &rest _)
+  "A tree-sitter simple indent anchor."
+  (save-excursion
+    (point-min)))
+
 
 (defvar verilog-ts--indent-rules
   `((verilog
      ;; Unit scope
-     (verilog-ts--unit-scope point-min 0) ; Place first for highest precedence
+     (verilog-ts--unit-scope verilog-ts--point-min-anchor 0) ; Place first for highest precedence
      ;; Comments
      ((and (node-is "comment")
            verilog-ts--unit-scope)
-      point-min 0)
+      verilog-ts--point-min-anchor 0)
      ((and (node-is "comment")
            (parent-is "conditional_statement"))
       parent-bol 0)

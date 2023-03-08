@@ -75,7 +75,9 @@
     (require 'treesit)
     (message "(treesit-language-available-p 'verilog): %s" (treesit-language-available-p 'verilog))
     (when (treesit-language-available-p 'verilog)
-      (require 'verilog-ext-tests-tree-sitter))))
+      (message "(functionp 'verilog-ts-mode): %s" (functionp 'verilog-ts-mode))
+      (when (functionp 'verilog-ts-mode)
+        (require 'verilog-ext-tests-tree-sitter)))))
 
 
 (provide 'verilog-ext-tests)
