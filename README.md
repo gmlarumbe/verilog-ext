@@ -1,5 +1,6 @@
-[![Build Status](https://github.com/gmlarumbe/verilog-ext/workflows/ERT-straight/badge.svg)](https://github.com/gmlarumbe/verilog-ext/actions/workflows/build_straight.yml)
 [![MELPA](https://melpa.org/packages/verilog-ext-badge.svg)](https://melpa.org/#/verilog-ext)
+[![Build Status](https://github.com/gmlarumbe/verilog-ext/workflows/ERT-straight/badge.svg)](https://github.com/gmlarumbe/verilog-ext/actions/workflows/build_straight.yml)
+[![Build Status](https://github.com/gmlarumbe/verilog-ext/workflows/ERT-package-el/badge.svg)](https://github.com/gmlarumbe/verilog-ext/actions/workflows/build_package.yml)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 # verilog-ext.el - SystemVerilog Extensions for Emacs #
