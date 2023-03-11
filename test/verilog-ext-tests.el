@@ -55,6 +55,7 @@
 (defvar verilog-ext-tests-faceup-dir (verilog-ext-path-join verilog-ext-tests-files-dir "faceup"))
 (defvar verilog-ext-tests-indent-dir (verilog-ext-path-join verilog-ext-tests-files-dir "indent"))
 (defvar verilog-ext-tests-jump-parent-dir (verilog-ext-path-join verilog-ext-tests-files-dir "jump-parent"))
+(defvar verilog-ext-tests-hierarchy-dir (verilog-ext-path-join verilog-ext-tests-files-dir "hierarchy"))
 
 (unless (member verilog-ext-tests-test-dir load-path)
   (add-to-list 'load-path verilog-ext-tests-test-dir))
@@ -65,6 +66,7 @@
 (require 'verilog-ext-tests-utils)
 (require 'verilog-ext-tests-beautify)
 (require 'verilog-ext-tests-indent)
+(require 'verilog-ext-tests-hierarchy)
 
 (message "Emacs version: %s" emacs-version)
 (if (< emacs-major-version 29)
