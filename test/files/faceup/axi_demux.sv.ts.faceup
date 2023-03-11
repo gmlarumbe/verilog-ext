@@ -69,8 +69,8 @@
   «:verilog-ts-font-lock-direction-face:input»  «t:select_t»                       slv_ar_select_i«:verilog-ts-font-lock-punctuation-face:,»
   «:verilog-ts-font-lock-direction-face:output» «t:axi_resp_t»                     slv_resp_o«:verilog-ts-font-lock-punctuation-face:,»
   «x:// Master Ports»
-  «:verilog-ts-font-lock-direction-face:output» axi_req_t    «:verilog-ts-font-lock-brackets-face:[»«:verilog-ts-font-lock-braces-content-face:NoMstPorts-1:0»«:verilog-ts-font-lock-brackets-face:]»  mst_reqs_o«:verilog-ts-font-lock-punctuation-face:,»
-  «:verilog-ts-font-lock-direction-face:input»  axi_resp_t   «:verilog-ts-font-lock-brackets-face:[»«:verilog-ts-font-lock-braces-content-face:NoMstPorts-1:0»«:verilog-ts-font-lock-brackets-face:]»  mst_resps_i
+  «:verilog-ts-font-lock-direction-face:output» «t:axi_req_t»    «:verilog-ts-font-lock-brackets-face:[»«:verilog-ts-font-lock-braces-content-face:NoMstPorts-1:0»«:verilog-ts-font-lock-brackets-face:]»  mst_reqs_o«:verilog-ts-font-lock-punctuation-face:,»
+  «:verilog-ts-font-lock-direction-face:input»  «t:axi_resp_t»   «:verilog-ts-font-lock-brackets-face:[»«:verilog-ts-font-lock-braces-content-face:NoMstPorts-1:0»«:verilog-ts-font-lock-brackets-face:]»  mst_resps_i
 «:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
 
   «k:localparam» «t:int» «t:unsigned» IdCounterWidth «:verilog-ts-font-lock-punctuation-face:=» cf_math_pkg«:verilog-ts-font-lock-punctuation-face:::»idx_width«:verilog-ts-font-lock-parenthesis-face:(»MaxTrans«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»

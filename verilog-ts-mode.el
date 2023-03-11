@@ -598,6 +598,9 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
       (net_port_header1
        (net_port_type1
         (simple_identifier) @font-lock-type-face)))
+     (ansi_port_declaration
+      (variable_port_header
+       (data_type (simple_identifier) @font-lock-type-face)))
      ;; Interfaces with modports
      (ansi_port_declaration
       (interface_port_header
