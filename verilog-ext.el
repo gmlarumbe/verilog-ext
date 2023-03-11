@@ -239,6 +239,8 @@ IEEE 1800-2012 SystemVerilog Section 9.3.4 Block names.")
           "//\\s-*\\(\\(block:\\|" verilog-identifier-sym-re "\\s-*::\\)\\s-*\\)*" ; Comments
           "\\(?2:" verilog-identifier-sym-re "\\)\\s-*$"))                 ; Block name to be replaced
 
+(defconst verilog-ext-verilog-file-extension-re "\\.s?vh?$")
+
 
 (defun verilog-ext-forward-syntactic-ws ()
   "Wrap `verilog-forward-syntactic-ws' and return point."
@@ -339,6 +341,32 @@ the replacement text (see `replace-match' for more info)."
       (while (search-forward string endpos t)
         (replace-match to-string fixedcase)))))
 
+(defun verilog-ext-project-root ()
+  "Find current project root, depending on available packages."
+  (or (and (project-current)
+           (project-root (project-current)))
+      default-directory))
+
+(defun verilog-ext-find-dir-files (dir &optional follow-symlinks)
+  "Find SystemVerilog files recursively on DIR.
+Follow symlinks if optional argument FOLLOW-SYMLINKS is non-nil."
+  (directory-files-recursively dir verilog-ext-verilog-file-extension-re nil nil follow-symlinks))
+
+(defun verilog-ext-find-dirs-files (dirs &optional follow-symlinks)
+  "Find SystemVerilog files recursively on DIRS.
+DIRS is a list of directory strings.
+Follow symlinks if optional argument FOLLOW-SYMLINKS is non-nil."
+  (let (files)
+    (dolist (dir dirs)
+      (push (verilog-ext-find-dir-files dir follow-symlinks) files))
+    (when files
+      (flatten-tree files))))
+
+(defun verilog-ext-find-project-files (&optional follow-symlinks)
+  "Find SystemVerilog files recursively on current project.
+Follow symlinks if optional argument FOLLOW-SYMLINKS is non-nil."
+  (verilog-ext-find-dir-files (verilog-ext-project-root) follow-symlinks))
+
 (defun verilog-ext-scan-buffer-modules ()
   "Find modules in current buffer.
 Return list with found modules or nil if not found.
@@ -382,12 +410,6 @@ Return nil if no module was found."
     (if (cdr modules)
         (completing-read "Select module: " modules)
       (car modules))))
-
-(defun verilog-ext-project-root ()
-  "Find current project root, depending on available packages."
-  (or (and (project-current)
-           (project-root (project-current)))
-      default-directory))
 
 (defun verilog-ext-class-declaration-is-typedef-p ()
   "Return non-nil if point is at a class declaration.
@@ -1795,7 +1817,7 @@ user typedefs."
   (let (dir-files)
     (setq verilog-ext-align-typedef-words nil) ; Reset value
     (dolist (dir dirs)
-      (setq dir-files (directory-files-recursively dir "\.s?vh?$" nil nil t)) ; Follow symlinks
+      (setq dir-files (verilog-ext-find-dir-files dir :follow-symlinks))
       (dolist (file dir-files)
         (message "Processing %s ..." file)
         (with-temp-buffer
@@ -1986,7 +2008,7 @@ FILES is a list of strings containing the filepaths."
 (defun verilog-ext-beautify-dir-files (dir)
   "Beautify Verilog files on DIR."
   (interactive "DDirectory: ")
-  (let ((files (directory-files-recursively dir "\\.[s]?v[h]?$")))
+  (let ((files (verilog-ext-find-dir-files dir)))
     (verilog-ext-beautify-files files)))
 
 ;;; Imenu
