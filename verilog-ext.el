@@ -102,7 +102,7 @@ See https://chipsalliance.github.io/verible/verilog_format.html."
   :type 'integer
   :group 'verilog-ext)
 
-(defcustom verilog-ext-formatter-over_column-limit-penalty 100
+(defcustom verilog-ext-formatter-over-column-limit-penalty 100
   "Verible code formatter line break penalty.
 See https://chipsalliance.github.io/verible/verilog_format.html."
   :type 'integer
@@ -290,10 +290,22 @@ IEEE 1800-2012 SystemVerilog Section 9.3.4 Block names.")
     (point)))
 
 (defun verilog-ext-backward-sexp ()
-  "Wrap `verilog-backward-sexp' ignore errors and return point."
+  "Wrap `verilog-backward-sexp', ignore errors and return point."
   (ignore-errors
     (verilog-backward-sexp)
     (point)))
+
+(defun verilog-ext-pos-at-forward-sexp ()
+  "Return pos of point afer `verilog-ext-forward-sexp'."
+  (save-match-data
+    (save-excursion
+      (verilog-ext-forward-sexp))))
+
+(defun verilog-ext-pos-at-backward-sexp ()
+  "Return pos of point afer `verilog-ext-backward-sexp'."
+  (save-match-data
+    (save-excursion
+      (verilog-ext-backward-sexp))))
 
 (defun verilog-ext-backward-up-list ()
   "Wrap `backward-up-list' and ignore errors."
@@ -456,7 +468,7 @@ Also updates `match-data' with that of `verilog-ext-class-re'."
              (looking-at verilog-ext-task-re))
          (match-string-no-properties 2)))) ; Match 2 corresponds to class name classifier
 
-(defun verilog-ext-get-boundaries (block)
+(defun verilog-ext-get-block-boundaries (block)
   "Get boundaries of BLOCK.
 Assumes that point is looking at a BLOCK type."
   (let ((start-pos (point))
@@ -566,7 +578,7 @@ Return alist with block type, name and boundaries."
                          (t
                           (error "Invalid condition"))))
           ;; Set boundaries and return value
-          (setq block-boundaries (verilog-ext-get-boundaries block))
+          (setq block-boundaries (verilog-ext-get-block-boundaries block))
           (setq block-beg-point (car block-boundaries))
           (setq block-end-point (cdr block-boundaries)))
         (when (and block-beg-point block-end-point
@@ -677,7 +689,7 @@ efficiency and be able to use it for features such as `which-func'."
         (when (and block-type block-name)
           (when return-pos
             (setq block (intern block-type))
-            (setq block-boundaries (verilog-ext-get-boundaries block))
+            (setq block-boundaries (verilog-ext-get-block-boundaries block))
             (setq block-beg-point (car block-boundaries))
             (setq block-end-point (cdr block-boundaries)))
           `((type      . ,block-type)
@@ -778,7 +790,7 @@ Pass the args START, END and optional COLUMN to `indent-region'."
                        "--column_limit" (number-to-string verilog-ext-formatter-column-limit)
                        "--indentation_spaces" (number-to-string verilog-ext-formatter-indentation-spaces)
                        "--line_break_penalty" (number-to-string verilog-ext-formatter-line-break-penalty)
-                       "--over_column_limit_penalty" (number-to-string verilog-ext-formatter-over_column-limit-penalty)
+                       "--over_column_limit_penalty" (number-to-string verilog-ext-formatter-over-column-limit-penalty)
                        "--wrap_spaces" (number-to-string verilog-ext-formatter-wrap-spaces)
                        "-"))
           apheleia-formatters))
@@ -1026,6 +1038,7 @@ the function call."
           ;; Return alist
           `((pos         . ,tf-name-pos-beg)
             (name        . ,tf-name)
+            (type        . ,tf-type)
             (modifiers   . ,tf-modifiers)
             (return-type . ,func-return-type)
             (class-name  . ,class-name)
