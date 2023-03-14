@@ -72,6 +72,40 @@
   :type 'hook
   :group 'verilog-ext)
 
+(defcustom verilog-ext-workspace-root-dir nil
+  "Workspace root directory for file indexing.
+Detected automatically if set to nil."
+  :type 'directory
+  :group 'verilog-ext)
+
+(defcustom verilog-ext-workspace-file-extensions nil
+  "(SystemVerilog) file extensions.
+If set to nil will default to `verilog-ext-verilog-default-file-extension-re',
+which includes: .v, .vh, .sv and .svh."
+  :type '(repeat string)
+  :group 'verilog-ext)
+
+(defcustom verilog-ext-workspace-dirs nil
+  "List of current workspace directories for indexing.
+If set to nil default to search for current project files."
+  :type '(repeat directory)
+  :group 'verilog-ext)
+
+(defcustom verilog-ext-workspace-extra-files nil
+  "List of files besides the ones searched for in `verilog-ext-workspace-dirs'."
+  :type '(repeat file)
+  :group 'verilog-ext)
+
+(defcustom verilog-ext-workspace-ignore-dirs nil
+  "List of current workspace directories to be ignored."
+  :type '(repeat directory)
+  :group 'verilog-ext)
+
+(defcustom verilog-ext-workspace-ignore-files nil
+  "List of current workspace files to be ignored."
+  :type '(repeat file)
+  :group 'verilog-ext)
+
 (defcustom verilog-ext-jump-to-parent-module-engine "ag"
   "Default program to find parent module instantiations.
 Either `rg' or `ag' are implemented."
@@ -163,11 +197,6 @@ https://chipsalliance.github.io/verible/lint.html"
 (defcustom verilog-ext-which-func-enable t
   "Enable `which-func' enhanced version."
   :type 'boolean
-  :group 'verilog-ext)
-
-(defcustom verilog-ext-align-typedef-uvm-dir nil
-  "Verilog-ext align typedef UVM directory."
-  :type 'string
   :group 'verilog-ext)
 
 (defcustom verilog-ext-time-stamp-enable t
@@ -262,7 +291,8 @@ IEEE 1800-2012 SystemVerilog Section 9.3.4 Block names.")
           "//\\s-*\\(\\(block:\\|" verilog-identifier-sym-re "\\s-*::\\)\\s-*\\)*" ; Comments
           "\\(?2:" verilog-identifier-sym-re "\\)\\s-*$"))                 ; Block name to be replaced
 
-(defconst verilog-ext-verilog-file-extension-re "\\.s?vh?$")
+(defconst verilog-ext-verilog-default-file-extension-re "\\.s?vh?$")
+
 
 
 (defun verilog-ext-forward-syntactic-ws ()
@@ -382,25 +412,54 @@ the replacement text (see `replace-match' for more info)."
            (project-root (project-current)))
       default-directory))
 
-(defun verilog-ext-find-dir-files (dir &optional follow-symlinks)
+(defun verilog-ext-dir-files (dir &optional follow-symlinks ignore-dirs)
   "Find SystemVerilog files recursively on DIR.
-Follow symlinks if optional argument FOLLOW-SYMLINKS is non-nil."
-  (directory-files-recursively dir verilog-ext-verilog-file-extension-re nil nil follow-symlinks))
 
-(defun verilog-ext-find-dirs-files (dirs &optional follow-symlinks)
+Follow symlinks if optional argument FOLLOW-SYMLINKS is non-nil.
+
+Discard non-regular files (e.g. Emacs temporary non-saved buffer files like
+symlink #.test.sv).
+
+Optional arg IGNORE-DIRS specifies which directories should be excluded from
+search."
+  (let* ((files (directory-files-recursively dir
+                                             (or (and verilog-ext-workspace-file-extensions
+                                                      (concat (regexp-opt verilog-ext-workspace-file-extensions) "$"))
+                                                 verilog-ext-verilog-default-file-extension-re)
+                                             nil nil follow-symlinks))
+         (files-after-ignored (seq-filter (lambda (file)
+                                            ;; Each file checks if it has its prefix in the list of ignored directories
+                                            (let (ignore-file)
+                                              (dolist (dir ignore-dirs)
+                                                (when (string-prefix-p (expand-file-name dir) (expand-file-name file))
+                                                  (setq ignore-file t)))
+                                              (not ignore-file)))
+                                          files))
+         (files-regular (seq-filter #'file-regular-p files-after-ignored)))
+    files-regular))
+
+(defun verilog-ext-dirs-files (dirs &optional follow-symlinks ignore-dirs)
   "Find SystemVerilog files recursively on DIRS.
 DIRS is a list of directory strings.
-Follow symlinks if optional argument FOLLOW-SYMLINKS is non-nil."
+
+Follow symlinks if optional argument FOLLOW-SYMLINKS is non-nil.
+
+Optional arg IGNORE-DIRS specifies which directories should be excluded from
+search."
   (let (files)
     (dolist (dir dirs)
-      (push (verilog-ext-find-dir-files dir follow-symlinks) files))
+      (push (verilog-ext-dir-files dir follow-symlinks ignore-dirs) files))
     (when files
       (flatten-tree files))))
 
-(defun verilog-ext-find-project-files (&optional follow-symlinks)
+(defun verilog-ext-project-files (&optional follow-symlinks ignore-dirs)
   "Find SystemVerilog files recursively on current project.
-Follow symlinks if optional argument FOLLOW-SYMLINKS is non-nil."
-  (verilog-ext-find-dir-files (verilog-ext-project-root) follow-symlinks))
+
+Follow symlinks if optional argument FOLLOW-SYMLINKS is non-nil.
+
+Optional arg IGNORE-DIRS specifies which directories should be excluded from
+search."
+  (verilog-ext-dir-files (verilog-ext-project-root) follow-symlinks ignore-dirs))
 
 (defun verilog-ext-scan-buffer-modules ()
   "Find modules in current buffer.
@@ -698,6 +757,178 @@ efficiency and be able to use it for features such as `which-func'."
             (name      . ,block-name)
             (beg-point . ,block-beg-point)
             (end-point . ,block-end-point)))))))
+
+(defun verilog-ext-propertize-tag (tag type)
+  "Propertize TAG with TYPE and position properties."
+  (propertize tag
+              :type type
+              :file verilog-ext-workspace-tags-current-file
+              :line (line-number-at-pos)
+              :column (current-column)))
+
+(defun verilog-ext-get-declarations (&optional start limit ignore-paren)
+  "Return list of declarations between START and LIMIT.
+
+If START or LIMIT are nil parse between (point-min) and (point-max).
+
+If IGNORE-PAREN is non-nil, do not return declarations within parenthesis
+\(e.g. parameters, ports, function/task args).
+
+Return items with :type property."
+  (let (type item declarations)
+    (unless start (setq start (point-min)))
+    (unless limit (setq limit (point-max)))
+    (save-match-data
+      (save-excursion
+        (goto-char start)
+        (while (verilog-re-search-forward (verilog-get-declaration-re) limit :no-error)
+          (setq type (string-trim (match-string-no-properties 0)))
+          (setq item (thing-at-point 'symbol :no-props))
+          (unless (or (member item verilog-keywords)
+                      (when ignore-paren
+                        (verilog-in-parenthesis-p))
+                      (not item))
+            (push (verilog-ext-propertize-tag item type) declarations)))))
+    (reverse declarations)))
+
+(defun verilog-ext-get-function-tasks (&optional start limit)
+  "Return list of function/tasks between START and LIMIT.
+
+If START or LIMIT are nil parse between (point-min) and (point-max).
+
+Return items with :type property."
+  (let (data type item items)
+    (unless start (setq start (point-min)))
+    (unless limit (setq limit (point-max)))
+    (save-match-data
+      (save-excursion
+        (goto-char start)
+        (while (setq data (verilog-ext-find-function-task-fwd limit))
+          (setq type (alist-get 'type data))
+          (setq item (match-string-no-properties 1))
+          (push (verilog-ext-propertize-tag item type) items))))
+    (reverse items)))
+
+(defun verilog-ext-get-classes (&optional start limit)
+  "Return list of classes between START and LIMIT.
+
+If START or LIMIT are nil parse between (point-min) and (point-max).
+
+Return items with :type property."
+  (let (data type item items)
+    (unless start (setq start (point-min)))
+    (unless limit (setq limit (point-max)))
+    (save-match-data
+      (save-excursion
+        (goto-char start)
+        (while (setq data (verilog-ext-find-class-fwd limit))
+          (setq type "class")
+          (setq item (alist-get 'name data))
+          (push (verilog-ext-propertize-tag item type) items))))
+    (reverse items)))
+
+(defun verilog-ext-get-instances (&optional start limit)
+  "Return list of module instances between START and LIMIT.
+
+If START or LIMIT are nil parse between (point-min) and (point-max).
+
+Return items with :type property."
+  (let (type item items)
+    (unless start (setq start (point-min)))
+    (unless limit (setq limit (point-max)))
+    (save-match-data
+      (save-excursion
+        (goto-char start)
+        (while (verilog-ext-find-module-instance-fwd limit)
+          (setq item (match-string-no-properties 2))
+          (setq type (match-string-no-properties 1))
+          (push (verilog-ext-propertize-tag item type) items))))
+    (reverse items)))
+
+(defun verilog-ext-get-current-top-block-items ()
+  "Return list with current top block items.
+
+List contains variables, functions, tasks and instances for modules/interfaces,
+with their respective types as a text property :type.
+
+Assumes that point is inside a module/interface."
+  (let ((point-start (point))
+        top-block start limit)
+    (save-match-data
+      (save-excursion
+        (verilog-re-search-backward "\\<\\(module\\|interface\\|program\\|package\\)\\>" nil :no-error)
+        (setq top-block (match-string-no-properties 0))
+        (setq start (point))
+        (setq limit (verilog-ext-pos-at-forward-sexp))
+        (when (< point-start limit) ; Make sure point is inside module
+          (append (verilog-ext-get-declarations start limit)
+                  (verilog-ext-get-function-tasks start limit)
+                  (when (string-match "\\<\\(module\\|interface\\)\\>" top-block)
+                    (verilog-ext-get-instances start limit))))))))
+
+(defun verilog-ext-get-current-class-items ()
+  "Return list with current class items.
+
+List contains attributes and methods with their respective types as a text
+property :type.
+
+Assumes that point is inside a class."
+  (let ((point-start (point))
+        start limit)
+    (save-match-data
+      (save-excursion
+        (verilog-re-search-backward "\\<class\\>" nil :no-error)
+        (setq start (point))
+        (setq limit (verilog-ext-pos-at-forward-sexp))
+        (when (< point-start limit) ; Make sure point is inside class
+          (append (verilog-ext-get-declarations start limit :ignore-paren)
+                  (verilog-ext-get-function-tasks start limit)))))))
+
+(defun verilog-ext-get-current-struct-items ()
+  "Return list with current (typedef) struct items.
+
+Assumes that point is on a valid (typedef) struct after running
+`verilog-ext-find-struct'."
+  (let (start limit)
+    (save-match-data
+      (save-excursion
+        (verilog-ext-backward-syntactic-ws)
+        (setq limit (point))
+        (setq start (verilog-ext-pos-at-backward-sexp))
+        (verilog-ext-get-declarations start limit)))))
+
+(defun verilog-ext-get-current-buffer-top-blocks-items ()
+  "Return list with current buffer top block items."
+  (let (items block)
+    (save-match-data
+      (save-excursion
+        (goto-char (point-min))
+        (while (verilog-re-search-forward verilog-ext-top-re nil :no-error)
+          (setq block (verilog-ext-propertize-tag (match-string-no-properties 3) (match-string-no-properties 1)))
+          (setq items (append items (cons block (verilog-ext-get-current-top-block-items)))))
+        items))))
+
+(defun verilog-ext-get-current-buffer-classes-items ()
+  "Return list with current buffer classes and their items."
+  (let (data block items)
+    (save-match-data
+      (save-excursion
+        (goto-char (point-min))
+        (while (setq data (verilog-ext-find-class-fwd))
+          (setq block (verilog-ext-propertize-tag (alist-get 'name data) "class"))
+          (setq items (append items (cons block (verilog-ext-get-current-class-items)))))
+        items))))
+
+(defun verilog-ext-get-current-buffer-structs-items ()
+  "Return list with current buffer (typedef) structs and their items."
+  (let (data block items)
+    (save-match-data
+      (save-excursion
+        (goto-char (point-min))
+        (while (setq data (verilog-ext-find-struct))
+          (setq block (verilog-ext-propertize-tag (alist-get 'name data) "struct"))
+          (setq items (append items (cons block (verilog-ext-get-current-struct-items)))))
+        items))))
 
 (defun verilog-ext-update-buffer-and-dir-list ()
   "Update Verilog-mode opened buffers and directories lists."
@@ -1572,7 +1803,7 @@ Runs only when the ag/rg search was triggered by
 Configuration should be done so that `verilog-ext-navigation-ag-rg-hook' is run
 after the search has been done."
   (interactive)
-  (let* ((proj-dir (verilog-ext-project-root))
+  (let* ((proj-dir (verilog-ext-workspace-root))
          (module-name (or (verilog-ext-select-file-module buffer-file-name)
                           (error "No module/interface found @ %s" buffer-file-name)))
          (module-instance-pcre ; Many thanks to Kaushal Modi for this PCRE
@@ -1896,50 +2127,168 @@ Used for fontification and alignment."
   (verilog-ext-typedef--typedef-buffer-update verilog-ext-typedef-class-re)
   (verilog-ext-typedef--typedef-buffer-update verilog-ext-typedef-generic-re))
 
-(defun verilog-ext-typedef-batch-update (dirs)
-  "Scan recursively all (System)Verilog files under DIRS and udpate typedef list.
+(defun verilog-ext-typedef-batch-update (files)
+  "Scan all (System)Verilog FILES and udpate typedef list.
 
 It will return the updated value of `verilog-ext-align-typedef-words', which can
 be used later along with `verilog-regexp-words' to update the variable
 `verilog-align-typedef-regexp'.  This enables the fontification and alignment of
 user typedefs."
-  (interactive "DDirectory: ")
-  (unless (listp dirs)
-    (setq dirs (list dirs)))
-  (let (dir-files)
+  (let ((num-files (length files))
+        (num-files-processed 0)
+        progress)
     (setq verilog-ext-align-typedef-words nil) ; Reset value
-    (dolist (dir dirs)
-      (setq dir-files (verilog-ext-find-dir-files dir :follow-symlinks))
-      (dolist (file dir-files)
-        (message "Processing %s ..." file)
-        (with-temp-buffer
-          (insert-file-contents file)
-          (verilog-mode)
-          (verilog-ext-typedef--var-decl-update))))
+    (dolist (file files)
+      (setq progress (/ (* num-files-processed 100) num-files))
+      (message "(%0d%%) [Typedef collection] Processing %s" progress file)
+      (with-temp-buffer
+        (insert-file-contents file)
+        (verilog-mode)
+        (verilog-ext-typedef--var-decl-update))
+      (setq num-files-processed (1+ num-files-processed)))
     ;; Postprocess obtained results (remove keywords and generic types that were uppercase)
     (mapc (lambda (elm)
-                (when (member elm verilog-keywords)
-                  (delete elm verilog-ext-align-typedef-words)))
-            verilog-ext-align-typedef-words)
+            (when (member elm verilog-keywords)
+              (delete elm verilog-ext-align-typedef-words)))
+          verilog-ext-align-typedef-words)
     (let ((case-fold-search nil))
       (setq verilog-ext-align-typedef-words (seq-remove (lambda (s)
-                                                            (not (string-match-p "[[:lower:]]" s)))
+                                                          (not (string-match-p "[[:lower:]]" s)))
                                                         verilog-ext-align-typedef-words)))
     ;; Store results
     (when verilog-ext-align-typedef-words
       (setq verilog-ext-align-typedef-words-re (verilog-regexp-words verilog-ext-align-typedef-words))
       (setq verilog-align-typedef-regexp verilog-ext-align-typedef-words-re))))
 
-(defun verilog-ext-typedef-project-update ()
-  "Update typedef list of current project.
-If `verilog-ext-align-typedef-uvm-dir' is non nil, also include it
-for the search of typedefs"
+;;; Workspace
+(defvar verilog-ext-workspace-tags-table nil)
+(defvar verilog-ext-workspace-tags-subitems-table nil)
+(defvar verilog-ext-workspace-tags-current-file nil)
+
+(defun verilog-ext-workspace-root ()
+  "Return directory of current workspace root."
+  (or verilog-ext-workspace-root-dir
+      (verilog-ext-project-root)))
+
+(defun verilog-ext-workspace-files (&optional follow-symlinks)
+  "Return list of current workspace files.
+
+Follow symlinks if optional argument FOLLOW-SYMLINKS is non-nil."
+  (let* ((files (if verilog-ext-workspace-dirs
+                    (verilog-ext-dirs-files verilog-ext-workspace-dirs
+                                            follow-symlinks
+                                            verilog-ext-workspace-ignore-dirs)
+                  (verilog-ext-dir-files (verilog-ext-workspace-root)
+                                         follow-symlinks
+                                         verilog-ext-workspace-ignore-dirs)))
+         (files-all (append files verilog-ext-workspace-extra-files))
+         (files-after-ignored (seq-filter (lambda (file)
+                                            (not (member file verilog-ext-workspace-ignore-files)))
+                                          files-all)))
+    files-after-ignored))
+
+(defun verilog-ext-workspace-get-tags ()
+  "Get tags of current workspace."
+  (let* ((files (verilog-ext-workspace-files))
+         (num-files (length files))
+         (num-files-processed 0)
+         tags tags-subitems data progress)
+    (dolist (file files)
+      (setq verilog-ext-workspace-tags-current-file file)
+      (with-temp-buffer
+        (setq progress (/ (* num-files-processed 100) num-files))
+        (message "(%0d%%) [Tags collection] Processing %s" progress file)
+        (insert-file-contents file)
+        (verilog-mode)
+        ;; TODO: Possible unit space declarations and externally defined methods
+        ;;       Adds some processing overhead. Try to figure out how to optimize this
+        (setq tags (append tags
+                           (verilog-ext-get-declarations)
+                           (verilog-ext-get-function-tasks)
+                           (verilog-ext-get-instances)))
+        (when (setq data (verilog-ext-get-current-buffer-top-blocks-items))
+          (push data tags-subitems)
+          (push (car data) tags)
+          (setq tags (append tags (cdr data))))
+        (when (setq data (verilog-ext-get-current-buffer-classes-items))
+          (push data tags-subitems)
+          (push (car data) tags)
+          (setq tags (append tags (cdr data))))
+        (when (setq data (verilog-ext-get-current-buffer-structs-items))
+          (push data tags-subitems)
+          (push (car data) tags)
+          (setq tags (append tags (cdr data))))
+        (setq num-files-processed (1+ num-files-processed))))
+    ;; Delete duplicates and return value
+    (delete-dups tags)
+    (delete-dups tags-subitems)
+    (cons tags tags-subitems)))
+
+(defun verilog-ext-workspace-create-tags-table ()
+  "Create tags table."
+  (let* ((all-tags (verilog-ext-workspace-get-tags))
+         (tags (car all-tags))
+         (tags-subitems (cdr all-tags)))
+    (setq verilog-ext-workspace-tags-table tags)
+    (setq verilog-ext-workspace-tags-subitems-table tags-subitems)))
+
+(defun verilog-ext-workspace-create-tags-table-async ()
+  "Create tags table asynchronously."
+  ;; INFO: Still does not work as expected
+  (let ((parent-load-path load-path))
+    (async-start
+     (lambda ()
+       (setq load-path parent-load-path)
+       (require 'verilog-ext)
+       (verilog-ext-workspace-get-tags))
+     (lambda (result)
+       (message "Finished collection tags!")
+       (setq verilog-ext-workspace-tags-table (car result))
+       (setq verilog-ext-workspace-tags-subitems-table (cdr result))))))
+
+(defun verilog-ext-workspace-typedef-update ()
+  "Update typedef list of current workspace."
   (interactive)
-  (let (proj-dir)
-  (unless (setq proj-dir (verilog-ext-project-root))
-    (error "Could not find project root!"))
-  (verilog-ext-typedef-batch-update
-   `(,proj-dir ,verilog-ext-align-typedef-uvm-dir))))
+  (verilog-ext-typedef-batch-update (verilog-ext-workspace-files)))
+
+(defun verilog-ext-workspace-index-update ()
+  "Update workspace index.
+Update list of typedefs/classes and populate tags table."
+  (interactive)
+  (verilog-ext-workspace-typedef-update)
+  (verilog-ext-workspace-create-tags-table))
+
+;;; Xref
+(defun verilog-ext-xref--find-symbol (symbol)
+  "Return list of xref objects for SYMBOL."
+  (let* ((table-symbol (car (member symbol verilog-ext-workspace-tags-table))) ; TODO: For the time being it's only fetching one
+         file line column desc)
+    (when table-symbol
+      (setq file (get-text-property 0 :file table-symbol))
+      (setq line (get-text-property 0 :line table-symbol))
+      (setq column (get-text-property 0 :column table-symbol))
+      (setq desc (get-text-property 0 :type table-symbol))
+      (list (xref-make desc (xref-make-file-location file line column))))))
+
+(defun verilog-ext-xref-backend ()
+  "Verilog-ext backend for Xref."
+  (when (verilog-ext-workspace-root)
+    'verilog-ext-xref))
+
+(cl-defmethod xref-backend-identifier-at-point ((_backend (eql verilog-ext-xref)))
+  (thing-at-point 'symbol :no-props))
+
+(cl-defmethod xref-backend-definitions ((_backend (eql verilog-ext-xref)) symbol)
+  (verilog-ext-xref--find-symbol symbol))
+
+(cl-defmethod xref-backend-references ((_backend (eql verilog-ext-xref)) symbol)
+  (verilog-ext-xref--find-symbol symbol))
+
+(cl-defmethod xref-backend-apropos ((_backend (eql verilog-ext-xref)) symbol)
+  (verilog-ext-xref--find-symbol symbol))
+
+(cl-defmethod xref-backend-identifier-completion-table ((_backend (eql verilog-ext-xref)))
+  nil)
 
 
 ;;; Compile/Makefile
@@ -1973,7 +2322,7 @@ variable."
   "Create Iverilog/verilator Yasnippet based Makefile.
 Create it only if in a project and the Makefile does not already exist."
   (interactive)
-  (let ((project-root (verilog-ext-project-root))
+  (let ((project-root (verilog-ext-workspace-root))
         file)
     (if project-root
         (if (file-exists-p (setq file (verilog-ext-path-join project-root "Makefile")))
@@ -1986,7 +2335,7 @@ Create it only if in a project and the Makefile does not already exist."
   "Prompt to available Makefile targets and compile.
 Compiles them with various verilog regexps."
   (interactive)
-  (let ((makefile (verilog-ext-path-join (verilog-ext-project-root) "Makefile"))
+  (let ((makefile (verilog-ext-path-join (verilog-ext-workspace-root) "Makefile"))
         (makefile-need-target-pickup t) ; Force refresh of makefile targets
         target cmd)
     (unless (file-exists-p makefile)
@@ -1995,7 +2344,7 @@ Compiles them with various verilog regexps."
       (insert-file-contents makefile)
       (makefile-pickup-targets)
       (setq target (completing-read "Target: " makefile-target-table)))
-    (setq cmd (concat "cd " (verilog-ext-project-root) " && make " target))
+    (setq cmd (concat "cd " (verilog-ext-workspace-root) " && make " target))
     (compile cmd)))
 
 
@@ -2100,7 +2449,7 @@ FILES is a list of strings containing the filepaths."
 (defun verilog-ext-beautify-dir-files (dir)
   "Beautify Verilog files on DIR."
   (interactive "DDirectory: ")
-  (let ((files (verilog-ext-find-dir-files dir)))
+  (let ((files (verilog-ext-dir-files dir)))
     (verilog-ext-beautify-files files)))
 
 ;;; Imenu
@@ -3055,9 +3404,84 @@ endmodule // tb_<module_name>
 
 
 ;;; Completion
-;; Verilog extension for `company' and placeholder for `completion-at-point' improvements.
+;; Add verilog-keywords to`company'
 (dolist (mode '(verilog-mode verilog-ts-mode))
   (add-to-list 'company-keywords-alist (append `(,mode) verilog-keywords)))
+
+(defun verilog-ext-capf-annotation-function (cand)
+  "Completion annotation function for candidate CAND."
+  (let ((type (get-text-property 0 :type cand)))
+    (pcase type
+      ("function" "<f>")
+      ("task"     "<t>")
+      (_ type))))
+
+(defun verilog-ext-capf ()
+  "Verilog-ext `completion-at-point' function.
+Complete with identifiers of current workspace."
+  (interactive)
+  (let* (start end completions)
+    (cond (;; Dot completion for object methods/attributes and hierarchical references
+           (eq (preceding-char) ?.)
+           (setq start (point))
+           (setq end (point))
+           (let (block-name block-type)
+             (save-excursion
+               (backward-char)
+               (while (eq (preceding-char) ?\])
+                 (verilog-ext-backward-sexp))
+               (setq block-name (car (member (thing-at-point 'symbol :no-props) verilog-ext-workspace-tags-table)))
+               (when block-name
+                 (setq block-type (get-text-property 0 :type block-name))
+                 (setq completions (cdr (assoc block-type verilog-ext-workspace-tags-subitems-table)))))))
+          ;; Dot completion if not at the beginning
+          ((save-excursion
+             (backward-word)
+             (setq start (point))
+             (eq (preceding-char) ?.))
+           (setq end (point))
+           (let (block-name block-type)
+             (save-excursion
+               (goto-char start)
+               (backward-char)
+               (while (eq (preceding-char) ?\])
+                 (verilog-ext-backward-sexp))
+               (setq block-name (car (member (thing-at-point 'symbol :no-props) verilog-ext-workspace-tags-table)))
+               (when block-name
+                 (setq block-type (get-text-property 0 :type block-name))
+                 (setq completions (cdr (assoc block-type verilog-ext-workspace-tags-subitems-table)))))))
+          ;; Class static methods/members and package items
+          ((looking-back "::" (- (point) 2))
+           (setq start (point))
+           (setq end (point))
+           (save-excursion
+             (backward-char 2)
+             (while (eq (preceding-char) ?\])
+               (verilog-ext-backward-sexp))
+             (setq completions (cdr (assoc (thing-at-point 'symbol :no-props) verilog-ext-workspace-tags-subitems-table)))))
+          ;; Class static methods/members and package items if not at the beginning
+          ((save-excursion
+             (backward-word)
+             (setq start (point))
+             (looking-back "::" (- (point) 2)))
+           (setq end (point))
+           (save-excursion
+             (goto-char start)
+             (backward-char 2)
+             (while (eq (preceding-char) ?\])
+               (verilog-ext-backward-sexp))
+             (setq completions (cdr (assoc (thing-at-point 'symbol :no-props) verilog-ext-workspace-tags-subitems-table)))))
+          ;; Fallback, all project completions
+          (t
+           (let ((bds (bounds-of-thing-at-point 'symbol)))
+             (setq start (car bds))
+             (setq end (cdr bds))
+             (setq completions verilog-ext-workspace-tags-table))))
+    ;; Completion
+    (list start end completions
+          :annotation-function #'verilog-ext-capf-annotation-function
+          :company-docsig #'identity)))
+
 
 ;;; Syntax highlighting
 ;; Improved syntax highlighting based on `font-lock' keywords overriding.
@@ -3307,7 +3731,7 @@ obj.method();"
      '("begin" "end" "this"))))
 
 ;; Once UVM dir has been set, obtained through:
-;;   (verilog-ext-typedef-batch-update verilog-ext-align-typedef-uvm-dir)
+;;   (verilog-ext-typedef-batch-update (verilog-ext-dir-files "/home/user/UVM/src/"))
 (defconst verilog-ext-font-lock-uvm-classes
   (eval-when-compile
     (verilog-regexp-words
@@ -3668,7 +4092,7 @@ Similar to `verilog-match-translate-off' but including
     ;; Fallback to `verilog-ext-font-lock-var-decl-typedef-fontify'.
     ;; Try to fontify with a similar font those variable declarations whose regexps have not
     ;; been added to `verilog-align-typedef-regexp' (it won't be possible to align those)
-    ;; To do so, check `verilog-ext-typedef-project-update'.
+    ;; To do so, check `verilog-ext-workspace-typedef-update'.
     (list verilog-ext-typedef-var-decl-single-re
           '(1 verilog-ext-font-lock-typedef-face))
     (list verilog-ext-typedef-var-decl-multiple-re
@@ -3865,8 +4289,8 @@ declaration."
 Populates `verilog-ext-hierarchy-builtin-workspace-flat-hierarchy'."
   (interactive)
   (let* ((files (if verilog-ext-hierarchy-builtin-dirs
-                    (verilog-ext-find-dirs-files verilog-ext-hierarchy-builtin-dirs :follow-symlinks)
-                  (verilog-ext-find-project-files :follow-symlinks)))
+                    (verilog-ext-dirs-files verilog-ext-hierarchy-builtin-dirs :follow-symlinks)
+                  (verilog-ext-workspace-files :follow-symlinks)))
          flat-hierarchy data)
     (dolist (file files)
       (message "Processing %s" file)
@@ -3881,8 +4305,8 @@ Populates `verilog-ext-hierarchy-builtin-workspace-flat-hierarchy'."
   (interactive)
   (let ((parent-load-path load-path)
         (files (if verilog-ext-hierarchy-builtin-dirs
-                   (verilog-ext-find-dirs-files verilog-ext-hierarchy-builtin-dirs :follow-symlinks)
-                 (verilog-ext-find-project-files :follow-symlinks)))
+                   (verilog-ext-dirs-files verilog-ext-hierarchy-builtin-dirs :follow-symlinks)
+                 (verilog-ext-workspace-files :follow-symlinks)))
         flat-hierarchy data)
     (async-start
      (lambda ()
@@ -4660,6 +5084,8 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
           (verilog-ext-time-stamp-mode))
         ;; `verilog-mode'-only customization (exclude `verilog-ts-mode')
         (when (eq major-mode 'verilog-mode)
+          ;; Capf
+          (add-hook 'completion-at-point-functions 'verilog-ext-capf nil 'local)
           ;; Imenu
           (setq-local imenu-create-index-function #'verilog-ext-imenu-index)
           ;; Font-lock
@@ -4680,6 +5106,7 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
           ;; indentation issues with compiler directives.
           (modify-syntax-entry ?` ".")))
     ;; Cleanup
+    (remove-hook 'completion-at-point-functions 'verilog-ext-capf 'local)
     (remove-hook 'kill-buffer-hook #'verilog-ext-kill-buffer-hook :local)
     (verilog-ext-block-end-comments-to-names-mode -1)
     (verilog-ext-time-stamp-mode -1)))
