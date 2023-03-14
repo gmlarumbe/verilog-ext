@@ -239,6 +239,8 @@ See `verilog-ext-block-end-comments-to-names' for examples."
 (defconst verilog-ext-class-re (concat "\\(?1:\\<class\\>\\)\\s-+\\(?3:" verilog-identifier-sym-re "\\)"))
 (defconst verilog-ext-top-re (concat "\\<\\(?1:package\\|program\\|module\\|interface\\)\\>\\(\\s-+\\<automatic\\>\\)?\\s-+\\(?3:" verilog-identifier-sym-re "\\)"))
 
+(defconst verilog-ext-typedef-struct-re "^\\s-*\\(typedef\\s-+\\)?\\(struct\\|union\\)\\s-+\\(packed\\|\\(un\\)?signed\\)?")
+
 
 (defvar verilog-ext-buffer-list nil)
 (defvar verilog-ext-dir-list nil)
@@ -1457,6 +1459,62 @@ moves the cursor to current instance if pointing at one."
           (goto-char (match-beginning 1))
           (message "%s : %s" (match-string-no-properties 1) (match-string-no-properties 2)))
       (call-interactively #'verilog-ext-find-module-instance-bwd))))
+
+(defun verilog-ext-find-enum (&optional limit bwd)
+  "Find (typedef) enum declarations.
+Bound search by LIMIT.
+Find backward if BWD is non-nil."
+  (let (type name start-pos end-pos temp-pos)
+    (when (and (if bwd
+                   (verilog-re-search-backward verilog-typedef-enum-re limit t)
+                 (verilog-re-search-forward verilog-typedef-enum-re limit t))
+               (setq start-pos (match-beginning 0))
+               (verilog-ext-when-t bwd
+                 (setq temp-pos (point))
+                 (goto-char (match-end 0)))
+               (setq type (string-trim (match-string-no-properties 0)))
+               (verilog-ext-forward-syntactic-ws)
+               (looking-at "{")
+               (verilog-ext-forward-sexp)
+               (eq (preceding-char) ?})
+               (verilog-ext-forward-syntactic-ws)
+               (looking-at verilog-identifier-sym-re))
+      (setq name (match-string-no-properties 0))
+      (setq end-pos (match-end 0))
+      (when bwd
+        (goto-char temp-pos))
+      ;; Return alist
+      `((name . ,name)
+        (type . ,type)
+        (pos  . (,start-pos ,end-pos))))))
+
+(defun verilog-ext-find-struct (&optional limit bwd)
+  "Find (typedef) struct declarations.
+Bound search by LIMIT.
+Find backward if BWD is non-nil."
+  (let (type name start-pos end-pos temp-pos)
+    (when (and (if bwd
+                   (verilog-re-search-backward verilog-ext-typedef-struct-re limit t)
+                 (verilog-re-search-forward verilog-ext-typedef-struct-re limit t))
+               (setq start-pos (match-beginning 0))
+               (verilog-ext-when-t bwd
+                 (setq temp-pos (point))
+                 (goto-char (match-end 0)))
+               (setq type (string-trim (match-string-no-properties 0)))
+               (verilog-re-search-forward "{" limit t)
+               (verilog-ext-backward-char)
+               (verilog-ext-forward-sexp)
+               (eq (preceding-char) ?})
+               (verilog-ext-forward-syntactic-ws)
+               (looking-at verilog-identifier-sym-re))
+      (setq name (match-string-no-properties 0))
+      (setq end-pos (match-end 0))
+      (when bwd
+        (goto-char temp-pos))
+      ;; Return alist
+      `((name . ,name)
+        (type . ,type)
+        (pos  . (,start-pos ,end-pos))))))
 
 (defun verilog-ext-instance-at-point ()
   "Return list with module and instance names if point is at an instance."
@@ -3185,7 +3243,6 @@ obj.method();"
 (defconst verilog-ext-font-lock-time-event-re "\\([@#]\\)")
 (defconst verilog-ext-font-lock-time-unit-re "[0-9]+\\(\\.[0-9]+\\)?\\(?2:[umnpf]s\\)")
 (defconst verilog-ext-font-lock-interface-modport-re (concat "\\(?1:^\\s-*\\(?2:" verilog-identifier-re "\\)\\.\\(?3:" verilog-identifier-re "\\)\\s-+\\)"))
-(defconst verilog-ext-font-lock-typedef-struct-re "^\\s-*\\(typedef\\s-+\\)?\\(struct\\|union\\)\\s-+\\(packed\\|\\(un\\)?signed\\)?")
 
 
 (defconst verilog-ext-font-lock-type-font-keywords
@@ -3500,15 +3557,11 @@ Bound search by LIMIT."
 (defun verilog-ext-font-lock-enum-fontify (limit)
   "Fontify (typedef) enum declarations.
 Bound search by LIMIT."
-  (let (start-line-pos end-line-pos)
-    (when (and (verilog-re-search-forward verilog-typedef-enum-re limit t)
-               (setq start-line-pos (line-beginning-position))
-               (verilog-ext-forward-syntactic-ws)
-               (looking-at "{")
-               (verilog-ext-forward-sexp)
-               (eq (preceding-char) ?})
-               (verilog-ext-forward-syntactic-ws)
-               (looking-at verilog-identifier-sym-re))
+  (let (start-line-pos end-line-pos data)
+    (when (setq data (verilog-ext-find-enum limit))
+      (goto-char (car (alist-get 'pos data)))
+      (setq start-line-pos (line-beginning-position))
+      (goto-char (cadr (alist-get 'pos data)))
       (setq end-line-pos (line-end-position))
       (unless (get-text-property (point) 'font-lock-multiline)
         (put-text-property start-line-pos end-line-pos 'font-lock-multiline t))
@@ -3517,15 +3570,11 @@ Bound search by LIMIT."
 (defun verilog-ext-font-lock-struct-fontify (limit)
   "Fontify (typedef) struct declarations.
 Bound search by LIMIT."
-  (let (start-line-pos end-line-pos)
-    (when (and (verilog-re-search-forward verilog-ext-font-lock-typedef-struct-re limit t)
-               (setq start-line-pos (line-beginning-position))
-               (verilog-re-search-forward "{" limit t)
-               (verilog-ext-backward-char)
-               (verilog-ext-forward-sexp)
-               (eq (preceding-char) ?})
-               (verilog-ext-forward-syntactic-ws)
-               (looking-at verilog-identifier-sym-re))
+  (let (start-line-pos end-line-pos data)
+    (when (setq data (verilog-ext-find-struct limit))
+      (goto-char (car (alist-get 'pos data)))
+      (setq start-line-pos (line-beginning-position))
+      (goto-char (cadr (alist-get 'pos data)))
       (setq end-line-pos (line-end-position))
       (unless (get-text-property (point) 'font-lock-multiline)
         (put-text-property start-line-pos end-line-pos 'font-lock-multiline t))
