@@ -758,178 +758,6 @@ efficiency and be able to use it for features such as `which-func'."
             (beg-point . ,block-beg-point)
             (end-point . ,block-end-point)))))))
 
-(defun verilog-ext-propertize-tag (tag type)
-  "Propertize TAG with TYPE and position properties."
-  (propertize tag
-              :type type
-              :file verilog-ext-workspace-tags-current-file
-              :line (line-number-at-pos)
-              :column (current-column)))
-
-(defun verilog-ext-get-declarations (&optional start limit ignore-paren)
-  "Return list of declarations between START and LIMIT.
-
-If START or LIMIT are nil parse between (point-min) and (point-max).
-
-If IGNORE-PAREN is non-nil, do not return declarations within parenthesis
-\(e.g. parameters, ports, function/task args).
-
-Return items with :type property."
-  (let (type item declarations)
-    (unless start (setq start (point-min)))
-    (unless limit (setq limit (point-max)))
-    (save-match-data
-      (save-excursion
-        (goto-char start)
-        (while (verilog-re-search-forward (verilog-get-declaration-re) limit :no-error)
-          (setq type (string-trim (match-string-no-properties 0)))
-          (setq item (thing-at-point 'symbol :no-props))
-          (unless (or (member item verilog-keywords)
-                      (when ignore-paren
-                        (verilog-in-parenthesis-p))
-                      (not item))
-            (push (verilog-ext-propertize-tag item type) declarations)))))
-    (reverse declarations)))
-
-(defun verilog-ext-get-function-tasks (&optional start limit)
-  "Return list of function/tasks between START and LIMIT.
-
-If START or LIMIT are nil parse between (point-min) and (point-max).
-
-Return items with :type property."
-  (let (data type item items)
-    (unless start (setq start (point-min)))
-    (unless limit (setq limit (point-max)))
-    (save-match-data
-      (save-excursion
-        (goto-char start)
-        (while (setq data (verilog-ext-find-function-task-fwd limit))
-          (setq type (alist-get 'type data))
-          (setq item (match-string-no-properties 1))
-          (push (verilog-ext-propertize-tag item type) items))))
-    (reverse items)))
-
-(defun verilog-ext-get-classes (&optional start limit)
-  "Return list of classes between START and LIMIT.
-
-If START or LIMIT are nil parse between (point-min) and (point-max).
-
-Return items with :type property."
-  (let (data type item items)
-    (unless start (setq start (point-min)))
-    (unless limit (setq limit (point-max)))
-    (save-match-data
-      (save-excursion
-        (goto-char start)
-        (while (setq data (verilog-ext-find-class-fwd limit))
-          (setq type "class")
-          (setq item (alist-get 'name data))
-          (push (verilog-ext-propertize-tag item type) items))))
-    (reverse items)))
-
-(defun verilog-ext-get-instances (&optional start limit)
-  "Return list of module instances between START and LIMIT.
-
-If START or LIMIT are nil parse between (point-min) and (point-max).
-
-Return items with :type property."
-  (let (type item items)
-    (unless start (setq start (point-min)))
-    (unless limit (setq limit (point-max)))
-    (save-match-data
-      (save-excursion
-        (goto-char start)
-        (while (verilog-ext-find-module-instance-fwd limit)
-          (setq item (match-string-no-properties 2))
-          (setq type (match-string-no-properties 1))
-          (push (verilog-ext-propertize-tag item type) items))))
-    (reverse items)))
-
-(defun verilog-ext-get-current-top-block-items ()
-  "Return list with current top block items.
-
-List contains variables, functions, tasks and instances for modules/interfaces,
-with their respective types as a text property :type.
-
-Assumes that point is inside a module/interface."
-  (let ((point-start (point))
-        top-block start limit)
-    (save-match-data
-      (save-excursion
-        (verilog-re-search-backward "\\<\\(module\\|interface\\|program\\|package\\)\\>" nil :no-error)
-        (setq top-block (match-string-no-properties 0))
-        (setq start (point))
-        (setq limit (verilog-ext-pos-at-forward-sexp))
-        (when (< point-start limit) ; Make sure point is inside module
-          (append (verilog-ext-get-declarations start limit)
-                  (verilog-ext-get-function-tasks start limit)
-                  (when (string-match "\\<\\(module\\|interface\\)\\>" top-block)
-                    (verilog-ext-get-instances start limit))))))))
-
-(defun verilog-ext-get-current-class-items ()
-  "Return list with current class items.
-
-List contains attributes and methods with their respective types as a text
-property :type.
-
-Assumes that point is inside a class."
-  (let ((point-start (point))
-        start limit)
-    (save-match-data
-      (save-excursion
-        (verilog-re-search-backward "\\<class\\>" nil :no-error)
-        (setq start (point))
-        (setq limit (verilog-ext-pos-at-forward-sexp))
-        (when (< point-start limit) ; Make sure point is inside class
-          (append (verilog-ext-get-declarations start limit :ignore-paren)
-                  (verilog-ext-get-function-tasks start limit)))))))
-
-(defun verilog-ext-get-current-struct-items ()
-  "Return list with current (typedef) struct items.
-
-Assumes that point is on a valid (typedef) struct after running
-`verilog-ext-find-struct'."
-  (let (start limit)
-    (save-match-data
-      (save-excursion
-        (verilog-ext-backward-syntactic-ws)
-        (setq limit (point))
-        (setq start (verilog-ext-pos-at-backward-sexp))
-        (verilog-ext-get-declarations start limit)))))
-
-(defun verilog-ext-get-current-buffer-top-blocks-items ()
-  "Return list with current buffer top block items."
-  (let (items block)
-    (save-match-data
-      (save-excursion
-        (goto-char (point-min))
-        (while (verilog-re-search-forward verilog-ext-top-re nil :no-error)
-          (setq block (verilog-ext-propertize-tag (match-string-no-properties 3) (match-string-no-properties 1)))
-          (setq items (append items (cons block (verilog-ext-get-current-top-block-items)))))
-        items))))
-
-(defun verilog-ext-get-current-buffer-classes-items ()
-  "Return list with current buffer classes and their items."
-  (let (data block items)
-    (save-match-data
-      (save-excursion
-        (goto-char (point-min))
-        (while (setq data (verilog-ext-find-class-fwd))
-          (setq block (verilog-ext-propertize-tag (alist-get 'name data) "class"))
-          (setq items (append items (cons block (verilog-ext-get-current-class-items)))))
-        items))))
-
-(defun verilog-ext-get-current-buffer-structs-items ()
-  "Return list with current buffer (typedef) structs and their items."
-  (let (data block items)
-    (save-match-data
-      (save-excursion
-        (goto-char (point-min))
-        (while (setq data (verilog-ext-find-struct))
-          (setq block (verilog-ext-propertize-tag (alist-get 'name data) "struct"))
-          (setq items (append items (cons block (verilog-ext-get-current-struct-items)))))
-        items))))
-
 (defun verilog-ext-update-buffer-and-dir-list ()
   "Update Verilog-mode opened buffers and directories lists."
   (let (verilog-buffers verilog-dirs)
@@ -2014,6 +1842,211 @@ Otherwise move to previous paragraph."
       (verilog-ext-backward-sexp)
     (backward-paragraph)))
 
+;; ;;; Tags
+(defmacro verilog-ext-tags-table-push-tag (table tag type desc &optional file parent)
+  "Push TAG in hash table TABLE.
+
+TAG is of string type TYPE and with string description DESC and located in FILE
+for `xref'.
+
+Optional arg PARENT is the module where TAG is defined/instantiated for dot
+completion."
+  (declare (indent 0) (debug t))
+  `(setq ,table (verilog-ext-tags-table-add-entry ,table ,tag ,type ,desc ,file ,parent)))
+
+(defmacro verilog-ext-tags-table-push-definitions (tag-type table &optional file start limit parent)
+  "Push definitions of TAG-TYPE inside hash table TABLE.
+
+Optional arg FILE might be specified for the cases when a temp-buffer without an
+associated file is being parsed.
+
+Limit search between START and LIMIT if provided, otherwise search the whole
+buffer.
+
+Optional arg PARENT is the module where TAG is defined/instantiated for dot
+completion."
+  (declare (indent 0) (debug t))
+  `(setq ,table (verilog-ext-tags-get-definitions ,tag-type ,table ,file ,start ,limit ,parent)))
+
+(defmacro verilog-ext-tags-table-push-references (table &optional defs-table file start limit)
+  "Push references found in FILE inside hash table TABLE.
+
+Optional definitions table DEFS-TABLE is used to filter out references that have
+already been parsed as definitions.
+
+Limit search between START and LIMIT if provided, otherwise search the whole
+buffer."
+  (declare (indent 0) (debug t))
+  `(setq ,table (verilog-ext-tags-get-references ,table ,defs-table ,file ,start ,limit)))
+
+(defun verilog-ext-tags-tag-properties (type desc &optional file)
+  "Return :locs properties for current tag.
+These include tag TYPE and description DESC as well as FILE and current line."
+  `(:type ,type
+    :desc ,desc
+    :file ,(or file buffer-file-name)
+    :line ,(line-number-at-pos)))
+
+(defun verilog-ext-tags-table-add-entry (table tag type desc &optional file parent)
+  "Add entry for TAG in hash-table TABLE.
+
+It is needed to provide TYPE, description DESC and FILE properties to add the
+entry in the table.
+
+Optional arg PARENT is the module where TAG is defined/instantiated for dot
+completion.
+
+If there is no entry in the table for TAG add one.  Otherwise update the
+existing one with current location properties."
+  (let ((tag-value (gethash tag table))
+        (parent-value (gethash parent table))
+        locs-plist loc-new parent-items)
+    (if (not tag-value)
+        ;; Add tag with properties
+        (puthash tag `(:items nil :locs (,(verilog-ext-tags-tag-properties type desc file))) table)
+      ;; Otherwise update existing tag properties
+      (setq locs-plist (plist-get tag-value :locs))
+      (setq loc-new (verilog-ext-tags-tag-properties type desc file))
+      (unless (member loc-new locs-plist)
+        (push loc-new locs-plist)
+        (plist-put tag-value :locs locs-plist)
+        (puthash tag `(:items ,(plist-get tag-value :items) :locs ,locs-plist) table)))
+    (when parent
+      (if (not parent-value)
+          (error "%s should be in the table" parent)
+        (setq parent-items (plist-get parent-value :items))
+        (unless (member tag parent-items)
+          (plist-put parent-value :items (append parent-items `(,tag)))
+          (puthash parent parent-value table))))
+    table))
+
+(defun verilog-ext-tags-get-definitions (tag-type table &optional file start limit parent)
+  "Add definitions of TAG-TYPE to hash-table TABLE for FILE.
+
+Limit search between START and LIMIT if provided.
+
+Optional arg PARENT is the module where TAG is defined/instantiated for dot
+completion."
+  (let ((ignore-paren-decl (eq tag-type 'declarations-no-parens))
+        tag type desc data inner-start inner-limit)
+    (unless start (setq start (point-min)))
+    (unless limit (setq limit (point-max)))
+    (when (eq tag-type 'declarations-no-parens)
+      (setq tag-type 'declarations))
+    (save-match-data
+      (save-excursion
+        (goto-char start)
+        (pcase (symbol-name tag-type)
+          ("declarations" (while (verilog-re-search-forward (verilog-get-declaration-re) limit :no-error)
+                            (setq type (string-trim (match-string-no-properties 0)))
+                            (setq tag (thing-at-point 'symbol :no-props))
+                            (unless (or (member tag verilog-keywords)
+                                        (when ignore-paren-decl
+                                          (verilog-in-parenthesis-p))
+                                        (not tag))
+                              (setq desc (verilog-ext-tags-desc tag))
+                              (verilog-ext-tags-table-push-tag table tag type desc file parent))))
+          ("tf" (while (setq data (verilog-ext-find-function-task-fwd limit))
+                  (setq type (alist-get 'type data))
+                  (setq tag (match-string-no-properties 1))
+                  (setq desc (verilog-ext-tags-desc tag))
+                  (verilog-ext-tags-table-push-tag table tag type desc file parent)))
+          ("instances" (while (verilog-ext-find-module-instance-fwd limit)
+                         (setq tag (match-string-no-properties 2))
+                         (setq type (match-string-no-properties 1))
+                         (setq desc (verilog-ext-tags-desc tag))
+                         (verilog-ext-tags-table-push-tag table tag type desc file parent)))
+          ("structs" (while (setq data (verilog-ext-find-struct))
+                       (setq tag (alist-get 'name data))
+                       (setq type "struct")
+                       (setq desc (verilog-ext-tags-desc tag))
+                       (verilog-ext-tags-table-push-tag table tag type desc file parent)
+                       ;; Get struct items
+                       (save-excursion
+                         (verilog-ext-backward-syntactic-ws)
+                         (setq inner-limit (point))
+                         (setq inner-start (verilog-ext-pos-at-backward-sexp))
+                         (verilog-ext-tags-table-push-definitions 'declarations table file inner-start inner-limit tag))))
+          ("classes" (while (setq data (verilog-ext-find-class-fwd limit))
+                       (setq type "class")
+                       (setq tag (alist-get 'name data))
+                       (setq desc (verilog-ext-tags-desc tag))
+                       (verilog-ext-tags-table-push-tag table tag type desc file parent)
+                       ;; Get class items
+                       (save-excursion
+                         (verilog-re-search-backward "\\<class\\>" nil :no-error)
+                         (setq inner-start (point))
+                         (setq inner-limit (verilog-ext-pos-at-forward-sexp)))
+                       (dolist (defs '(declarations-no-parens tf structs))
+                         (verilog-ext-tags-table-push-definitions defs table file inner-start inner-limit tag))))
+          ("top-items" (while (verilog-re-search-forward verilog-ext-top-re nil :no-error)
+                         (setq tag (match-string-no-properties 3))
+                         (setq type (match-string-no-properties 1))
+                         (setq desc (verilog-ext-tags-desc tag))
+                         (verilog-ext-tags-table-push-tag table tag type desc file)
+                         ;; Get top-block items
+                         (setq inner-start (match-beginning 1))
+                         (save-excursion
+                           (goto-char inner-start)
+                           (setq inner-limit (verilog-ext-pos-at-forward-sexp)))
+                         (let ((top-items-defs '(declarations tf structs classes)))
+                           (when (string-match "\\<\\(module\\|interface\\)\\>" type)
+                             (setq top-items-defs (append top-items-defs '(instances))))
+                           (dolist (defs top-items-defs)
+                             (verilog-ext-tags-table-push-definitions defs table file inner-start inner-limit tag)))))
+          (_ (error "Unsupported tag type")))))
+    ;; Return table initial-table
+    table))
+
+(defun verilog-ext-tags-get-references (table &optional defs-table file start limit)
+  "Add refrences to hash-table TABLE.
+
+Optional definitions table DEFS-TABLE is used to filter out references that have
+already been parsed as definitions.
+
+Optional FILE is explicitly provided for the case when references are fetched
+from a temp-buffer.
+
+Limit search between START and LIMIT if provided."
+  (let (tag type desc begin existing-def existing-def-props)
+    (unless start (setq start (point-min)))
+    (unless limit (setq limit (point-max)))
+    (save-match-data
+      (save-excursion
+        (goto-char start)
+        (while (verilog-re-search-forward verilog-identifier-sym-re limit :no-error)
+          (setq begin (match-beginning 0))
+          (setq tag (match-string-no-properties 0))
+          (setq type nil) ; Does not apply for references
+          (setq desc (verilog-ext-tags-desc tag))
+          (unless (or (member tag verilog-keywords) ; Filter verilog keywords
+                      ;; Filter existing definitions
+                      (and defs-table
+                           (setq existing-def (gethash tag defs-table))
+                           (setq existing-def-props (plist-get existing-def :locs))
+                           (progn (catch 'exit
+                                    (dolist (prop-list existing-def-props)
+                                      (when (and (eq (plist-get prop-list :file) file)
+                                                 (eq (plist-get prop-list :line) (line-number-at-pos)))
+                                        (throw 'exit t))))))
+                      ;; Filter bit-width expressions
+                      (save-excursion
+                        (goto-char begin)
+                        (eq (preceding-char) ?')))
+            (verilog-ext-tags-table-push-tag table tag type desc file)))))
+    ;; Return updated table
+    table))
+
+(defun verilog-ext-tags-desc (tag)
+  "Return propertized description for TAG.
+Meant to be used for `xref' backend."
+  (let* ((desc (string-trim (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
+         (desc-prop (replace-regexp-in-string (concat "\\_<" tag "\\_>")
+                                              (propertize tag 'face '(:foreground "goldenrod" :weight bold))
+                                              desc
+                                              :fixedcase)))
+    desc-prop))
+
 ;;; Typedef
 ;; For more info, see: https://github.com/gmlarumbe/verilog-ext/wiki/Typedefs
 (defconst verilog-ext-range-optional-re
@@ -2161,8 +2194,8 @@ user typedefs."
       (setq verilog-align-typedef-regexp verilog-ext-align-typedef-words-re))))
 
 ;;; Workspace
-(defvar verilog-ext-workspace-tags-table nil)
-(defvar verilog-ext-workspace-tags-subitems-table nil)
+(defvar verilog-ext-workspace-tags-defs-table (make-hash-table :test #'equal))
+(defvar verilog-ext-workspace-tags-refs-table (make-hash-table :test #'equal))
 (defvar verilog-ext-workspace-tags-current-file nil)
 
 (defun verilog-ext-workspace-root ()
@@ -2192,7 +2225,9 @@ Follow symlinks if optional argument FOLLOW-SYMLINKS is non-nil."
   (let* ((files (verilog-ext-workspace-files))
          (num-files (length files))
          (num-files-processed 0)
-         tags tags-subitems data progress)
+         (table (make-hash-table :test #'equal))
+         progress)
+    ;; Definitions
     (dolist (file files)
       (setq verilog-ext-workspace-tags-current-file file)
       (with-temp-buffer
@@ -2200,41 +2235,35 @@ Follow symlinks if optional argument FOLLOW-SYMLINKS is non-nil."
         (message "(%0d%%) [Tags collection] Processing %s" progress file)
         (insert-file-contents file)
         (verilog-mode)
-        ;; TODO: Possible unit space declarations and externally defined methods
-        ;;       Adds some processing overhead. Try to figure out how to optimize this
-        (setq tags (append tags
-                           (verilog-ext-get-declarations)
-                           (verilog-ext-get-function-tasks)
-                           (verilog-ext-get-instances)))
-        (when (setq data (verilog-ext-get-current-buffer-top-blocks-items))
-          (push data tags-subitems)
-          (push (car data) tags)
-          (setq tags (append tags (cdr data))))
-        (when (setq data (verilog-ext-get-current-buffer-classes-items))
-          (push data tags-subitems)
-          (push (car data) tags)
-          (setq tags (append tags (cdr data))))
-        (when (setq data (verilog-ext-get-current-buffer-structs-items))
-          (push data tags-subitems)
-          (push (car data) tags)
-          (setq tags (append tags (cdr data))))
+        (cond (;; Top-block based-file (module/interface/package/program)
+               (save-excursion (verilog-re-search-forward verilog-ext-top-re nil :no-error))
+               (verilog-ext-tags-table-push-definitions 'top-items table file))
+              ;; No top-blocks class-based file
+              ((save-excursion (verilog-ext-find-class-fwd))
+               (verilog-ext-tags-table-push-definitions 'classes table file))
+              ;; Default,
+              (t (dolist (defs '(declarations tf structs))
+                   (verilog-ext-tags-table-push-definitions defs table file))))
         (setq num-files-processed (1+ num-files-processed))))
-    ;; Delete duplicates and return value
-    (delete-dups tags)
-    (delete-dups tags-subitems)
-    (cons tags tags-subitems)))
+    (setq verilog-ext-workspace-tags-defs-table table)
+    ;; References
+    (setq table (make-hash-table :test #'equal)) ; Clean table
+    (setq num-files-processed 0)
+    (dolist (file files)
+      (setq verilog-ext-workspace-tags-current-file file)
+      (with-temp-buffer
+        (setq progress (/ (* num-files-processed 100) num-files))
+        (message "(%0d%%) [References collection] Processing %s" progress file)
+        (insert-file-contents file)
+        (verilog-mode)
+        (verilog-ext-tags-table-push-references table verilog-ext-workspace-tags-defs-table file)
+        (setq verilog-ext-workspace-tags-refs-table table))
+      (setq num-files-processed (1+ num-files-processed)))
+    ;; Return value for async processing
+    (list verilog-ext-workspace-tags-defs-table verilog-ext-workspace-tags-refs-table)))
 
-(defun verilog-ext-workspace-create-tags-table ()
-  "Create tags table."
-  (let* ((all-tags (verilog-ext-workspace-get-tags))
-         (tags (car all-tags))
-         (tags-subitems (cdr all-tags)))
-    (setq verilog-ext-workspace-tags-table tags)
-    (setq verilog-ext-workspace-tags-subitems-table tags-subitems)))
-
-(defun verilog-ext-workspace-create-tags-table-async ()
+(defun verilog-ext-workspace-get-tags-async ()
   "Create tags table asynchronously."
-  ;; INFO: Still does not work as expected
   (let ((parent-load-path load-path))
     (async-start
      (lambda ()
@@ -2243,8 +2272,8 @@ Follow symlinks if optional argument FOLLOW-SYMLINKS is non-nil."
        (verilog-ext-workspace-get-tags))
      (lambda (result)
        (message "Finished collection tags!")
-       (setq verilog-ext-workspace-tags-table (car result))
-       (setq verilog-ext-workspace-tags-subitems-table (cdr result))))))
+       (setq verilog-ext-workspace-tags-defs-table (car result))
+       (setq verilog-ext-workspace-tags-refs-table (cadr result))))))
 
 (defun verilog-ext-workspace-typedef-update ()
   "Update typedef list of current workspace."
@@ -2253,22 +2282,30 @@ Follow symlinks if optional argument FOLLOW-SYMLINKS is non-nil."
 
 (defun verilog-ext-workspace-index-update ()
   "Update workspace index.
-Update list of typedefs/classes and populate tags table."
+Update list of typedefs/classes and populate tags tables."
   (interactive)
   (verilog-ext-workspace-typedef-update)
-  (verilog-ext-workspace-create-tags-table))
+  (verilog-ext-workspace-get-tags))
 
 ;;; Xref
-(defun verilog-ext-xref--find-symbol (symbol)
-  "Return list of xref objects for SYMBOL."
-  (let* ((table-symbol (car (member symbol verilog-ext-workspace-tags-table))) ; TODO: For the time being it's only fetching one
-         file line column desc)
-    (when table-symbol
-      (setq file (get-text-property 0 :file table-symbol))
-      (setq line (get-text-property 0 :line table-symbol))
-      (setq column (get-text-property 0 :column table-symbol))
-      (setq desc (get-text-property 0 :type table-symbol))
-      (list (xref-make desc (xref-make-file-location file line column))))))
+(defun verilog-ext-xref--find-symbol (symbol type)
+  "Return list of TYPE xref objects for SYMBOL."
+  (let* ((table (cond ((eq type 'def)
+                       verilog-ext-workspace-tags-defs-table)
+                      ((eq type 'ref)
+                       verilog-ext-workspace-tags-refs-table)
+                      (t
+                       (error "Wrong table"))))
+         (table-entry (gethash symbol table))
+         (entry-locs (plist-get table-entry :locs))
+         file line desc xref-entries)
+    (when table-entry
+      (dolist (loc entry-locs)
+        (setq file (plist-get loc :file))
+        (setq line (plist-get loc :line))
+        (setq desc (plist-get loc :desc))
+        (push (xref-make desc (xref-make-file-location file line column)) xref-entries)))
+    xref-entries))
 
 (defun verilog-ext-xref-backend ()
   "Verilog-ext backend for Xref."
@@ -2279,13 +2316,10 @@ Update list of typedefs/classes and populate tags table."
   (thing-at-point 'symbol :no-props))
 
 (cl-defmethod xref-backend-definitions ((_backend (eql verilog-ext-xref)) symbol)
-  (verilog-ext-xref--find-symbol symbol))
+  (verilog-ext-xref--find-symbol symbol 'def))
 
 (cl-defmethod xref-backend-references ((_backend (eql verilog-ext-xref)) symbol)
-  (verilog-ext-xref--find-symbol symbol))
-
-(cl-defmethod xref-backend-apropos ((_backend (eql verilog-ext-xref)) symbol)
-  (verilog-ext-xref--find-symbol symbol))
+  (verilog-ext-xref--find-symbol symbol 'ref))
 
 (cl-defmethod xref-backend-identifier-completion-table ((_backend (eql verilog-ext-xref)))
   nil)
@@ -3410,7 +3444,7 @@ endmodule // tb_<module_name>
 
 (defun verilog-ext-capf-annotation-function (cand)
   "Completion annotation function for candidate CAND."
-  (let ((type (get-text-property 0 :type cand)))
+  (let ((type (plist-get (car (plist-get (gethash cand verilog-ext-workspace-tags-defs-table) :locs)) :type)))
     (pcase type
       ("function" "<f>")
       ("task"     "<t>")
@@ -3425,31 +3459,30 @@ Complete with identifiers of current workspace."
            (eq (preceding-char) ?.)
            (setq start (point))
            (setq end (point))
-           (let (block-name block-type)
+           (let (table-entry-value block-type)
              (save-excursion
                (backward-char)
                (while (eq (preceding-char) ?\])
                  (verilog-ext-backward-sexp))
-               (setq block-name (car (member (thing-at-point 'symbol :no-props) verilog-ext-workspace-tags-table)))
-               (when block-name
-                 (setq block-type (get-text-property 0 :type block-name))
-                 (setq completions (cdr (assoc block-type verilog-ext-workspace-tags-subitems-table)))))))
-          ;; Dot completion if not at the beginning
+               (setq table-entry-value (gethash (thing-at-point 'symbol :no-props) verilog-ext-workspace-tags-defs-table))
+               (when table-entry-value
+                 (setq block-type (plist-get (car (plist-get table-entry-value :locs)) :type)) ; TODO: Only using type of first occurence
+                 (setq completions (plist-get (gethash block-type verilog-ext-workspace-tags-defs-table) :items))))))
           ((save-excursion
              (backward-word)
              (setq start (point))
              (eq (preceding-char) ?.))
            (setq end (point))
-           (let (block-name block-type)
+           (let (table-entry-value block-type)
              (save-excursion
                (goto-char start)
                (backward-char)
                (while (eq (preceding-char) ?\])
                  (verilog-ext-backward-sexp))
-               (setq block-name (car (member (thing-at-point 'symbol :no-props) verilog-ext-workspace-tags-table)))
-               (when block-name
-                 (setq block-type (get-text-property 0 :type block-name))
-                 (setq completions (cdr (assoc block-type verilog-ext-workspace-tags-subitems-table)))))))
+               (setq table-entry-value (gethash (thing-at-point 'symbol :no-props) verilog-ext-workspace-tags-defs-table))
+               (when table-entry-value
+                 (setq block-type (plist-get (car (plist-get table-entry-value :locs)) :type)) ; TODO: Only using type of first occurence?
+                 (setq completions (plist-get (gethash block-type verilog-ext-workspace-tags-defs-table) :items))))))
           ;; Class static methods/members and package items
           ((looking-back "::" (- (point) 2))
            (setq start (point))
@@ -3458,7 +3491,7 @@ Complete with identifiers of current workspace."
              (backward-char 2)
              (while (eq (preceding-char) ?\])
                (verilog-ext-backward-sexp))
-             (setq completions (cdr (assoc (thing-at-point 'symbol :no-props) verilog-ext-workspace-tags-subitems-table)))))
+             (setq completions (plist-get (gethash (thing-at-point 'symbol :no-props) verilog-ext-workspace-tags-defs-table) :items))))
           ;; Class static methods/members and package items if not at the beginning
           ((save-excursion
              (backward-word)
@@ -3470,13 +3503,13 @@ Complete with identifiers of current workspace."
              (backward-char 2)
              (while (eq (preceding-char) ?\])
                (verilog-ext-backward-sexp))
-             (setq completions (cdr (assoc (thing-at-point 'symbol :no-props) verilog-ext-workspace-tags-subitems-table)))))
+             (setq completions (plist-get (gethash (thing-at-point 'symbol :no-props) verilog-ext-workspace-tags-defs-table) :items))))
           ;; Fallback, all project completions
           (t
            (let ((bds (bounds-of-thing-at-point 'symbol)))
              (setq start (car bds))
              (setq end (cdr bds))
-             (setq completions verilog-ext-workspace-tags-table))))
+             (setq completions verilog-ext-workspace-tags-defs-table))))
     ;; Completion
     (list start end completions
           :annotation-function #'verilog-ext-capf-annotation-function

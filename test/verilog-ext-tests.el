@@ -67,6 +67,8 @@
 (require 'verilog-ext-tests-beautify)
 (require 'verilog-ext-tests-indent)
 (require 'verilog-ext-tests-hierarchy)
+(require 'verilog-ext-tests-tags)
+(require 'verilog-ext-tests-workspace)
 
 (message "Emacs version: %s" emacs-version)
 (if (< emacs-major-version 29)
