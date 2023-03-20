@@ -6,7 +6,7 @@
 ;; URL: https://github.com/gmlarumbe/verilog-ext
 ;; Version: 0.0.0
 ;; Keywords: Verilog, IDE, Tools
-;; Package-Requires: ((emacs "29"))
+;; Package-Requires: ((emacs "29") (async "1.9.7"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -27,8 +27,10 @@
 
 ;;; Code:
 
+;;; Requirements
 
 (require 'treesit)
+(require 'async) ; Tree-sitter asynchronous identifiers collection
 
 ;; Copied from `c-ts-mode'
 (declare-function treesit-parser-create "treesit.c")
@@ -44,6 +46,7 @@
   (require 'verilog-mode))
 
 
+;;; Customization
 (defcustom verilog-ts-mode-hook nil
   "Hook run after Verilog Tree-sitter mode is loaded."
   :type 'hook
@@ -1012,6 +1015,58 @@ Return nil if there is no name or if NODE is not a defun node."
                 "task_declaration"
                 "class_method")))
 
+;;; Completion
+(defvar verilog-ts-capf-table nil)
+
+(defun verilog-ts-capf-create-table ()
+  "Verilog tree-sitter completion at point.
+Complete with identifiers of current buffer."
+  (let (completions)
+    (dolist (file (directory-files-recursively (project-root (project-current)) "\\.[s]?v[h]?$"))
+      (with-temp-buffer
+        (message "Processing %s" file)
+        (insert-file-contents file)
+        (verilog-ts-mode)
+        (setq completions (append (verilog-ts-nodes-current-buffer "simple_identifier") completions))))
+    (delete-dups completions)
+    (setq verilog-ts-capf-table completions)))
+
+(defun verilog-ts-capf-create-table-async ()
+  "Verilog tree-sitter completion at point.
+Complete with identifiers of current buffer."
+  (let (dirs completions)
+    (dolist (lib '("verilog-ts-mode"))
+      (setq dir (file-name-directory (locate-library lib)))
+      (unless (member dir dirs)
+        (push dir dirs)))
+    (async-start
+     (lambda ()
+       (dolist (dir dirs)
+         (add-to-list 'load-path dir))
+       (require 'verilog-ts-mode)
+       (require 'project)
+       (dolist (file (directory-files-recursively (project-root (project-current)) "\\.[s]?v[h]?$"))
+         (with-temp-buffer
+           (message "Processing %s" file)
+           (insert-file-contents file)
+           (verilog-ts-mode)
+           (setq completions (append (verilog-ts-nodes-current-buffer "simple_identifier") completions))))
+       (delete-dups completions)
+       completions)
+     (lambda (result)
+       (message "Finished collection tags!")
+       (setq verilog-ts-capf-table result)))))
+
+(defun verilog-ts-capf ()
+  "Verilog tree-sitter completion at point.
+Complete with identifiers of current buffer."
+  (interactive)
+  (let* ((bds (bounds-of-thing-at-point 'symbol))
+         (start (car bds))
+         (end (cdr bds)))
+    (list start end verilog-ts-capf-table . nil)))
+
+
 ;;; Major-mode
 (defvar-keymap verilog-ts-mode-map
   :doc "Keymap for SystemVerilog language with tree-sitter"
@@ -1065,6 +1120,8 @@ Return nil if there is no name or if NODE is not a defun node."
                 `(("Class" "\\`class_declaration\\'" nil nil)
                   ("Task" "\\`task_declaration\\'" nil nil)
                   ("Func" "\\`function_declaration\\'" nil nil)))
+    ;; Completion
+    (add-hook 'completion-at-point-functions 'verilog-ts-capf nil 'local)
     ;; Setup.
     (treesit-major-mode-setup)))
 
