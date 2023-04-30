@@ -5119,7 +5119,7 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
         ;; `verilog-mode'-only customization (exclude `verilog-ts-mode')
         (when (eq major-mode 'verilog-mode)
           ;; Capf
-          (add-hook 'completion-at-point-functions 'verilog-ext-capf nil 'local)
+          (add-hook 'completion-at-point-functions #'verilog-ext-capf nil 'local)
           ;; Imenu
           (setq-local imenu-create-index-function #'verilog-ext-imenu-index)
           ;; Font-lock
@@ -5140,7 +5140,7 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
           ;; indentation issues with compiler directives.
           (modify-syntax-entry ?` ".")))
     ;; Cleanup
-    (remove-hook 'completion-at-point-functions 'verilog-ext-capf 'local)
+    (remove-hook 'completion-at-point-functions #'verilog-ext-capf 'local)
     (remove-hook 'kill-buffer-hook #'verilog-ext-kill-buffer-hook :local)
     (verilog-ext-block-end-comments-to-names-mode -1)
     (verilog-ext-time-stamp-mode -1)))
