@@ -95,7 +95,7 @@
 (message "Installing and setting up verilog-ext")
 (use-package verilog-ext
   :straight (:host github :repo "gmlarumbe/verilog-ext"
-             :files ("verilog-ext.el" "verilog-ts-mode.el" "snippets"))
+             :files ("verilog-ext.el" "ts-mode/verilog-ts-mode.el" "snippets"))
   :after verilog-mode
   :hook ((verilog-mode . verilog-ext-mode))
   :demand
