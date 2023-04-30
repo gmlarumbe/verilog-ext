@@ -2298,11 +2298,12 @@ Update list of typedefs/classes and populate tags tables."
                        (error "Wrong table"))))
          (table-entry (gethash symbol table))
          (entry-locs (plist-get table-entry :locs))
-         file line desc xref-entries)
+         file line column desc xref-entries)
     (when table-entry
       (dolist (loc entry-locs)
         (setq file (plist-get loc :file))
         (setq line (plist-get loc :line))
+        (setq column nil)
         (setq desc (plist-get loc :desc))
         (push (xref-make desc (xref-make-file-location file line column)) xref-entries)))
     xref-entries))
