@@ -46,11 +46,10 @@ variable."
       ("vppreproc" (setq verilog-preprocessor "vppreproc __FLAGS__ __FILE__"))
       ;; Icarus Verilog:  `iverilog' command syntax requires writing to an output file (defaults to a.out).
       ("iverilog" (let* ((filename-sans-ext (file-name-sans-extension (file-name-nondirectory (buffer-file-name))))
-                         (iver-out-file (concat filename-sans-ext "_pp_iver.sv")))
+                         (iver-out-file (concat "/tmp/" filename-sans-ext "_pp_iver.sv")))
                     (setq verilog-preprocessor (concat "iverilog -E -o" iver-out-file " __FILE__ && "
-                                                       "echo \"\" && "
-                                                       "cat " iver-out-file " && "
-                                                       "rm " iver-out-file)))))
+                                                       "echo \"\" && " ; Add blank line between run command and first preprocessed line
+                                                       "cat " iver-out-file)))))
     (verilog-preprocess)
     (pop-to-buffer "*Verilog-Preprocessed*")))
 

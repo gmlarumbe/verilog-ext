@@ -61,6 +61,7 @@ Defaults to .v, .vh, .sv and .svh."
 
 (defvar verilog-ext-buffer-list nil)
 (defvar verilog-ext-dir-list nil)
+(defvar verilog-ext-file-list nil)
 (defvar-local verilog-ext-file-allows-instances nil
   "Non nil if current file includes a module or interface block.")
 
@@ -556,18 +557,22 @@ efficiency and be able to use it for features such as `which-func'."
             (end-point . ,block-end-point)))))))
 
 ;;;; Buffers/hooks
-(defun verilog-ext-update-buffer-and-dir-list ()
-  "Update Verilog-mode opened buffers and directories lists."
-  (let (verilog-buffers verilog-dirs)
+(defun verilog-ext-update-buffer-file-and-dir-list ()
+  "Update `verilog-mode' list of open buffers, files, and dir lists."
+  (let (verilog-buffers verilog-dirs verilog-files)
     (dolist (buf (buffer-list (current-buffer)))
       (with-current-buffer buf
         (when (or (eq major-mode 'verilog-mode)
                   (eq major-mode 'verilog-ts-mode))
           (push buf verilog-buffers)
           (unless (member default-directory verilog-dirs)
-            (push default-directory verilog-dirs)))))
+            (push default-directory verilog-dirs))
+          (when (and buffer-file-name
+                     (string-match verilog-ext-file-extension-re (file-name-extension buffer-file-name)))
+            (push buffer-file-name verilog-files)))))
     (setq verilog-ext-buffer-list verilog-buffers)
-    (setq verilog-ext-dir-list verilog-dirs)))
+    (setq verilog-ext-dir-list verilog-dirs)
+    (setq verilog-ext-file-list verilog-files)))
 
 (defun verilog-ext-kill-buffer-hook ()
   "Verilog hook to run when killing a buffer."

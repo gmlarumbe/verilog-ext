@@ -358,10 +358,16 @@ Complete with identifiers of current workspace."
           :company-docsig #'identity)))
 
 (defun verilog-ext-workspace-capf-set (&optional disable)
-  "Enable or DISABLE builtin capf function."
+  "Enable or DISABLE builtin capf function.
+Replace already existing `verilog-mode' `verilog-completion-at-point'."
   (if disable
-      (remove-hook 'completion-at-point-functions #'verilog-ext-workspace-capf :local)
-    (add-hook 'completion-at-point-functions #'verilog-ext-workspace-capf nil :local)))
+      (progn
+        (remove-hook 'completion-at-point-functions #'verilog-ext-workspace-capf :local)
+        (add-hook 'completion-at-point-functions #'verilog-completion-at-point :local))
+    ;; Else
+    (add-hook 'completion-at-point-functions #'verilog-ext-workspace-capf nil :local)
+    (remove-hook 'completion-at-point-functions #'verilog-completion-at-point :local)))
+
 
 ;;;; Makefile
 (defun verilog-ext-workspace-makefile-create ()

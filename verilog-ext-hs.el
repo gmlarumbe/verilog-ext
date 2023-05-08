@@ -31,29 +31,37 @@
 
 (defconst verilog-ext-hs-block-start-keywords-re
   (eval-when-compile
-    (verilog-regexp-words
-     '("begin"
-       "fork"
-       "clocking"
-       "function"
-       "covergroup"
-       "property"
-       "task"
-       "generate"
-       "`ifdef" "`ifndef"))))
+    (concat "\\("
+            "\\(" (regexp-opt '("(" "{" "[")) "\\)"
+            "\\|"
+            "\\(" (verilog-regexp-words
+                 '("begin"
+                   "fork"
+                   "clocking"
+                   "function"
+                   "covergroup"
+                   "property"
+                   "task"
+                   "generate"
+                   "`ifdef" "`ifndef"))
+            "\\)" "\\)")))
 
 (defconst verilog-ext-hs-block-end-keywords-re
   (eval-when-compile
-    (verilog-regexp-words
-     '("end"
-       "join" "join_any" "join_none"
-       "endclocking"
-       "endfunction"
-       "endgroup"
-       "endproperty"
-       "endtask"
-       "endgenerate"
-       "`endif"))))
+    (concat "\\("
+            "\\(" (regexp-opt '(")" "}" "]")) "\\)"
+            "\\|"
+            "\\(" (verilog-regexp-words
+                 '("end"
+                   "join" "join_any" "join_none"
+                   "endclocking"
+                   "endfunction"
+                   "endgroup"
+                   "endproperty"
+                   "endtask"
+                   "endgenerate"
+                   "`endif"))
+            "\\)" "\\)")))
 
 (defun verilog-ext-hs-setup ()
   "Configure hideshow."

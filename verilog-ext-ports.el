@@ -55,18 +55,19 @@ If called with universal arg, FORCE-CONNECT will force connection
 of current port instead of toggling."
   (interactive "P")
   (let* ((case-fold-search verilog-case-fold)
-         (re (concat "\\(?1:^\\s-*\\)\\.\\(?2:" verilog-identifier-re "\\)\\(?3:\\s-*\\)\\(?4:(\\(?5:.*\\))\\)?"))
+         (re (concat "\\(?1:^\\s-*\\)\\.\\(?2:" verilog-identifier-re "\\)\\(?3:\\s-*\\)\\(?4:(\\s-*\\(?5:" verilog-identifier-re "\\)*\\s-*)\\)?"))
          port-found port conn sig)
     (save-excursion
       (beginning-of-line)
-      (if (verilog-re-search-forward re (line-end-position) t)
+      (if (looking-at re)
           (progn
             (setq port-found t)
             (setq port (match-string-no-properties 2))
             (setq conn (match-string-no-properties 5))
-            (if (or (string-equal conn "") force-connect) ; Disconnected or forced connection
+            (if (or (not conn) force-connect) ; Disconnected or forced connection
                 (progn ; Connect
                   (setq sig (read-string (concat "Connect [" port "] to: ") port))
+                  (looking-at re) ; Needed before `replace-match' to avoid buggy situations
                   (replace-match (concat "\\1.\\2\\3\(" sig "\)") t))
               ;; Else disconnect
               (replace-match (concat "\\1.\\2\\3\(" nil "\)") t)))

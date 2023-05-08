@@ -28,6 +28,7 @@
 ;;  - verible
 ;;  - slang
 ;;  - svlint
+;;  - surelog
 ;;  - Cadence HAL
 
 ;;; Code:
@@ -53,9 +54,10 @@ https://chipsalliance.github.io/verible/lint.html"
 (defvar verilog-ext-flycheck-linters '(verilog-verible
                                        verilog-verilator
                                        verilog-slang
+                                       verilog-surelog
                                        verilog-iverilog
-                                       verilog-cadence-hal
-                                       verilog-svlint)
+                                       verilog-svlint
+                                       verilog-cadence-hal)
   "List of supported linters.")
 
 
@@ -119,6 +121,7 @@ to avoid minibuffer collisions."
 
 ;;;; Verilator
 (defvar verilog-ext-flycheck-verilator-include-path nil)
+(flycheck-def-config-file-var flycheck-verilog-verilator-command-file verilog-verilator "verilator.f")
 
 (flycheck-define-checker verilog-verilator
   "A Verilog syntax checker using the Verilator Verilog HDL simulator.
@@ -127,13 +130,15 @@ See URL `https://www.veripool.org/wiki/verilator'."
   ;; https://verilator.org/guide/latest/exe_verilator.html
   ;;   The three flags -y, +incdir+<dir> and -I<dir> have similar effect;
   ;;   +incdir+<dir> and -y are fairly standard across Verilog tools while -I<dir> is used by many C++ compilers.
-  :command ("verilator" "--lint-only" "-Wall" "-Wno-fatal"
+  :command ("verilator" "--lint-only" "-Wall" "-Wno-fatal" "--timing"
             "--bbox-unsup" ; Blackbox unsupported language features to avoid errors on verification sources
             "--bbox-sys"  ;  Blackbox unknown $system calls
             (option-list "-I" verilog-ext-flycheck-verilator-include-path concat)
+            (config-file "-f" flycheck-verilog-verilator-command-file)
             source)
   :error-patterns
   ((warning line-start "%Warning-" (zero-or-more not-newline) ": " (file-name) ":" line ":" column ": " (message) line-end)
+   (error   line-start "%Error: Internal Error: "                  (file-name) ":" line ":" column ": " (message) line-end)
    (error   line-start "%Error: "                                  (file-name) ":" line ":" column ": " (message) line-end)
    (error   line-start "%Error-"   (zero-or-more not-newline) ": " (file-name) ":" line ":" column ": " (message) line-end))
   :modes (verilog-mode verilog-ts-mode))
@@ -191,6 +196,11 @@ See URL `https://github.com/chipsalliance/verible'."
 
 
 ;;;; Slang
+(flycheck-def-config-file-var flycheck-verilog-slang-command-file verilog-slang "slang.f")
+
+(defvar verilog-ext-flycheck-slang-include-path nil) ; e.g. (list (verilog-ext-path-join (getenv "UVM_HOME") "src"))
+(defvar verilog-ext-flycheck-slang-file-list nil)    ; e.g. (list (verilog-ext-path-join (getenv "UVM_HOME") "src/uvm_pkg.sv"))
+
 (flycheck-define-checker verilog-slang
   "SystemVerilog Language Services.
 
@@ -201,15 +211,23 @@ See URL `https://github.com/MikePopoloski/slang'."
   :command ("slang"
             "--lint-only"
             "--ignore-unknown-modules"
+            (option-list "-I" verilog-ext-flycheck-slang-include-path)
+            (eval verilog-ext-flycheck-slang-file-list)
+            (config-file "-f" flycheck-verilog-slang-command-file)
             source)
   :error-patterns
   ((error   (file-name) ":" line ":" column ": error: "   (message))
-   (warning (file-name) ":" line ":" column ": warning: " (message)))
+   (warning (file-name) ":" line ":" column ": warning: " (message))
+   (info    (file-name) ":" line ":" column ": note: "    (message)))
   :modes (verilog-mode verilog-ts-mode))
 
 
 ;;;; Svlint
-(defvar verilog-ext-flycheck-svlint-include-path nil)
+(flycheck-def-config-file-var flycheck-verilog-svlint-config-file verilog-svlint ".svlint.toml")
+
+;; Variables are needed since svlint doesn't allow both source and -f command file at the same time
+(defvar verilog-ext-flycheck-svlint-include-path nil) ; e.g. (list (verilog-ext-path-join (getenv "UVM_HOME") "src"))
+(defvar verilog-ext-flycheck-svlint-file-list nil)    ; e.g. (list (verilog-ext-path-join (getenv "UVM_HOME") "src/uvm_pkg.sv"))
 
 (flycheck-define-checker verilog-svlint
   "A Verilog syntax checker using svlint.
@@ -218,11 +236,41 @@ See URL `https://github.com/dalance/svlint'"
   :command ("svlint"
             "-1" ; one-line output
             "--ignore-include"
+            (config-file "-f" flycheck-verilog-svlint-config-file)
             (option-list "-i" verilog-ext-flycheck-svlint-include-path)
+            (eval verilog-ext-flycheck-svlint-file-list)
             source)
   :error-patterns
   ((warning line-start "Fail"  (zero-or-more blank) (file-name) ":" line ":" column (zero-or-more blank) (zero-or-more not-newline) "hint: " (message) line-end)
    (error   line-start "Error" (zero-or-more blank) (file-name) ":" line ":" column (zero-or-more blank) (zero-or-more not-newline) "hint: " (message) line-end))
+  :modes (verilog-mode verilog-ts-mode))
+
+
+;;;; Surelog
+(defvar verilog-ext-flycheck-surelog-directory "/tmp")
+
+(defun verilog-ext-flycheck-surelog-directory-fn (_checker)
+  "Return directory where surelog is executed.
+slpp_all outputs will be stored at this directory.."
+  (let ((dir verilog-ext-flycheck-surelog-directory))
+    dir))
+
+(flycheck-define-checker verilog-surelog
+  "SystemVerilog 2017 Pre-processor, Parser, Elaborator, UHDM Compiler. Provides
+  IEEE Design/TB C/C++ VPI and Python AST API.
+
+See URL `https://github.com/chipsalliance/Surelog'"
+  :command ("surelog"
+            "-parseonly" ; one-line output
+            source)
+  :error-patterns
+  ((info    line-start "[INF:" (one-or-more alnum) "] " (file-name) ":" line ":" column ":" blank (message) line-end)
+   (info    line-start "[NTE:" (one-or-more alnum) "] " (file-name) ":" line ":" column ":" blank (message) line-end)
+   (warning line-start "[WRN:" (one-or-more alnum) "] " (file-name) ":" line ":" column ":" blank (message) line-end)
+   (error   line-start "[SNT:" (one-or-more alnum) "] " (file-name) ":" line ":" column ":" blank (message) line-end)
+   (error   line-start "[ERR:" (one-or-more alnum) "] " (file-name) ":" line ":" column ":" blank (message) line-end)
+   (error   line-start "[FAT:" (one-or-more alnum) "] " (file-name) ":" line ":" column ":" blank (message) line-end))
+  :working-directory verilog-ext-flycheck-surelog-directory-fn
   :modes (verilog-mode verilog-ts-mode))
 
 

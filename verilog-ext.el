@@ -25,19 +25,27 @@
 
 ;; Extensions for Verilog Mode:
 ;;
-;;  - Tree-sitter powered `verilog-ts-mode` support
-;;  - Improve syntax highlighting
-;;  - Hierarchy extraction and navigation
+;;  - Improved syntax highlighting
+;;  - Hierarchy extraction and navigation: builtin and vhier based
 ;;  - LSP configuration for `lsp-mode` and `eglot`
 ;;  - Support for many linters via `flycheck`
-;;  - Improve `imenu` entries: detect instances, classes and methods
 ;;  - Beautify modules and instances
+;;  - Improve `imenu` entries: detect instances, classes and methods
 ;;  - Code navigation functions for RTL and Verification environments
 ;;  - Extended collection of custom and `yasnippet` templates insertion via `hydra`
 ;;  - Code formatter via `apheleia`
 ;;  - Code folding via `hideshow`
 ;;  - Enhanced support for `which-func`
-;;  - Many additional misc utilities
+;;  - Compilation-based utilities
+;;  - Time-stamp auto-configuration
+;;  - Convert block end comments to names
+;;  - Automatically add SystemVerilog keywords to `company-keywords` backend
+;;  - Port connections utilities
+;;
+;;  Experimental:
+;;  - Tree-sitter powered `verilog-ts-mode` support
+;;  - Builtin xref backend
+;;  - Builtin capf
 
 ;;; Code:
 
@@ -221,7 +229,7 @@
       (progn
         ;; Common
         (verilog-ext-scan-buffer-modules)
-        (verilog-ext-update-buffer-and-dir-list)
+        (verilog-ext-update-buffer-file-and-dir-list)
         (add-hook 'kill-buffer-hook #'verilog-ext-kill-buffer-hook nil :local)
         (setq verilog-library-directories verilog-ext-dir-list)
         ;; Features

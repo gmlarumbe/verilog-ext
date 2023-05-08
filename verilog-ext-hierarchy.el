@@ -290,8 +290,12 @@ Return populated `hierarchy' struct."
   (let ((hierarchy-alist (or flat-hierarchy
                              verilog-ext-hierarchy-builtin-workspace-flat-hierarchy))
         (hierarchy-struct (hierarchy-new)))
+    (unless hierarchy-alist
+      (when (y-or-n-p "Empty hierarchy database, run `verilog-ext-hierarchy-builtin-parse-workspace'?")
+        (verilog-ext-hierarchy-builtin-parse-workspace)
+        (setq hierarchy-alist verilog-ext-hierarchy-builtin-workspace-flat-hierarchy)))
     (unless (assoc module hierarchy-alist)
-      (error "Could not find %s in the hierarchy-alist, maybe rerun `verilog-ext-hierarchy-builtin-parse-workspace'?" module))
+      (error "Could not find %s in the hierarchy-alist" module))
     (if (not (cdr (assoc module hierarchy-alist)))
         (user-error "Current module has no instances")
       (setq verilog-ext-hierarchy-builtin-current-flat-hierarchy hierarchy-alist)
