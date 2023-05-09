@@ -30,6 +30,7 @@
 (require 'make-mode)
 (require 'async)
 (require 'verilog-ext-tags)
+(require 'verilog-ext-hierarchy)
 (require 'verilog-ext-template)
 
 (defgroup verilog-ext-workspace nil
@@ -98,6 +99,7 @@ Follow symlinks if optional argument FOLLOW-SYMLINKS is non-nil."
 (defvar verilog-ext-workspace-cache-typedefs nil)
 (defvar verilog-ext-workspace-cache-tags-defs nil)
 (defvar verilog-ext-workspace-cache-tags-refs nil)
+(defvar verilog-ext-workspace-cache-hierarchy nil)
 
 (defun verilog-ext-workspace-serialize (data filename)
   "Serialize DATA to FILENAME.
@@ -129,9 +131,11 @@ If optional TYPE arg is passed, only serialize that TYPE."
     ('typedefs  (verilog-ext-workspace-serialize verilog-ext-workspace-cache-typedefs  (verilog-ext-path-join verilog-ext-workspace-cache-dir "typedefs")))
     ('tags-defs (verilog-ext-workspace-serialize verilog-ext-workspace-cache-tags-defs (verilog-ext-path-join verilog-ext-workspace-cache-dir "tags-defs")))
     ('tags-refs (verilog-ext-workspace-serialize verilog-ext-workspace-cache-tags-refs (verilog-ext-path-join verilog-ext-workspace-cache-dir "tags-refs")))
+    ('hierarchy (verilog-ext-workspace-serialize verilog-ext-workspace-cache-hierarchy (verilog-ext-path-join verilog-ext-workspace-cache-dir "hierarchy")))
     (_ (verilog-ext-workspace-serialize verilog-ext-workspace-cache-typedefs  (verilog-ext-path-join verilog-ext-workspace-cache-dir "typedefs"))
        (verilog-ext-workspace-serialize verilog-ext-workspace-cache-tags-defs (verilog-ext-path-join verilog-ext-workspace-cache-dir "tags-defs"))
-       (verilog-ext-workspace-serialize verilog-ext-workspace-cache-tags-refs (verilog-ext-path-join verilog-ext-workspace-cache-dir "tags-refs")))))
+       (verilog-ext-workspace-serialize verilog-ext-workspace-cache-tags-refs (verilog-ext-path-join verilog-ext-workspace-cache-dir "tags-refs"))
+       (verilog-ext-workspace-serialize verilog-ext-workspace-cache-hierarchy (verilog-ext-path-join verilog-ext-workspace-cache-dir "hierarchy")))))
 
 (defun verilog-ext-workspace-unserialize-cache (&optional type)
   "Unserializes the hard drive data to the memory cache.
@@ -140,9 +144,11 @@ If optional TYPE arg is passed, only deserialize that TYPE."
     ('typedefs  (setq verilog-ext-workspace-cache-typedefs  (verilog-ext-workspace-unserialize (verilog-ext-path-join verilog-ext-workspace-cache-dir "typedefs"))))
     ('tags-defs (setq verilog-ext-workspace-cache-tags-defs (verilog-ext-workspace-unserialize (verilog-ext-path-join verilog-ext-workspace-cache-dir "tags-defs"))))
     ('tags-refs (setq verilog-ext-workspace-cache-tags-refs (verilog-ext-workspace-unserialize (verilog-ext-path-join verilog-ext-workspace-cache-dir "tags-refs"))))
+    ('hierarchy (setq verilog-ext-workspace-cache-hierarchy (verilog-ext-workspace-unserialize (verilog-ext-path-join verilog-ext-workspace-cache-dir "hierarchy"))))
     (_ (setq verilog-ext-workspace-cache-typedefs  (verilog-ext-workspace-unserialize (verilog-ext-path-join verilog-ext-workspace-cache-dir "typedefs")))
        (setq verilog-ext-workspace-cache-tags-defs (verilog-ext-workspace-unserialize (verilog-ext-path-join verilog-ext-workspace-cache-dir "tags-defs")))
-       (setq verilog-ext-workspace-cache-tags-refs (verilog-ext-workspace-unserialize (verilog-ext-path-join verilog-ext-workspace-cache-dir "tags-refs"))))))
+       (setq verilog-ext-workspace-cache-tags-refs (verilog-ext-workspace-unserialize (verilog-ext-path-join verilog-ext-workspace-cache-dir "tags-refs")))
+       (setq verilog-ext-workspace-cache-hierarchy (verilog-ext-workspace-unserialize (verilog-ext-path-join verilog-ext-workspace-cache-dir "hierarchy"))))))
 
 (defun verilog-ext-workspace-clear-cache (&optional type)
   "Clears the hard drive and the memory cache.
@@ -152,11 +158,68 @@ If optional TYPE arg is passed, only clear that TYPE."
     ('typedefs  (setq verilog-ext-workspace-cache-typedefs  nil))
     ('tags-defs (setq verilog-ext-workspace-cache-tags-defs nil))
     ('tags-refs (setq verilog-ext-workspace-cache-tags-refs nil))
+    ('hierarchy (setq verilog-ext-workspace-cache-hierarchy nil))
     (_ (setq verilog-ext-workspace-cache-typedefs  nil)
        (setq verilog-ext-workspace-cache-tags-defs nil)
-       (setq verilog-ext-workspace-cache-tags-refs nil)))
+       (setq verilog-ext-workspace-cache-tags-refs nil)
+       (setq verilog-ext-workspace-cache-hierarchy nil)))
   (verilog-ext-workspace-serialize-cache type)
   (message "Cleared cache!"))
+
+
+;;;; Hierarchy
+(defun verilog-ext-workspace-hierarchy-builtin-parse (&optional verbose)
+  "Return flat hierarchy of modules and instances of current workspace files.
+
+Populates `verilog-ext-hierarchy-builtin-current-flat-hierarchy' for subsequent
+hierarchy extraction and display.
+
+With current-prefix or VERBOSE, dump output log."
+  (interactive "p")
+  (let* ((files (if verilog-ext-hierarchy-builtin-dirs
+                    (verilog-ext-dirs-files verilog-ext-hierarchy-builtin-dirs :follow-symlinks)
+                  (verilog-ext-workspace-files :follow-symlinks)))
+         (num-files (length files))
+         (num-files-processed 0)
+         (log-file (verilog-ext-path-join verilog-ext-workspace-cache-dir "hierarchy.log"))
+         msg progress flat-hierarchy data)
+    (when verbose
+      (delete-file log-file))
+    (dolist (file files)
+      (setq progress (/ (* num-files-processed 100) num-files))
+      (setq msg (format "(%0d%%) [Hierarchy parsing] Processing %s" progress file))
+      (when verbose
+        (append-to-file (concat msg "\n") nil log-file))
+      (message "%s" msg)
+      (setq data (verilog-ext-hierarchy-builtin-parse-file file))
+      (when data
+        (push data flat-hierarchy))
+      (setq num-files-processed (1+ num-files-processed)))
+    ;; Update cache
+    (setq verilog-ext-workspace-cache-hierarchy verilog-ext-hierarchy-builtin-current-flat-hierarchy)
+    (verilog-ext-workspace-serialize-cache 'hierarchy)
+    ;; Return value for async related function
+    (setq verilog-ext-hierarchy-builtin-current-flat-hierarchy flat-hierarchy)))
+
+(defun verilog-ext-workspace-hierarchy-builtin-parse-async (&optional verbose)
+  "Return flat hierarchy of modules and instances of workspace asynchronously.
+
+Populates `verilog-ext-hierarchy-builtin-current-flat-hierarchy' for subsequent
+hierarchy extraction and display.
+
+With current-prefix or VERBOSE, dump output log."
+  (interactive "p")
+  (message "Starting hierarchy parsing for %s" (verilog-ext-workspace-root))
+  (async-start
+   `(lambda ()
+      ,(async-inject-variables verilog-ext-async-inject-variables-re)
+      (require 'verilog-ext)
+      (verilog-ext-workspace-hierarchy-builtin-parse ,verbose))
+   (lambda (result)
+     (message "Finished analyzing hierarchy!")
+     (setq verilog-ext-hierarchy-builtin-current-flat-hierarchy result)
+     (setq verilog-ext-workspace-cache-hierarchy verilog-ext-hierarchy-builtin-current-flat-hierarchy)
+     (verilog-ext-workspace-serialize-cache 'hierarchy))))
 
 
 ;;;; Tags
@@ -228,16 +291,18 @@ With current-prefix or VERBOSE, dump output log."
   (message "Starting tag collection for %s" (verilog-ext-workspace-root))
   (async-start
    `(lambda ()
-      ,(async-inject-variables "\\`\\(load-path\\|buffer-file-name\\|verilog-ext-workspace-\\|verilog-align-typedef-\\)")
+      ,(async-inject-variables verilog-ext-async-inject-variables-re)
       (require 'verilog-ext)
       (verilog-ext-workspace-get-tags ,verbose))
    (lambda (result)
      (message "Finished collection tags!")
+     ;; Tags definitions
      (setq verilog-ext-workspace-tags-defs-table (car result))
      (setq verilog-ext-workspace-cache-tags-defs (car result))
      (verilog-ext-workspace-serialize-cache 'tags-defs)
+     ;; Tags references
      (setq verilog-ext-workspace-tags-refs-table (cadr result))
-     (setq verilog-ext-workspace-cache-tags-refs (cadr result)) ; Update cache
+     (setq verilog-ext-workspace-cache-tags-refs (cadr result))
      (verilog-ext-workspace-serialize-cache 'tags-refs))))
 
 ;;; Typedefs
@@ -385,7 +450,7 @@ With current-prefix or VERBOSE, dump output log."
   (message "Starting typedef collection for %s" (verilog-ext-workspace-root))
   (async-start
    `(lambda ()
-      ,(async-inject-variables "\\`\\(load-path\\|buffer-file-name\\|verilog-ext-workspace-\\|verilog-align-typedef-\\)")
+      ,(async-inject-variables verilog-ext-async-inject-variables-re)
       (require 'verilog-ext)
       (verilog-ext-workspace-typedef-batch-update (verilog-ext-workspace-files) ,verbose))
    (lambda (result)
@@ -521,6 +586,11 @@ Compiles them with various verilog regexps."
 
 
 ;;;; Setup
+(defun verilog-ext-workspace-hierarchy-setup ()
+  "Setup workspace builtin hierarchy analysis."
+  (verilog-ext-workspace-unserialize-cache 'hierarchy)
+  (setq verilog-ext-hierarchy-builtin-current-flat-hierarchy verilog-ext-workspace-cache-hierarchy))
+
 (defun verilog-ext-workspace-tags-table-setup ()
   "Setup workspace tags table feature for `xref' and `capf'."
   (verilog-ext-workspace-unserialize-cache 'tags-defs)

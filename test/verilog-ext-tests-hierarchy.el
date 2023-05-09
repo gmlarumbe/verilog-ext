@@ -25,6 +25,8 @@
 ;;; Code:
 
 
+(require 'verilog-ext-workspace)
+
 (defun verilog-ext-test-hierarchy ()
   (let* ((test-file (verilog-ext-path-join verilog-ext-tests-common-dir "instances.sv"))
          (verilog-library-directories `(,verilog-ext-tests-jump-parent-dir
@@ -65,12 +67,12 @@
                  (clone-indirect-buffer-other-window "*debug*" t))
                (insert-file-contents test-file)
                (verilog-mode)
-               (verilog-ext-hierarchy-builtin-parse-workspace)
+               (verilog-ext-workspace-hierarchy-builtin-parse)
                (verilog-ext-hierarchy-current-buffer)))
             ;; builtin-outshine
             ((and (eq verilog-ext-hierarchy-backend 'builtin)
                   (eq verilog-ext-hierarchy-frontend 'outshine))
-             (verilog-ext-hierarchy-builtin-parse-workspace)
+             (verilog-ext-workspace-hierarchy-builtin-parse)
              (save-window-excursion
                (find-file test-file)
                (verilog-ext-hierarchy-current-buffer)

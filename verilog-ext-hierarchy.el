@@ -30,7 +30,7 @@
 (require 'hierarchy)
 (require 'tree-widget)
 (require 'async)
-(require 'verilog-ext-workspace)
+(require 'verilog-ext-nav)
 
 (defgroup verilog-ext-hierarchy nil
   "Verilog-ext hierarchy."
@@ -193,11 +193,6 @@ Return hierarchy as an indented string."
       (buffer-substring-no-properties (point-min) (point-max)))))
 
 ;;;;; Builtin
-(defvar verilog-ext-hierarchy-builtin-workspace-flat-hierarchy nil
-  "Workspace flat hierarchy.
-Populated by `verilog-ext-hierarchy-builtin-parse-workspace' or
-`verilog-ext-hierarchy-builtin-parse-workspace-async'.")
-
 (defvar verilog-ext-hierarchy-builtin-current-flat-hierarchy nil
   "Current flat hierarchy.
 Used by `verilog-ext-hierarchy-extract-builtin' and its subroutines.  Needed
@@ -223,44 +218,6 @@ declaration."
           (push (concat (match-string-no-properties 1) ":" (match-string-no-properties 2)) instances))
         (cons (car modules) (reverse instances))))))
 
-(defun verilog-ext-hierarchy-builtin-parse-workspace ()
-  "Return modules and instances of current workspace files.
-Populates `verilog-ext-hierarchy-builtin-workspace-flat-hierarchy'."
-  (interactive)
-  (let* ((files (if verilog-ext-hierarchy-builtin-dirs
-                    (verilog-ext-dirs-files verilog-ext-hierarchy-builtin-dirs :follow-symlinks)
-                  (verilog-ext-workspace-files :follow-symlinks)))
-         flat-hierarchy data)
-    (dolist (file files)
-      (message "Processing %s" file)
-      (setq data (verilog-ext-hierarchy-builtin-parse-file file))
-      (when data
-        (push data flat-hierarchy)))
-    (setq verilog-ext-hierarchy-builtin-workspace-flat-hierarchy flat-hierarchy)))
-
-(defun verilog-ext-hierarchy-builtin-parse-workspace-async ()
-  "Return modules and instances of current workspace files asynchronously.
-Populates `verilog-ext-hierarchy-builtin-workspace-flat-hierarchy'."
-  (interactive)
-  (let ((parent-load-path load-path)
-        (files (if verilog-ext-hierarchy-builtin-dirs
-                   (verilog-ext-dirs-files verilog-ext-hierarchy-builtin-dirs :follow-symlinks)
-                 (verilog-ext-workspace-files :follow-symlinks)))
-        flat-hierarchy data)
-    (async-start
-     (lambda ()
-       (setq load-path parent-load-path)
-       (require 'verilog-ext)
-       (dolist (file files)
-         (message "Processing %s" file)
-         (setq data (verilog-ext-hierarchy-builtin-parse-file file))
-         (when data
-           (push data flat-hierarchy)))
-       flat-hierarchy)
-     (lambda (result)
-       (message "Finished analyzing hierarchy!")
-       (setq verilog-ext-hierarchy-builtin-workspace-flat-hierarchy result)))))
-
 (defun verilog-ext-hierarchy-extract-builtin--childrenfn (item)
   "Childrenfn for `hierarchy'.
 Arg ITEM are hierarchy nodes."
@@ -283,21 +240,24 @@ Arg ITEM are hierarchy nodes."
 (defun verilog-ext-hierarchy-extract-builtin (module &optional flat-hierarchy)
   "Construct hierarchy for MODULE using builtin `hierarchy' package.
 
-Modules and instances will be analyzed from FLAT-HIERARCHY input.
-This is a list of the form (module instance1:NAME1 instance2:NAME2 ...)
+Modules and instances will be analyzed from FLAT-HIERARCHY input if provided.
+Otherwise, extract from `verilog-ext-hierarchy-builtin-current-flat-hierarchy':
+ - This is a list of the form (module instance1:NAME1 instance2:NAME2 ...)
+
+This optional arg is intended to be used for conversion between vhier/builtin.
 
 Return populated `hierarchy' struct."
-  (let ((hierarchy-alist (or flat-hierarchy
-                             verilog-ext-hierarchy-builtin-workspace-flat-hierarchy))
-        (hierarchy-struct (hierarchy-new)))
+  (let ((hierarchy-struct (hierarchy-new))
+        (hierarchy-alist (or flat-hierarchy
+                             verilog-ext-hierarchy-builtin-current-flat-hierarchy)))
     (unless hierarchy-alist
-      (when (y-or-n-p "Empty hierarchy database, run `verilog-ext-hierarchy-builtin-parse-workspace'?")
-        (verilog-ext-hierarchy-builtin-parse-workspace)
-        (setq hierarchy-alist verilog-ext-hierarchy-builtin-workspace-flat-hierarchy)))
+      (user-error "Empty hierarchy database, maybe run first `verilog-ext-workspace-hierarchy-builtin-parse'?"))
     (unless (assoc module hierarchy-alist)
-      (error "Could not find %s in the hierarchy-alist" module))
+      (user-error "Could not find %s in the flat-hierarchy" module))
     (if (not (cdr (assoc module hierarchy-alist)))
         (user-error "Current module has no instances")
+      ;; DANGER: Don't forget to update `verilog-ext-hierarchy-builtin-current-flat-hierarchy'
+      ;; before populating the`hierarchy-struct' if using flat-hierarchy as an input!
       (setq verilog-ext-hierarchy-builtin-current-flat-hierarchy hierarchy-alist)
       (verilog-ext-hierarchy-extract-builtin--construct-node module hierarchy-struct))))
 

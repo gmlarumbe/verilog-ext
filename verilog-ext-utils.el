@@ -102,6 +102,8 @@ type_t foo1, foo2 , foo4, foo6[], foo7 [25], foo8 ;")
 (defconst verilog-ext-server-lsp-ids
   (mapcar #'car verilog-ext-server-lsp-list))
 
+(defconst verilog-ext-async-inject-variables-re "\\`\\(load-path\\|buffer-file-name\\|verilog-ext-workspace-\\|verilog-align-typedef-\\)")
+
 
 ;;;; Wrappers
 (defun verilog-ext-forward-syntactic-ws ()

@@ -148,10 +148,10 @@ FEATURES can be a single feature or a list of features."
 (require 'verilog-ext-which-func)
 (require 'verilog-ext-ports)
 (require 'verilog-ext-tags)
+(require 'verilog-ext-hierarchy)
 (require 'verilog-ext-beautify)
 (require 'verilog-ext-template)
 (require 'verilog-ext-workspace)
-(require 'verilog-ext-hierarchy)
 (require 'verilog-ext-xref)
 (require 'verilog-ext-formatter)
 (require 'verilog-ext-flycheck)
@@ -219,7 +219,8 @@ FEATURES can be a single feature or a list of features."
   (verilog-ext-when-feature 'typedefs
     (verilog-ext-workspace-typedefs-setup))
   (verilog-ext-when-feature 'hierarchy
-    (verilog-ext-hierarchy-setup))
+    (verilog-ext-hierarchy-setup)
+    (verilog-ext-workspace-hierarchy-setup))
   (verilog-ext-when-feature 'formatter
     (verilog-ext-formatter-setup))
   (verilog-ext-when-feature 'flycheck
