@@ -682,6 +682,19 @@ Similar to `verilog-match-translate-off' but including
       (0 'verilog-ext-font-lock-translate-off-face prepend)))))
 
 
+;;; Setup
+(defun verilog-ext-font-lock-setup ()
+  "Setup syntax highlighting of SystemVerilog buffers.
+Add `verilog-ext-mode' font lock keywords before running
+`verilog-mode' in order to populate `font-lock-keywords-alist'
+before `font-lock' is loaded."
+  (let ((keywords (append verilog-ext-font-lock-keywords
+                          verilog-ext-font-lock-keywords-1
+                          verilog-ext-font-lock-keywords-2
+                          verilog-ext-font-lock-keywords-3)))
+    (font-lock-add-keywords 'verilog-mode keywords 'set)))
+
+
 (provide 'verilog-ext-font-lock)
 
 ;;; verilog-ext-font-lock.el ends here

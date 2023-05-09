@@ -208,6 +208,8 @@ FEATURES can be a single feature or a list of features."
   "Setup `verilog-ext-mode' depending on enabled features."
   (interactive)
   ;; Features
+  (verilog-ext-when-feature 'font-lock
+    (verilog-ext-font-lock-setup))
   (verilog-ext-when-feature 'hideshow
     (verilog-ext-hs-setup))
   (verilog-ext-when-feature 'company-keywords
@@ -282,10 +284,6 @@ FEATURES can be a single feature or a list of features."
           ;;   the minor mode is loaded/unloaded.
           ;;   https://emacs.stackexchange.com/questions/60198/font-lock-add-keywords-is-not-working
           (verilog-ext-when-feature 'font-lock
-            (font-lock-add-keywords nil (append verilog-ext-font-lock-keywords
-                                                verilog-ext-font-lock-keywords-1
-                                                verilog-ext-font-lock-keywords-2
-                                                verilog-ext-font-lock-keywords-3) 'set)
             (font-lock-flush)
             (setq-local font-lock-multiline nil))))
     ;; Cleanup
