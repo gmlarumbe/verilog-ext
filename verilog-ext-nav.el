@@ -112,6 +112,7 @@ the function call."
         (and (if bwd
                  (verilog-re-search-backward tf-re limit 'move)
                (verilog-re-search-forward tf-re limit 'move))
+             (not (verilog-ext-point-inside-multiline-define))
              (setq tf-type (match-string-no-properties 0))
              (setq tf-kwd-pos-end (match-end 0))
              (verilog-re-search-forward ";" limit 'move)
@@ -227,8 +228,9 @@ it was interactive."
                         (verilog-re-search-backward verilog-ext-class-re limit 'move)
                       (verilog-re-search-forward verilog-ext-class-re limit 'move)))
           (when (save-excursion
-                  (setq class-kwd-pos (goto-char (match-beginning 1))) ; Dirty workaround to make `verilog-ext-class-declaration-is-typedef-p' work properly ...
-                  (not (verilog-ext-class-declaration-is-typedef-p))) ; ... moving point to the beginning of 'class keyword
+                  (setq class-kwd-pos (goto-char (match-beginning 1)))    ; Dirty workaround to make `verilog-ext-class-declaration-is-typedef-p' work properly ...
+                  (and (not (verilog-ext-class-declaration-is-typedef-p)) ; ... moving point to the beginning of 'class keyword
+                       (not (verilog-ext-point-inside-multiline-define))))
             (setq found t)
             (setq name (match-string-no-properties 3))
             (setq name-pos-start (match-beginning 3))
@@ -617,6 +619,7 @@ Find backward if BWD is non-nil."
     (when (and (if bwd
                    (verilog-re-search-backward verilog-typedef-enum-re limit t)
                  (verilog-re-search-forward verilog-typedef-enum-re limit t))
+               (not (verilog-ext-point-inside-multiline-define))
                (setq start-pos (match-beginning 0))
                (verilog-ext-when-t bwd
                  (setq temp-pos (point))
@@ -645,6 +648,7 @@ Find backward if BWD is non-nil."
     (when (and (if bwd
                    (verilog-re-search-backward verilog-ext-typedef-struct-re limit t)
                  (verilog-re-search-forward verilog-ext-typedef-struct-re limit t))
+               (not (verilog-ext-point-inside-multiline-define))
                (setq start-pos (match-beginning 0))
                (verilog-ext-when-t bwd
                  (setq temp-pos (point))

@@ -122,10 +122,9 @@ Otherwsise create the cons cell with the label and the TREE."
 Find recursively tasks and functions inside classes."
   (save-restriction
     (narrow-to-region (point-min) (point))
-    (let* ((data (progn
-                   (verilog-ext-find-class-bwd)
-                   (verilog-forward-sexp)
-                   (verilog-ext-find-function-task-class-bwd)))
+    (let* ((data (and (verilog-ext-find-class-bwd)
+                      (verilog-ext-forward-sexp)
+                      (verilog-ext-find-function-task-class-bwd)))
            (pos (when data
                   (save-excursion
                     (goto-char (alist-get 'pos data))

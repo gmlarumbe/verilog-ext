@@ -327,6 +327,18 @@ Also updates `match-data' with that of `verilog-ext-class-re'."
              (looking-at verilog-ext-task-re))
          (match-string-no-properties 2)))) ; Match 2 corresponds to class name classifier
 
+(defun verilog-ext-point-inside-multiline-define ()
+  "Return non-nil if point is inside a multilin define.
+Check `verilog-indent-ignore-p'."
+  (save-match-data
+    (or (save-excursion
+          (verilog-re-search-forward ".*\\\\\\s-*$" (line-end-position) t))
+        (save-excursion  ; Last line after multiline define
+          (verilog-backward-syntactic-ws)
+          (unless (bobp)
+            (backward-char))
+          (looking-at "\\\\")))))
+
 (defun verilog-ext-get-block-boundaries (block)
   "Get boundaries of BLOCK.
 Assumes that point is looking at a BLOCK type."

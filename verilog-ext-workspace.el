@@ -147,6 +147,7 @@ If optional TYPE arg is passed, only deserialize that TYPE."
 (defun verilog-ext-workspace-clear-cache (&optional type)
   "Clears the hard drive and the memory cache.
 If optional TYPE arg is passed, only clear that TYPE."
+  (interactive)
   (pcase type
     ('typedefs  (setq verilog-ext-workspace-cache-typedefs  nil))
     ('tags-defs (setq verilog-ext-workspace-cache-tags-defs nil))
@@ -154,7 +155,8 @@ If optional TYPE arg is passed, only clear that TYPE."
     (_ (setq verilog-ext-workspace-cache-typedefs  nil)
        (setq verilog-ext-workspace-cache-tags-defs nil)
        (setq verilog-ext-workspace-cache-tags-refs nil)))
-  (verilog-ext-workspace-serialize-cache type))
+  (verilog-ext-workspace-serialize-cache type)
+  (message "Cleared cache!"))
 
 
 ;;;; Tags
@@ -162,20 +164,27 @@ If optional TYPE arg is passed, only clear that TYPE."
 (defvar verilog-ext-workspace-tags-refs-table (make-hash-table :test #'equal))
 (defvar verilog-ext-workspace-tags-current-file nil)
 
-(defun verilog-ext-workspace-get-tags ()
-  "Get tags of current workspace."
-  (interactive)
+(defun verilog-ext-workspace-get-tags (&optional verbose)
+  "Get tags of current workspace.
+With current-prefix or VERBOSE, dump output log."
+  (interactive "p")
   (let* ((files (verilog-ext-workspace-files))
          (num-files (length files))
          (num-files-processed 0)
          (table (make-hash-table :test #'equal))
-         progress)
+         (log-file (verilog-ext-path-join verilog-ext-workspace-cache-dir "tags.log"))
+         msg progress)
+    (when verbose
+      (delete-file log-file))
     ;; Definitions
     (dolist (file files)
       (setq verilog-ext-workspace-tags-current-file file)
       (with-temp-buffer
         (setq progress (/ (* num-files-processed 100) num-files))
-        (message "(%0d%%) [Tags collection] Processing %s" progress file)
+        (setq msg (format "(%0d%%) [Tags collection] Processing %s" progress file))
+        (when verbose
+          (append-to-file (concat msg "\n") nil log-file))
+        (message "%s" msg)
         (insert-file-contents file)
         (verilog-mode)
         (cond (;; Top-block based-file (module/interface/package/program)
@@ -198,7 +207,10 @@ If optional TYPE arg is passed, only clear that TYPE."
       (setq verilog-ext-workspace-tags-current-file file)
       (with-temp-buffer
         (setq progress (/ (* num-files-processed 100) num-files))
-        (message "(%0d%%) [References collection] Processing %s" progress file)
+        (setq msg (format "(%0d%%) [References collection] Processing %s" progress file))
+        (when verbose
+          (append-to-file (concat msg "\n") nil log-file))
+        (message "%s" msg)
         (insert-file-contents file)
         (verilog-mode)
         (verilog-ext-tags-table-push-references table verilog-ext-workspace-tags-defs-table file)
@@ -209,14 +221,16 @@ If optional TYPE arg is passed, only clear that TYPE."
     ;; Return value for async processing
     (list verilog-ext-workspace-tags-defs-table verilog-ext-workspace-tags-refs-table)))
 
-(defun verilog-ext-workspace-get-tags-async ()
-  "Create tags table asynchronously."
-  (interactive)
+(defun verilog-ext-workspace-get-tags-async (&optional verbose)
+  "Create tags table asynchronously.
+With current-prefix or VERBOSE, dump output log."
+  (interactive "p")
+  (message "Starting tag collection for %s" (verilog-ext-workspace-root))
   (async-start
    `(lambda ()
-      ,(async-inject-variables "\\`\\(load-path\\|buffer-file-name\\|verilog-ext-workspace-\\)")
+      ,(async-inject-variables "\\`\\(load-path\\|buffer-file-name\\|verilog-ext-workspace-\\|verilog-align-typedef-\\)")
       (require 'verilog-ext)
-      (verilog-ext-workspace-get-tags))
+      (verilog-ext-workspace-get-tags ,verbose))
    (lambda (result)
      (message "Finished collection tags!")
      (setq verilog-ext-workspace-tags-defs-table (car result))
@@ -311,20 +325,29 @@ Used for fontification and alignment."
   (verilog-ext-workspace-typedef--typedef-buffer-update verilog-ext-typedef-class-re)
   (verilog-ext-workspace-typedef--typedef-buffer-update verilog-ext-typedef-generic-re))
 
-(defun verilog-ext-workspace-typedef-batch-update (files)
+(defun verilog-ext-workspace-typedef-batch-update (files &optional verbose)
   "Scan all (System)Verilog FILES and udpate typedef list.
 
 It will return the updated value of `verilog-ext-workspace-align-typedef-words',
 which can be used later along with `verilog-regexp-words' to update the variable
 `verilog-align-typedef-regexp'.  This enables the fontification and alignment of
-user typedefs."
+user typedefs.
+
+If optional arg VERBOSE is enabled, dump output to a logfile for potential debug
+in corresponding async function."
   (let ((num-files (length files))
         (num-files-processed 0)
-        progress)
+        (log-file (verilog-ext-path-join verilog-ext-workspace-cache-dir "typedefs.log"))
+        msg progress)
     (setq verilog-ext-workspace-align-typedef-words nil) ; Reset value
+    (when verbose
+      (delete-file log-file))
     (dolist (file files)
       (setq progress (/ (* num-files-processed 100) num-files))
-      (message "(%0d%%) [Typedef collection] Processing %s" progress file)
+      (setq msg (format "(%0d%%) [Typedef collection] Processing %s" progress file))
+      (when verbose
+        (append-to-file (concat msg "\n") nil log-file))
+      (message "%s" msg)
       (with-temp-buffer
         (insert-file-contents file)
         (verilog-mode)
@@ -337,8 +360,8 @@ user typedefs."
           verilog-ext-workspace-align-typedef-words)
     (let ((case-fold-search nil))
       (setq verilog-ext-workspace-align-typedef-words (seq-remove (lambda (s)
-                                                          (not (string-match-p "[[:lower:]]" s)))
-                                                        verilog-ext-workspace-align-typedef-words)))
+                                                                    (not (string-match-p "[[:lower:]]" s)))
+                                                                  verilog-ext-workspace-align-typedef-words)))
     ;; Store results
     (when verilog-ext-workspace-align-typedef-words
       (setq verilog-ext-workspace-align-typedef-words-re (verilog-regexp-words verilog-ext-workspace-align-typedef-words))
@@ -349,19 +372,22 @@ user typedefs."
     ;; Return value for async processing
     verilog-ext-workspace-align-typedef-words-re))
 
-(defun verilog-ext-workspace-typedef-update ()
-  "Update typedef list of current workspace."
-  (interactive)
-  (verilog-ext-workspace-typedef-batch-update (verilog-ext-workspace-files)))
+(defun verilog-ext-workspace-typedef-update (&optional verbose)
+  "Update typedef list of current workspace.
+With current-prefix or VERBOSE, dump output log."
+  (interactive "p")
+  (verilog-ext-workspace-typedef-batch-update (verilog-ext-workspace-files) verbose))
 
-(defun verilog-ext-workspace-typedef-update-async ()
-  "Update typedef list of current workspace asynchronously."
-  (interactive)
+(defun verilog-ext-workspace-typedef-update-async (&optional verbose)
+  "Update typedef list of current workspace asynchronously.
+With current-prefix or VERBOSE, dump output log."
+  (interactive "p")
+  (message "Starting typedef collection for %s" (verilog-ext-workspace-root))
   (async-start
    `(lambda ()
-      ,(async-inject-variables "\\`\\(load-path\\|buffer-file-name\\|verilog-ext-workspace-\\)")
+      ,(async-inject-variables "\\`\\(load-path\\|buffer-file-name\\|verilog-ext-workspace-\\|verilog-align-typedef-\\)")
       (require 'verilog-ext)
-      (verilog-ext-workspace-typedef-batch-update (verilog-ext-workspace-files)))
+      (verilog-ext-workspace-typedef-batch-update (verilog-ext-workspace-files) ,verbose))
    (lambda (result)
      (message "Finished collection of typedefs!")
      (setq verilog-ext-workspace-align-typedef-words-re result)
