@@ -164,6 +164,7 @@ If optional TYPE arg is passed, only clear that TYPE."
 
 (defun verilog-ext-workspace-get-tags ()
   "Get tags of current workspace."
+  (interactive)
   (let* ((files (verilog-ext-workspace-files))
          (num-files (length files))
          (num-files-processed 0)
@@ -210,6 +211,7 @@ If optional TYPE arg is passed, only clear that TYPE."
 
 (defun verilog-ext-workspace-get-tags-async ()
   "Create tags table asynchronously."
+  (interactive)
   (async-start
    `(lambda ()
       ,(async-inject-variables "\\`\\(load-path\\|buffer-file-name\\|verilog-ext-workspace-\\)")
@@ -354,6 +356,7 @@ user typedefs."
 
 (defun verilog-ext-workspace-typedef-update-async ()
   "Update typedef list of current workspace asynchronously."
+  (interactive)
   (async-start
    `(lambda ()
       ,(async-inject-variables "\\`\\(load-path\\|buffer-file-name\\|verilog-ext-workspace-\\)")

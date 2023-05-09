@@ -136,7 +136,14 @@ completion."
                   (setq type (alist-get 'type data))
                   (setq tag (match-string-no-properties 1))
                   (setq desc (verilog-ext-tags-desc tag))
-                  (verilog-ext-tags-table-push-tag table tag type desc file parent)))
+                  (verilog-ext-tags-table-push-tag table tag type desc file parent)
+                  ;; Get tasks and function declarations
+                  (save-excursion
+                    (when (< (setq inner-start (alist-get 'pos data))
+                             (setq inner-limit (save-excursion
+                                                 (verilog-re-search-backward "\\<\\(function\\|task\\)\\>" (line-beginning-position) :no-error)
+                                                 (verilog-ext-pos-at-forward-sexp))))
+                      (verilog-ext-tags-table-push-definitions 'declarations-no-parens table file inner-start inner-limit tag)))))
           ("instances" (while (verilog-ext-find-module-instance-fwd limit)
                          (setq tag (match-string-no-properties 2))
                          (setq type (match-string-no-properties 1))
