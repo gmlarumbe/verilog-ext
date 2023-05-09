@@ -116,8 +116,7 @@
               (const :tag "Xref backend to navigate definitions/references in current workspace."
                 xref)
               (const :tag "Completion at point builtin function with dot and scope completion."
-                capf)
-              )
+                capf))
   :group 'verilog-ext)
 
 (defmacro verilog-ext-when-feature (features &rest body)
