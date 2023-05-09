@@ -501,7 +501,8 @@ Compiles them with various verilog regexps."
 
 (defun verilog-ext-workspace-typedefs-setup ()
   "Setup workspace typedef feature.
-INFO: Enabling this feature will override the value of `verilog-align-typedef-regexp'."
+INFO: Enabling this feature will override the value of
+`verilog-align-typedef-regexp'."
   (verilog-ext-workspace-unserialize-cache 'typedefs)
   (setq verilog-ext-workspace-align-typedef-words-re verilog-ext-workspace-cache-typedefs)
   (setq verilog-align-typedef-regexp verilog-ext-workspace-cache-typedefs))

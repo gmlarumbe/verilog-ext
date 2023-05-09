@@ -42,6 +42,12 @@
   (profiler-stop)
   (profiler-report))
 
+;;;; Native compile
+(defun verilog-ext-native-compile-dir (dir)
+  "Native compile DIR."
+  (dolist (file (directory-files-recursively dir "\.el$"))
+    (native-compile file)))
+
 
 ;;;; Tests
 (require 'verilog-ext)
@@ -82,6 +88,16 @@
       (message "(functionp 'verilog-ts-mode): %s" (functionp 'verilog-ts-mode))
       (when (functionp 'verilog-ts-mode)
         (require 'verilog-ext-tests-tree-sitter)))))
+
+
+;;;; Report loaded file
+;; TODO: Not sure if this one really reports if functions have been loaded from .eln files
+(message "verilog-ext is: %s" (locate-library "verilog-ext"))
+;; TODO: `describe-function' is not intended to be used programatically
+;; (describe-function 'verilog-ext-hs-setup)
+
+;; INFO: However, if files are compiled successfully, subsequent invocations of Emacs should
+;; try to load files from native compiled instead of byte-compiled or interactive ones.
 
 
 (provide 'verilog-ext-tests)

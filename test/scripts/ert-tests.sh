@@ -32,11 +32,11 @@ clean() {
 compile() {
     local PACKAGE_EL=$1
 
-    echo "####################"
-    echo "## Byte-compiling ##"
-    echo "####################"
+    echo "######################"
+    echo "## Native-compiling ##"
+    echo "######################"
     echo ""
-    run_elisp_cmd "(byte-recompile-directory \"$PWD\" 0)" $PACKAGE_EL
+    run_elisp_cmd "(verilog-ext-native-compile-dir \"$PWD\")" $PACKAGE_EL
 }
 
 recompile() {
