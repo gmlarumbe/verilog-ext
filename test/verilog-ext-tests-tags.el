@@ -74,18 +74,18 @@ Return differences get a better explanation of the errors in ERT testsuites."
        (verilog-ext-tags-get-references table nil ,file))))
 
 (defvar verilog-ext-test-tags-defs-table-alist
-  '(;; TODO: For some reason the instances.sv test works fine in an interactive Emacs `ert' session but fails in the terminal with a new Emacs process.
-    ;;       Tried replacing defmacro with defun, both here in the test file and in verilog-ext and didn't change anything.
-    ;;       Also tried with (setq value (plist-put value :locs locs-plist)) instead of just (plist-put value), as suggested by the docstring, but nothing changed.
-    ;;       Also tried
+  '(;; DANGER: Happens if setting `verilog-align-typedef-regexp' to nil:
+    ;;    For some reason the instances.sv test works fine in an interactive Emacs `ert' session but fails in the terminal with a new Emacs process.
+    ;;    Tried replacing defmacro with defun, both here in the test file and in verilog-ext and didn't change anything.
+    ;;    Also tried with (setq value (plist-put value :locs locs-plist)) instead of just (plist-put value), as suggested by the docstring, but nothing changed.
     (("instances.sv" top-items) #s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data
                                               ("instances"
                                                (:items
-                                                ;; TODO: Commented line should be the correct one, but for some reason I_TEST_IF is detected before I_BLOCK_0 with Emacs in batch mode.
+                                                ;; DANGER: First line should be the correct one, but for some reason I_TEST_IF was detected before I_BLOCK_0 with Emacs in batch mode.
                                                 ;; The interactive one matches the result if running (verilog-ext-test-tags-defs-file "instances.sv" 'top-items) in an Eshell.
                                                 ;; ("i" "I_BLOCK0" "I_BLOCK1" "I_BLOCK2" "I_BLOCK3" "I_BLOCK_GEN" "I_TEST_IF" "ITEST_IF_PARAMS" "ITEST_IF_PARAMS_ARRAY" "I_TEST_IF_PARAMS_EMPTY" "I_BLOCK_WS_0" "I_BLOCK_WS_1")
                                                 ("i" "I_TEST_IF" "I_BLOCK0" "I_BLOCK1" "I_BLOCK2" "I_BLOCK3" "I_BLOCK_GEN" "ITEST_IF_PARAMS" "ITEST_IF_PARAMS_ARRAY" "I_TEST_IF_PARAMS_EMPTY" "I_BLOCK_WS_0" "I_BLOCK_WS_1")
-                                                ;; End of TODO
+                                                ;; End of DANGER
                                                 :locs
                                                 ((:type "module" :desc
                                                   #("module instances;" 7 16

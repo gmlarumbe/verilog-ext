@@ -30,22 +30,23 @@
 ;;  - LSP configuration for `lsp-mode` and `eglot`
 ;;  - Support for many linters via `flycheck`
 ;;  - Beautify modules and instances
-;;  - Improve `imenu` entries: detect instances, classes and methods
 ;;  - Code navigation functions for RTL and Verification environments
 ;;  - Extended collection of custom and `yasnippet` templates insertion via `hydra`
 ;;  - Code formatter via `apheleia`
-;;  - Code folding via `hideshow`
-;;  - Enhanced support for `which-func`
 ;;  - Compilation-based utilities
+;;  - Improve `imenu` entries: detect instances, classes and methods
+;;  - Enhanced support for `which-func`
+;;  - Code folding via `hideshow`
 ;;  - Time-stamp auto-configuration
 ;;  - Convert block end comments to names
 ;;  - Automatically add SystemVerilog keywords to `company-keywords` backend
 ;;  - Port connections utilities
+;;  - Workspace tags, typedef analysis and caching
 ;;
 ;;  Experimental:
 ;;  - Tree-sitter powered `verilog-ts-mode` support
 ;;  - Builtin xref backend
-;;  - Builtin capf
+;;  - Builtin capf function with dot and scope completion
 
 ;;; Code:
 
@@ -55,67 +56,71 @@
   :group 'languages
   :group 'verilog-mode)
 
-(defcustom verilog-ext-feature-list '(hideshow
-                                      time-stamp
-                                      block-end-comments
-                                      font-lock
-                                      compilation
+(defcustom verilog-ext-feature-list '(font-lock
+                                      hierarchy
+                                      eglot
+                                      lsp
+                                      flycheck
+                                      beautify
                                       navigation
+                                      template
+                                      formatter
+                                      compilation
                                       imenu
                                       which-func
-                                      template
-                                      beautify
+                                      hideshow
+                                      time-stamp
+                                      block-end-comments
                                       company-keywords
                                       ports
-                                      hierarchy
+                                      typedefs
                                       xref
-                                      capf
-                                      formatter
-                                      flycheck
-                                      eglot
-                                      lsp)
+                                      capf)
   "Which Verilog-ext features to enable."
-  :type '(set (const :tag "`hideshow' configuration."
-                hideshow)
-              (const :tag "`time-stamp' configuration."
-                time-stamp)
-              (const :tag "Enable minor-mode to convert block end comments to names."
-                block-end-comments)
-              (const :tag "Improved syntax highlighting via `font-lock'."
+  :type '(set (const :tag "Improved syntax highlighting via `font-lock'."
                 font-lock)
-              (const :tag "Compilation functions."
-                compilation)
+              (const :tag "Hierarchy extraction and visualization."
+                hierarchy)
+              (const :tag "Setup LSP servers for `eglot'."
+                eglot)
+              (const :tag "Setup LSP servers for `lsp-mode'."
+                lsp)
+              (const :tag "Setup linters for `flycheck'."
+                flycheck)
+              (const :tag "Code beautifying functions."
+                beautify)
               (const :tag "Code Navigation functions."
                 navigation)
+              (const :tag "`yasnippet' and custom templates."
+                template)
+              (const :tag "`verible' formatter via `apheleia'."
+                formatter)
+              (const :tag "Compilation functions."
+                compilation)
               (const :tag "Improved `imenu'."
                 imenu)
               (const :tag "Improved `which-function-mode'."
                 which-func)
-              (const :tag "`yasnippet' and other custom templates."
-                template)
-              (const :tag "Code beautifying functions."
-                beautify)
+              (const :tag "`hideshow' configuration."
+                hideshow)
+              (const :tag "`time-stamp' configuration."
+                time-stamp)
+              (const :tag "Convert block end comments to names (endmodule // top → endmodule : top)"
+                block-end-comments)
               (const :tag "Add `verilog-keywords' to `company-keywords' backend."
                 company-keywords)
-              (const :tag "Hierarchy extraction and visualization."
-                hierarchy)
               (const :tag "Port connections utilities."
                 ports)
-              (const :tag "Xref builtin backend for definitions/references."
+              (const :tag "Scan typedefs and classes of current workspace for syntax highlighting and alignment."
+                typedefs)
+              (const :tag "Xref backend to navigate definitions/references in current workspace."
                 xref)
-              (const :tag "Completion at point builtin function."
+              (const :tag "Completion at point builtin function with dot and scope completion."
                 capf)
-              (const :tag "Enable verible formatter via `apheleia'."
-                formatter)
-              (const :tag "Setup various linters for `flycheck'."
-                flycheck)
-              (const :tag "Setup various LSP servers for `eglot'."
-                eglot)
-              (const :tag "Setup various LSP servers for `lsp-mode'."
-                lsp))
+              )
   :group 'verilog-ext)
 
-(defmacro verilog-ext-if-feature (feature &rest body)
+(defmacro verilog-ext-when-feature (feature &rest body)
   "Macro to run BODY if `verilog-ext' FEATURE is enabled."
   (declare (indent 1) (debug 1))
   `(when (member ,feature verilog-ext-feature-list)
@@ -154,24 +159,24 @@
     (define-key map (kbd "C-<backspace>") 'verilog-ext-backward-kill-word)
     (define-key map (kbd "M-DEL") 'verilog-ext-backward-kill-word)
     ;; Features
-    (verilog-ext-if-feature 'hideshow
+    (verilog-ext-when-feature 'hideshow
       (define-key map (kbd "C-<tab>") 'verilog-ext-hs-toggle-hiding))
-    (verilog-ext-if-feature 'formatter
+    (verilog-ext-when-feature 'formatter
       (define-key map (kbd "C-c C-l") 'verilog-ext-formatter-run))
-    (verilog-ext-if-feature 'compilation
+    (verilog-ext-when-feature 'compilation
       (define-key map (kbd "C-c C-p") 'verilog-ext-preprocess))
-    (verilog-ext-if-feature 'flycheck
+    (verilog-ext-when-feature 'flycheck
       (define-key map (kbd "C-c C-f") 'verilog-ext-flycheck-mode-toggle))
-    (verilog-ext-if-feature 'template
+    (verilog-ext-when-feature 'template
       (define-key map (kbd "C-c C-t") 'verilog-ext-hydra/body))
-    (verilog-ext-if-feature 'hierarchy
+    (verilog-ext-when-feature 'hierarchy
       (define-key map (kbd "C-c C-v") 'verilog-ext-hierarchy-current-buffer))
     ;; Code beautifying
-    (verilog-ext-if-feature 'beautify
+    (verilog-ext-when-feature 'beautify
       (define-key map (kbd "C-M-i") 'verilog-ext-beautify-block-at-point-indent)
       (define-key map (kbd "C-c C-b") 'verilog-ext-beautify-module-at-point))
     ;; Navigation
-    (verilog-ext-if-feature 'navigation
+    (verilog-ext-when-feature 'navigation
       (define-key map (kbd "C-M-a") 'verilog-ext-nav-beg-of-defun-dwim)
       (define-key map (kbd "C-M-e") 'verilog-ext-nav-end-of-defun-dwim)
       (define-key map (kbd "C-M-d") 'verilog-ext-nav-down-dwim)
@@ -182,7 +187,7 @@
       (define-key map (kbd "C-c M-?") 'verilog-ext-jump-to-module-at-point-ref)
       (define-key map (kbd "C-M-.") 'verilog-ext-workspace-jump-to-parent-module))
     ;; Port connections
-    (verilog-ext-if-feature 'ports
+    (verilog-ext-when-feature 'ports
       (define-key map (kbd "C-c C-c c") 'verilog-ext-ports-clean-blanks)
       (define-key map (kbd "C-c C-c t") 'verilog-ext-ports-toggle-connect)
       (define-key map (kbd "C-c C-c r") 'verilog-ext-ports-connect-recursively))
@@ -194,23 +199,28 @@
   "Setup `verilog-ext-mode' depending on enabled features."
   (interactive)
   ;; Features
-  (verilog-ext-if-feature 'hideshow
+  (verilog-ext-when-feature 'hideshow
     (verilog-ext-hs-setup))
-  (verilog-ext-if-feature 'company-keywords
+  (verilog-ext-when-feature 'company-keywords
     (verilog-ext-company-keywords-add))
-  (verilog-ext-if-feature 'template
+  (verilog-ext-when-feature 'template
     (verilog-ext-template-add-snippets))
-  (verilog-ext-if-feature 'hierarchy
+  (verilog-ext-when-feature 'typedefs
+    (verilog-ext-workspace-typedefs-setup))
+  (verilog-ext-when-feature 'hierarchy
     (verilog-ext-hierarchy-setup))
-  (verilog-ext-if-feature 'formatter
+  (verilog-ext-when-feature 'formatter
     (verilog-ext-formatter-setup))
-  (verilog-ext-if-feature 'flycheck
+  (verilog-ext-when-feature 'flycheck
     (verilog-ext-flycheck-setup))
-  (verilog-ext-if-feature 'eglot
+  (verilog-ext-when-feature 'eglot
     (verilog-ext-eglot-set-server verilog-ext-eglot-default-server))
-  (verilog-ext-if-feature 'lsp
+  (verilog-ext-when-feature 'lsp
     (verilog-ext-lsp-setup)
     (verilog-ext-lsp-set-server verilog-ext-lsp-mode-default-server))
+  (when (or (member 'capf verilog-ext-feature-list)
+            (member 'xref verilog-ext-feature-list))
+    (verilog-ext-workspace-tags-table-setup))
   ;; Jump to parent module ag/ripgrep hooks
   (add-hook 'ag-search-finished-hook #'verilog-ext-navigation-ag-rg-hook)
   (add-hook 'ripgrep-search-finished-hook #'verilog-ext-navigation-ag-rg-hook))
@@ -233,13 +243,13 @@
         (add-hook 'kill-buffer-hook #'verilog-ext-kill-buffer-hook nil :local)
         (setq verilog-library-directories verilog-ext-dir-list)
         ;; Features
-        (verilog-ext-if-feature 'flycheck
+        (verilog-ext-when-feature 'flycheck
           (setq verilog-ext-flycheck-verilator-include-path verilog-ext-dir-list))
-        (verilog-ext-if-feature 'which-func
+        (verilog-ext-when-feature 'which-func
           (verilog-ext-which-func))
-        (verilog-ext-if-feature 'block-end-comments
+        (verilog-ext-when-feature 'block-end-comments
           (verilog-ext-block-end-comments-to-names-mode))
-        (verilog-ext-if-feature 'time-stamp
+        (verilog-ext-when-feature 'time-stamp
           (verilog-ext-time-stamp-mode))
         ;; `verilog-mode'-only customization (exclude `verilog-ts-mode')
         (when (eq major-mode 'verilog-mode)
@@ -250,20 +260,20 @@
           ;; indentation issues with compiler directives.
           (modify-syntax-entry ?` ".")
           ;; Capf
-          (verilog-ext-if-feature 'capf
+          (verilog-ext-when-feature 'capf
             (verilog-ext-workspace-capf-set))
           ;; Xref
-          (verilog-ext-if-feature 'xref
+          (verilog-ext-when-feature 'xref
             (verilog-ext-xref-set))
           ;; Imenu
-          (verilog-ext-if-feature 'imenu
+          (verilog-ext-when-feature 'imenu
             (setq-local imenu-create-index-function #'verilog-ext-imenu-index))
           ;; Font-lock
           ;;   It's not possible to add font-lock keywords to minor-modes.
           ;;   The workaround consists in add/remove keywords to the major mode when
           ;;   the minor mode is loaded/unloaded.
           ;;   https://emacs.stackexchange.com/questions/60198/font-lock-add-keywords-is-not-working
-          (verilog-ext-if-feature 'font-lock
+          (verilog-ext-when-feature 'font-lock
             (font-lock-add-keywords nil (append verilog-ext-font-lock-keywords
                                                 verilog-ext-font-lock-keywords-1
                                                 verilog-ext-font-lock-keywords-2
@@ -272,13 +282,13 @@
             (setq-local font-lock-multiline nil))))
     ;; Cleanup
     (remove-hook 'kill-buffer-hook #'verilog-ext-kill-buffer-hook :local)
-    (verilog-ext-if-feature 'block-end-comments
+    (verilog-ext-when-feature 'block-end-comments
       (verilog-ext-block-end-comments-to-names-mode -1))
-    (verilog-ext-if-feature 'time-stamp
+    (verilog-ext-when-feature 'time-stamp
       (verilog-ext-time-stamp-mode -1))
-    (verilog-ext-if-feature 'xref
+    (verilog-ext-when-feature 'xref
       (verilog-ext-xref-set :disable))
-    (verilog-ext-if-feature 'capf
+    (verilog-ext-when-feature 'capf
       (verilog-ext-workspace-capf-set :disable))))
 
 

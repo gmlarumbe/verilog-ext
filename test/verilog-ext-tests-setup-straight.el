@@ -100,6 +100,7 @@
   :hook ((verilog-mode . verilog-ext-mode))
   :demand
   :config
+  (setq verilog-ext-feature-list (remove 'typedefs verilog-ext-feature-list)) ; Do not override `verilog-align-typedef-regexp'
   (verilog-ext-mode-setup)
   (add-hook 'verilog-ts-mode-hook #'(lambda () ; Applies also to verilog-ts-mode since it's derived
                                       (setq treesit-font-lock-level 4))))
