@@ -120,11 +120,20 @@
               )
   :group 'verilog-ext)
 
-(defmacro verilog-ext-when-feature (feature &rest body)
-  "Macro to run BODY if `verilog-ext' FEATURE is enabled."
+(defmacro verilog-ext-when-feature (features &rest body)
+  "Macro to run BODY if `verilog-ext' feature is enabled.
+FEATURES can be a single feature or a list of features."
   (declare (indent 1) (debug 1))
-  `(when (member ,feature verilog-ext-feature-list)
-     ,@body))
+  `(let (enabled)
+     (if (listp ,features)
+         (dolist (feature ,features)
+           (when (member feature verilog-ext-feature-list)
+             (setq enabled t)))
+       ;; Else
+       (when (member ,features verilog-ext-feature-list)
+         (setq enabled t)))
+     (when enabled
+       ,@body)))
 
 
 ;;; Features
@@ -218,8 +227,7 @@
   (verilog-ext-when-feature 'lsp
     (verilog-ext-lsp-setup)
     (verilog-ext-lsp-set-server verilog-ext-lsp-mode-default-server))
-  (when (or (member 'capf verilog-ext-feature-list)
-            (member 'xref verilog-ext-feature-list))
+  (verilog-ext-when-feature '(capf xref)
     (verilog-ext-workspace-tags-table-setup))
   ;; Jump to parent module ag/ripgrep hooks
   (add-hook 'ag-search-finished-hook #'verilog-ext-navigation-ag-rg-hook)
