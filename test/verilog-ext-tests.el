@@ -43,10 +43,17 @@
   (profiler-report))
 
 ;;;; Native compile
-(defun verilog-ext-native-compile-dir (dir)
-  "Native compile DIR."
-  (dolist (file (directory-files-recursively dir "\.el$"))
-    (native-compile file)))
+(defun verilog-ext-compile-dir (dir)
+  "Compile DIR.
+Native compile if native compilation is available.
+Otherwise, byte-compile."
+  (if (native-comp-available-p)
+      (dolist (file (directory-files-recursively dir "\.el$"))
+        (message "Native compiling %s" file)
+        (native-compile file))
+    ;; Nix Emacs images might still lack native compilation support, so byte-compile them
+    (message "Byte-compiling %s" dir)
+    (byte-recompile-directory dir 0)))
 
 
 ;;;; Tests
