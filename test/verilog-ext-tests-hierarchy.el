@@ -28,7 +28,7 @@
 (require 'verilog-ext-workspace)
 
 (defun verilog-ext-test-hierarchy ()
-  (let* ((test-file (verilog-ext-path-join verilog-ext-tests-common-dir "instances.sv"))
+  (let* ((test-file (file-name-concat verilog-ext-tests-common-dir "instances.sv"))
          (verilog-library-directories `(,verilog-ext-tests-jump-parent-dir
                                         ,verilog-ext-tests-common-dir))
          (verilog-library-files `(,test-file))

@@ -27,8 +27,8 @@
 
 (defvar verilog-ext-tests-indent-test-files
   (append (directory-files verilog-ext-tests-common-dir t ".s?vh?$")
-          (directory-files (verilog-ext-path-join verilog-ext-tests-files-dir "verilog-mode") t ".s?vh?$")))
-(defvar verilog-ext-tests-indent-dump-dir (verilog-ext-path-join verilog-ext-tests-indent-dir "dump"))
+          (directory-files (file-name-concat verilog-ext-tests-files-dir "verilog-mode") t ".s?vh?$")))
+(defvar verilog-ext-tests-indent-dump-dir (file-name-concat verilog-ext-tests-indent-dir "dump"))
 (defvar verilog-ext-tests-indent-dump-diff-on-error t)
 
 
@@ -64,7 +64,7 @@
   "Update .indent files manually."
   (save-window-excursion
     (dolist (file verilog-ext-tests-indent-test-files)
-      (let ((indented-file (verilog-ext-path-join verilog-ext-tests-indent-dir
+      (let ((indented-file (file-name-concat verilog-ext-tests-indent-dir
                                                   (verilog-ext-tests-indent-ref-file-from-orig file tree-sitter)))
             (verilog-align-typedef-regexp (concat "\\<" verilog-identifier-re "_\\(t\\)\\>")))
         (message "Processing %s" file)
@@ -75,7 +75,7 @@
 (defun verilog-ext-test-indent-file (file &optional tree-sitter)
   "Expects FILE absolute path."
   (let* ((verbose nil)
-         (dump-file (verilog-ext-path-join verilog-ext-tests-indent-dump-dir
+         (dump-file (file-name-concat verilog-ext-tests-indent-dump-dir
                                            (file-name-nondirectory file))))
     (when verbose
       (message "Indenting %s..." file))
@@ -92,7 +92,7 @@
 Reference indented version: file.indent.sv in indent dir."
   (let* ((verbose nil)
          (filename-indented (verilog-ext-test-indent-file file tree-sitter))
-         (filename-ref (verilog-ext-path-join verilog-ext-tests-indent-dir
+         (filename-ref (file-name-concat verilog-ext-tests-indent-dir
                                               (verilog-ext-tests-indent-ref-file-from-orig file tree-sitter))))
     (when verbose
       (message "Comparing %s" file))

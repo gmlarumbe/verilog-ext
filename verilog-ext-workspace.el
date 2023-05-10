@@ -64,7 +64,7 @@ If set to nil default to search for current project files."
   :type '(repeat file)
   :group 'verilog-ext-workspace)
 
-(defcustom verilog-ext-workspace-cache-dir (verilog-ext-path-join user-emacs-directory "verilog-ext")
+(defcustom verilog-ext-workspace-cache-dir (file-name-concat user-emacs-directory "verilog-ext")
   "The directory of Verilog-ext cache files."
   :group 'verilog-ext-workspace
   :type 'file)
@@ -128,27 +128,27 @@ The saved data can be restored with `verilog-ext-workspace-unserialize'."
   "Serializes the memory cache to the hard drive.
 If optional TYPE arg is passed, only serialize that TYPE."
   (pcase type
-    ('typedefs  (verilog-ext-workspace-serialize verilog-ext-workspace-cache-typedefs  (verilog-ext-path-join verilog-ext-workspace-cache-dir "typedefs")))
-    ('tags-defs (verilog-ext-workspace-serialize verilog-ext-workspace-cache-tags-defs (verilog-ext-path-join verilog-ext-workspace-cache-dir "tags-defs")))
-    ('tags-refs (verilog-ext-workspace-serialize verilog-ext-workspace-cache-tags-refs (verilog-ext-path-join verilog-ext-workspace-cache-dir "tags-refs")))
-    ('hierarchy (verilog-ext-workspace-serialize verilog-ext-workspace-cache-hierarchy (verilog-ext-path-join verilog-ext-workspace-cache-dir "hierarchy")))
-    (_ (verilog-ext-workspace-serialize verilog-ext-workspace-cache-typedefs  (verilog-ext-path-join verilog-ext-workspace-cache-dir "typedefs"))
-       (verilog-ext-workspace-serialize verilog-ext-workspace-cache-tags-defs (verilog-ext-path-join verilog-ext-workspace-cache-dir "tags-defs"))
-       (verilog-ext-workspace-serialize verilog-ext-workspace-cache-tags-refs (verilog-ext-path-join verilog-ext-workspace-cache-dir "tags-refs"))
-       (verilog-ext-workspace-serialize verilog-ext-workspace-cache-hierarchy (verilog-ext-path-join verilog-ext-workspace-cache-dir "hierarchy")))))
+    ('typedefs  (verilog-ext-workspace-serialize verilog-ext-workspace-cache-typedefs  (file-name-concat verilog-ext-workspace-cache-dir "typedefs")))
+    ('tags-defs (verilog-ext-workspace-serialize verilog-ext-workspace-cache-tags-defs (file-name-concat verilog-ext-workspace-cache-dir "tags-defs")))
+    ('tags-refs (verilog-ext-workspace-serialize verilog-ext-workspace-cache-tags-refs (file-name-concat verilog-ext-workspace-cache-dir "tags-refs")))
+    ('hierarchy (verilog-ext-workspace-serialize verilog-ext-workspace-cache-hierarchy (file-name-concat verilog-ext-workspace-cache-dir "hierarchy")))
+    (_ (verilog-ext-workspace-serialize verilog-ext-workspace-cache-typedefs  (file-name-concat verilog-ext-workspace-cache-dir "typedefs"))
+       (verilog-ext-workspace-serialize verilog-ext-workspace-cache-tags-defs (file-name-concat verilog-ext-workspace-cache-dir "tags-defs"))
+       (verilog-ext-workspace-serialize verilog-ext-workspace-cache-tags-refs (file-name-concat verilog-ext-workspace-cache-dir "tags-refs"))
+       (verilog-ext-workspace-serialize verilog-ext-workspace-cache-hierarchy (file-name-concat verilog-ext-workspace-cache-dir "hierarchy")))))
 
 (defun verilog-ext-workspace-unserialize-cache (&optional type)
   "Unserializes the hard drive data to the memory cache.
 If optional TYPE arg is passed, only deserialize that TYPE."
   (pcase type
-    ('typedefs  (setq verilog-ext-workspace-cache-typedefs  (verilog-ext-workspace-unserialize (verilog-ext-path-join verilog-ext-workspace-cache-dir "typedefs"))))
-    ('tags-defs (setq verilog-ext-workspace-cache-tags-defs (verilog-ext-workspace-unserialize (verilog-ext-path-join verilog-ext-workspace-cache-dir "tags-defs"))))
-    ('tags-refs (setq verilog-ext-workspace-cache-tags-refs (verilog-ext-workspace-unserialize (verilog-ext-path-join verilog-ext-workspace-cache-dir "tags-refs"))))
-    ('hierarchy (setq verilog-ext-workspace-cache-hierarchy (verilog-ext-workspace-unserialize (verilog-ext-path-join verilog-ext-workspace-cache-dir "hierarchy"))))
-    (_ (setq verilog-ext-workspace-cache-typedefs  (verilog-ext-workspace-unserialize (verilog-ext-path-join verilog-ext-workspace-cache-dir "typedefs")))
-       (setq verilog-ext-workspace-cache-tags-defs (verilog-ext-workspace-unserialize (verilog-ext-path-join verilog-ext-workspace-cache-dir "tags-defs")))
-       (setq verilog-ext-workspace-cache-tags-refs (verilog-ext-workspace-unserialize (verilog-ext-path-join verilog-ext-workspace-cache-dir "tags-refs")))
-       (setq verilog-ext-workspace-cache-hierarchy (verilog-ext-workspace-unserialize (verilog-ext-path-join verilog-ext-workspace-cache-dir "hierarchy"))))))
+    ('typedefs  (setq verilog-ext-workspace-cache-typedefs  (verilog-ext-workspace-unserialize (file-name-concat verilog-ext-workspace-cache-dir "typedefs"))))
+    ('tags-defs (setq verilog-ext-workspace-cache-tags-defs (verilog-ext-workspace-unserialize (file-name-concat verilog-ext-workspace-cache-dir "tags-defs"))))
+    ('tags-refs (setq verilog-ext-workspace-cache-tags-refs (verilog-ext-workspace-unserialize (file-name-concat verilog-ext-workspace-cache-dir "tags-refs"))))
+    ('hierarchy (setq verilog-ext-workspace-cache-hierarchy (verilog-ext-workspace-unserialize (file-name-concat verilog-ext-workspace-cache-dir "hierarchy"))))
+    (_ (setq verilog-ext-workspace-cache-typedefs  (verilog-ext-workspace-unserialize (file-name-concat verilog-ext-workspace-cache-dir "typedefs")))
+       (setq verilog-ext-workspace-cache-tags-defs (verilog-ext-workspace-unserialize (file-name-concat verilog-ext-workspace-cache-dir "tags-defs")))
+       (setq verilog-ext-workspace-cache-tags-refs (verilog-ext-workspace-unserialize (file-name-concat verilog-ext-workspace-cache-dir "tags-refs")))
+       (setq verilog-ext-workspace-cache-hierarchy (verilog-ext-workspace-unserialize (file-name-concat verilog-ext-workspace-cache-dir "hierarchy"))))))
 
 (defun verilog-ext-workspace-clear-cache (&optional type)
   "Clears the hard drive and the memory cache.
@@ -181,7 +181,7 @@ With current-prefix or VERBOSE, dump output log."
                   (verilog-ext-workspace-files :follow-symlinks)))
          (num-files (length files))
          (num-files-processed 0)
-         (log-file (verilog-ext-path-join verilog-ext-workspace-cache-dir "hierarchy.log"))
+         (log-file (file-name-concat verilog-ext-workspace-cache-dir "hierarchy.log"))
          msg progress flat-hierarchy data)
     (when verbose
       (delete-file log-file))
@@ -235,7 +235,7 @@ With current-prefix or VERBOSE, dump output log."
          (num-files (length files))
          (num-files-processed 0)
          (table (make-hash-table :test #'equal))
-         (log-file (verilog-ext-path-join verilog-ext-workspace-cache-dir "tags.log"))
+         (log-file (file-name-concat verilog-ext-workspace-cache-dir "tags.log"))
          msg progress)
     (when verbose
       (delete-file log-file))
@@ -402,7 +402,7 @@ If optional arg VERBOSE is enabled, dump output to a logfile for potential debug
 in corresponding async function."
   (let ((num-files (length files))
         (num-files-processed 0)
-        (log-file (verilog-ext-path-join verilog-ext-workspace-cache-dir "typedefs.log"))
+        (log-file (file-name-concat verilog-ext-workspace-cache-dir "typedefs.log"))
         msg progress)
     (setq verilog-ext-workspace-align-typedef-words nil) ; Reset value
     (when verbose
@@ -555,7 +555,7 @@ Create it only if in a project and the Makefile does not already exist."
   (let ((project-root (verilog-ext-workspace-root))
         file)
     (if project-root
-        (if (file-exists-p (setq file (verilog-ext-path-join project-root "Makefile")))
+        (if (file-exists-p (setq file (file-name-concat project-root "Makefile")))
             (error "File %s already exists!" file)
           (find-file file)
           (verilog-ext-template-insert-yasnippet "verilog"))
@@ -565,7 +565,7 @@ Create it only if in a project and the Makefile does not already exist."
   "Prompt to available Makefile targets and compile.
 Compiles them with various verilog regexps."
   (interactive)
-  (let ((makefile (verilog-ext-path-join (verilog-ext-workspace-root) "Makefile"))
+  (let ((makefile (file-name-concat (verilog-ext-workspace-root) "Makefile"))
         (makefile-need-target-pickup t) ; Force refresh of makefile targets
         target cmd)
     (unless (file-exists-p makefile)

@@ -198,8 +198,8 @@ See URL `https://github.com/chipsalliance/verible'."
 ;;;; Slang
 (flycheck-def-config-file-var flycheck-verilog-slang-command-file verilog-slang "slang.f")
 
-(defvar verilog-ext-flycheck-slang-include-path nil) ; e.g. (list (verilog-ext-path-join (getenv "UVM_HOME") "src"))
-(defvar verilog-ext-flycheck-slang-file-list nil)    ; e.g. (list (verilog-ext-path-join (getenv "UVM_HOME") "src/uvm_pkg.sv"))
+(defvar verilog-ext-flycheck-slang-include-path nil) ; e.g. (list (file-name-concat (getenv "UVM_HOME") "src"))
+(defvar verilog-ext-flycheck-slang-file-list nil)    ; e.g. (list (file-name-concat (getenv "UVM_HOME") "src/uvm_pkg.sv"))
 
 (flycheck-define-checker verilog-slang
   "SystemVerilog Language Services.
@@ -226,8 +226,8 @@ See URL `https://github.com/MikePopoloski/slang'."
 (flycheck-def-config-file-var flycheck-verilog-svlint-config-file verilog-svlint ".svlint.toml")
 
 ;; Variables are needed since svlint doesn't allow both source and -f command file at the same time
-(defvar verilog-ext-flycheck-svlint-include-path nil) ; e.g. (list (verilog-ext-path-join (getenv "UVM_HOME") "src"))
-(defvar verilog-ext-flycheck-svlint-file-list nil)    ; e.g. (list (verilog-ext-path-join (getenv "UVM_HOME") "src/uvm_pkg.sv"))
+(defvar verilog-ext-flycheck-svlint-include-path nil) ; e.g. (list (file-name-concat (getenv "UVM_HOME") "src"))
+(defvar verilog-ext-flycheck-svlint-file-list nil)    ; e.g. (list (file-name-concat (getenv "UVM_HOME") "src/uvm_pkg.sv"))
 
 (flycheck-define-checker verilog-svlint
   "A Verilog syntax checker using svlint.
@@ -308,8 +308,8 @@ Plus, the :command key arg of `flycheck-define-command-checker' assumes each
 of the strings are arguments.  If something such as \"&&\" \"cat\" is used to
 try to display the logfile in stdout , it would throw an xrun fatal error as
 \"&&\" would not be recognized as a file."
-  (let* ((log-path (verilog-ext-path-join verilog-ext-flycheck-hal-directory verilog-ext-flycheck-hal-log-name))
-         (script-path (verilog-ext-path-join verilog-ext-flycheck-hal-directory verilog-ext-flycheck-hal-script-name))
+  (let* ((log-path (file-name-concat verilog-ext-flycheck-hal-directory verilog-ext-flycheck-hal-log-name))
+         (script-path (file-name-concat verilog-ext-flycheck-hal-directory verilog-ext-flycheck-hal-script-name))
          (script-code (concat "#!/bin/bash
 args=\"${@}\"
 xrun -hal $args

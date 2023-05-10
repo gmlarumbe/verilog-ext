@@ -29,7 +29,7 @@
   '("axi_demux.sv"
     "instances.sv"
     "ucontroller.sv"))
-(defvar verilog-ext-tests-beautify-dump-dir (verilog-ext-path-join verilog-ext-tests-beautify-dir "dump"))
+(defvar verilog-ext-tests-beautify-dump-dir (file-name-concat verilog-ext-tests-beautify-dir "dump"))
 (defvar verilog-ext-tests-beautify-dump-diff-on-error t)
 
 
@@ -42,20 +42,20 @@
         (files verilog-ext-tests-beautify-test-files)  ; Only files with instances are relevant
         (verilog-ext-time-stamp-pattern nil))          ; Prevent auto-update of timestamp
     (dolist (file files)
-      (copy-file (verilog-ext-path-join orig-dir file)
-                 (verilog-ext-path-join dest-dir (verilog-ext-tests-beautify-ref-file-from-orig file)) t))
+      (copy-file (file-name-concat orig-dir file)
+                 (file-name-concat dest-dir (verilog-ext-tests-beautify-ref-file-from-orig file)) t))
     (verilog-ext-beautify-dir-files dest-dir)))
 
 (defun verilog-ext-test-beautify-file (file)
   (let ((debug nil)
-        (dump-file (verilog-ext-path-join verilog-ext-tests-beautify-dump-dir file)))
+        (dump-file (file-name-concat verilog-ext-tests-beautify-dump-dir file)))
     (cl-letf (((symbol-function 'message)
                (lambda (FORMAT-STRING &rest ARGS)
                  nil))) ; Mock `message' to silence all the indentation reporting
       (with-temp-file dump-file
         (when debug
           (clone-indirect-buffer-other-window "*debug*" t))
-        (insert-file-contents (verilog-ext-path-join verilog-ext-tests-common-dir file))
+        (insert-file-contents (file-name-concat verilog-ext-tests-common-dir file))
         ;; Remove alignments between port connections
         (verilog-ext-replace-regexp-whole-buffer (concat "\\(?1:^\\s-*\\." verilog-identifier-re "\\)\\(?2:\\s-*\\)(") "\\1(")
         ;; Beautify
@@ -67,7 +67,7 @@
   "Compare beautified FILE.
 Reference beautified version: file.beauty.sv in beautify dir."
   (let ((filename-beautified (verilog-ext-test-beautify-file file)) ; Dump file
-        (filename-ref (verilog-ext-path-join verilog-ext-tests-beautify-dir (verilog-ext-tests-beautify-ref-file-from-orig file))))
+        (filename-ref (file-name-concat verilog-ext-tests-beautify-dir (verilog-ext-tests-beautify-ref-file-from-orig file))))
     (if (equal (with-temp-buffer
                  (insert-file-contents filename-beautified)
                  (buffer-substring-no-properties (point-min) (point-max)))

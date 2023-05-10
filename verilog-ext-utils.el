@@ -184,13 +184,6 @@ Same function `while' but returning t after last condition for use in ands."
      t))
 
 ;;;; String/regexp
-(defun verilog-ext-path-join (arg1 arg2)
-  "Join path of ARG1 and ARG2."
-  (if (and arg1 arg2)
-      (concat (file-name-as-directory arg1) arg2)
-    (error "Cannot join path with nil arguments")
-    nil))
-
 (defun verilog-ext-replace-regexp (regexp to-string start end)
   "Wrapper function for programatic use of `replace-regexp'.
 Replace REGEXP with TO-STRING from START to END."

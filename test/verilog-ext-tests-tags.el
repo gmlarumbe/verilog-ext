@@ -53,7 +53,7 @@ Return differences get a better explanation of the errors in ERT testsuites."
   (declare (indent 1) (debug t))
   `(let ((table (make-hash-table :test #'equal)))
      (with-temp-buffer
-       (insert-file-contents (verilog-ext-path-join verilog-ext-tests-common-dir ,file))
+       (insert-file-contents (file-name-concat verilog-ext-tests-common-dir ,file))
        (verilog-mode)
        ;; Avoid errors in desc when there are tabs and trailing whitespaces
        (untabify (point-min) (point-max))
@@ -65,7 +65,7 @@ Return differences get a better explanation of the errors in ERT testsuites."
   (declare (indent 1) (debug t))
   `(let ((table (make-hash-table :test #'equal)))
      (with-temp-buffer
-       (insert-file-contents (verilog-ext-path-join verilog-ext-tests-common-dir ,file))
+       (insert-file-contents (file-name-concat verilog-ext-tests-common-dir ,file))
        (verilog-mode)
        ;; Avoid errors in desc when there are tabs and trailing whitespaces
        (untabify (point-min) (point-max))

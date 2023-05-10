@@ -44,7 +44,7 @@
         ;; `faceup-write-file' calls internally `font-lock-fontify-region' so
         ;; it's more consistent
         (font-lock-fontify-region (point-min) (point-max))
-        (faceup-write-file (verilog-ext-path-join verilog-ext-tests-faceup-dir
+        (faceup-write-file (file-name-concat verilog-ext-tests-faceup-dir
                                                   (concat (file-name-nondirectory file)
                                                           (when tree-sitter
                                                             ".ts")
@@ -58,8 +58,8 @@
                 'verilog-mode))
         result)
     (setq result (faceup-test-font-lock-file mode
-                                             (verilog-ext-path-join verilog-ext-tests-common-dir file)
-                                             (verilog-ext-path-join verilog-ext-tests-faceup-dir (concat file
+                                             (file-name-concat verilog-ext-tests-common-dir file)
+                                             (file-name-concat verilog-ext-tests-faceup-dir (concat file
                                                                                                          (when tree-sitter
                                                                                                            ".ts")
                                                                                                          ".faceup"))))

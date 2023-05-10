@@ -34,7 +34,7 @@
            (eval-expression-print-level nil)
            (eval-expression-print-length nil)
            (default-directory (file-name-as-directory verilog-ext-tests-common-dir)))
-       (insert-file-contents (verilog-ext-path-join verilog-ext-tests-common-dir ,file))
+       (insert-file-contents (file-name-concat verilog-ext-tests-common-dir ,file))
        (verilog-mode)
        ,@body)))
 
@@ -119,7 +119,7 @@ It did work locally though."
            (eval-expression-print-level nil)
            (eval-expression-print-length nil)
            (default-directory (file-name-as-directory verilog-ext-tests-jump-parent-dir)))
-       (insert-file-contents (verilog-ext-path-join verilog-ext-tests-jump-parent-dir ,file))
+       (insert-file-contents (file-name-concat verilog-ext-tests-jump-parent-dir ,file))
        (verilog-mode)
        ,@body)))
 

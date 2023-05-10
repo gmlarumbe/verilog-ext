@@ -28,7 +28,7 @@
 (defmacro verilog-ext-test-utils-file (file &rest body)
   (declare (indent 1) (debug t))
   `(with-temp-buffer
-     (insert-file-contents (verilog-ext-path-join verilog-ext-tests-common-dir ,file))
+     (insert-file-contents (file-name-concat verilog-ext-tests-common-dir ,file))
      (verilog-mode)
      ,@body))
 

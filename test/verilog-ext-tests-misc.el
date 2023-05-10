@@ -46,7 +46,7 @@
          (insert (mapconcat #'identity (directory-files-recursively default-directory "\.s?vh?$" nil nil t) "\n")))
        (ggtags-create-tags default-directory)
        ;; Enable ggtags and run body
-       (find-file (verilog-ext-path-join verilog-ext-tests-examples-dir ,file))
+       (find-file (file-name-concat verilog-ext-tests-examples-dir ,file))
        (ggtags-mode 1)
        (goto-char (point-min))
        ,@body)))
@@ -69,7 +69,7 @@ for verbosity purposes."
      (ggtags-create-tags default-directory)
      (message (shell-command-to-string "ls -al"))
      ;; Enable ggtags and run body
-     (find-file (verilog-ext-path-join verilog-ext-tests-examples-dir ,file))
+     (find-file (file-name-concat verilog-ext-tests-examples-dir ,file))
      (ggtags-mode 1)
      (goto-char (point-min))
      ,@body))
@@ -82,7 +82,7 @@ for verbosity purposes."
     ;; Tested many things and changed many others but it seemed to be random and related to xref more than to any other thing
     ;; It works fine though if run in a subshell
     (xref-find-definitions (thing-at-point 'symbol :no-props)) ; `xref-find-definitions' could hang the ERT interactive test
-    (should (string= buffer-file-name (verilog-ext-path-join verilog-ext-tests-examples-dir "jump-parent/block0.sv")))
+    (should (string= buffer-file-name (file-name-concat verilog-ext-tests-examples-dir "jump-parent/block0.sv")))
     (should (equal (point) 15))))
 
 (ert-deftest navigation::jump-to-module-at-point ()
@@ -94,7 +94,7 @@ for verbosity purposes."
     ;; Tested many things and changed many others but it seemed to be random and related to xref more than to any other thing
     ;; It works fine though if run in a subshell
     (verilog-ext-jump-to-module-at-point)
-    (should (string= buffer-file-name (verilog-ext-path-join verilog-ext-tests-examples-dir "jump-parent/block0.sv")))
+    (should (string= buffer-file-name (file-name-concat verilog-ext-tests-examples-dir "jump-parent/block0.sv")))
     (should (equal (point) 15))))
 
 ;; INFO: The analogous `navigation::jump-to-parent-module-ag' test works fine also in GitHub actions

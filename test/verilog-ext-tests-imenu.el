@@ -28,7 +28,7 @@
 (defmacro verilog-ext-test-imenu-file (file)
   (declare (indent 1))
   `(with-temp-buffer
-     (insert-file-contents (verilog-ext-path-join verilog-ext-tests-common-dir ,file))
+     (insert-file-contents (file-name-concat verilog-ext-tests-common-dir ,file))
      (verilog-mode)
      (let ((imenu-use-markers nil)
            (print-level nil)
