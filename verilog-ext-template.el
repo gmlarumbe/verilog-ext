@@ -34,11 +34,6 @@
   "Verilog-ext templates."
   :group 'verilog-ext)
 
-(defcustom verilog-ext-template-snippets-dir (expand-file-name "snippets" (file-name-directory (or load-file-name (buffer-file-name))))
-  "Yasnippet verilog-ext snippets directory."
-  :type 'string
-  :group 'verilog-ext-template)
-
 (defcustom verilog-ext-template-resetn "Rst_n"
   "Name of active low reset for templates."
   :type 'string
@@ -48,6 +43,10 @@
   "Name of clock for templates."
   :type 'string
   :group 'verilog-ext-template)
+
+(defconst verilog-ext-template-snippets-dir
+  (expand-file-name "snippets" (file-name-directory (or load-file-name (buffer-file-name))))
+  "Yasnippet verilog-ext snippets directory.")
 
 
 (defmacro with-verilog-ext-template (&rest body)
@@ -346,16 +345,23 @@ If ASYNC is non-nil create an asynchronous reset."
       (verilog-insert-date)
       (insert " : created")
       (goto-char (point-min))
-      (setq string (read-string "Title: "))
+      (if (called-interactively-p 'all)
+          (setq string (read-string "Title: "))
+        (setq string (file-name-nondirectory (file-name-sans-extension buffer-file-name))))
       (search-forward "<title>")
       (replace-match string t t)
-      (setq string (read-string "Project: " verilog-project))
+      (if (called-interactively-p 'all)
+          (setq string (read-string "Project: " verilog-project))
+        (setq string (file-name-base (directory-file-name (or (and (project-current)
+                                                                   (project-root (project-current)))
+                                                              default-directory)))))
       (setq verilog-project string)
       (search-forward "<project>")
       (replace-match string t t)
       (search-forward "<description>")
       (replace-match "" t t)
-      (insert (read-string "Description: ")))))
+      (when (called-interactively-p 'all)
+        (insert (read-string "Description: "))))))
 
 
 ;;;; Instances
@@ -474,7 +480,8 @@ Use inst INST-TEMPLATE or prompt to choose one if nil."
       (error "Current buffer needs to visit a file to instantiate module"))
     (unless module-name
       (error "No module found in %s" file))
-    (unless (verilog-ext-point-inside-block 'module)
+    (unless (or (verilog-ext-point-inside-block 'module)
+                (verilog-ext-point-inside-block 'interface))
       (error "Point is not inside a module block.  Cannot instantiate block"))
     (setq instance-name (read-string "Instance-name: " (concat "I_" (upcase module-name))))
     (unless (member (expand-file-name file) verilog-library-files)
@@ -663,6 +670,30 @@ endmodule // tb_<module_name>
     (search-forward "// TODO")
     (write-file outfile)))
 
+;;;; UVM agent
+(defun verilog-ext-template-uvm-agent (name base-dir)
+  "Create package and files for UVM agent NAME on BASE-DIR.
+Files will be created at {BASE-DIR}/{NAME} directory."
+  (interactive "sUVC Name: \nDBase directory: ")
+  (let ((files (verilog-ext-dir-files (file-name-concat verilog-ext-template-snippets-dir "uvm_agent")))
+        output-dir new-filename)
+    (unless (and (file-exists-p base-dir)
+                 (file-directory-p base-dir))
+      (user-error "Directory %s does not exist!" base-dir))
+    (setq output-dir (file-name-concat base-dir name))
+    (make-directory output-dir)
+    (dolist (file files)
+      (setq new-filename (file-name-concat output-dir (replace-regexp-in-string "uvm_"
+                                                                                (concat name "_")
+                                                                                (file-name-nondirectory file))))
+      (with-temp-file new-filename
+        (insert-file-contents file)
+        (verilog-ext-replace-regexp-whole-buffer "<uvm_name>" name))
+      (save-window-excursion
+        (find-file-literally new-filename)
+        (verilog-ext-template-header)
+        (save-buffer)
+        (kill-buffer)))))
 
 ;;;; Yasnippet/Hydra
 (defun verilog-ext-template-insert-yasnippet (snippet)
@@ -743,6 +774,7 @@ endmodule // tb_<module_name>
   ("ue"  (verilog-ext-template-insert-yasnippet "ue") "UVM Error")
   ("uw"  (verilog-ext-template-insert-yasnippet "uw") "UVM Warning")
   ("ur"  (verilog-ext-template-insert-yasnippet "ur") "UVM Report")
+  ("ua"  (call-interactively #'verilog-ext-template-uvm-agent) "UVM Agent")
 
   ("/*"  (verilog-ext-template-insert-yasnippet "/*")       "Star comment" :column "Comments")
   ("B"   (verilog-ext-template-block-comment)               "Block comment")
