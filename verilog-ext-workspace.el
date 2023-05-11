@@ -231,7 +231,7 @@ With current-prefix or VERBOSE, dump output log."
   "Get tags of current workspace.
 With current-prefix or VERBOSE, dump output log."
   (interactive "p")
-  (let* ((files (verilog-ext-workspace-files))
+  (let* ((files (verilog-ext-workspace-files :follow-symlinks))
          (num-files (length files))
          (num-files-processed 0)
          (table (make-hash-table :test #'equal))
@@ -441,7 +441,7 @@ in corresponding async function."
   "Update typedef list of current workspace.
 With current-prefix or VERBOSE, dump output log."
   (interactive "p")
-  (verilog-ext-workspace-typedef-batch-update (verilog-ext-workspace-files) verbose))
+  (verilog-ext-workspace-typedef-batch-update (verilog-ext-workspace-files :follow-symlinks) verbose))
 
 (defun verilog-ext-workspace-typedef-update-async (&optional verbose)
   "Update typedef list of current workspace asynchronously.
@@ -452,7 +452,7 @@ With current-prefix or VERBOSE, dump output log."
    `(lambda ()
       ,(async-inject-variables verilog-ext-async-inject-variables-re)
       (require 'verilog-ext)
-      (verilog-ext-workspace-typedef-batch-update (verilog-ext-workspace-files) ,verbose))
+      (verilog-ext-workspace-typedef-batch-update (verilog-ext-workspace-files :follow-symlinks) ,verbose))
    (lambda (result)
      (message "Finished collection of typedefs!")
      (setq verilog-ext-workspace-align-typedef-words-re result)
