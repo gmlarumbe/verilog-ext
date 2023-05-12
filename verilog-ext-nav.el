@@ -125,14 +125,16 @@ the function call."
                (setq tf-args-pos-beg (1+ (point)))
                (setq tf-args (split-string (buffer-substring-no-properties tf-args-pos-beg tf-args-pos-end) ","))
                (setq tf-args (mapcar #'string-trim tf-args)))
-             (backward-word)
              ;; Func/task name
-             (when (looking-at verilog-identifier-re)
-               (setq tf-name (match-string-no-properties 0))
+             (verilog-ext-backward-syntactic-ws)
+             (when (and (looking-back verilog-identifier-sym-re (car (bounds-of-thing-at-point 'symbol)))
+                        (setq tf-name (match-string-no-properties 0))
+                        (not (member tf-name (remove "new" verilog-keywords)))) ; Avoid getting stuck with "task ; "
                (setq tf-name-pos-beg (match-beginning 0))
                (setq tf-name-pos-end (match-end 0))
                (setq found t))
              ;; Externally defined functions
+             (backward-word)
              (verilog-ext-when-t (eq (preceding-char) ?:)
                (skip-chars-backward ":")
                (backward-word)
