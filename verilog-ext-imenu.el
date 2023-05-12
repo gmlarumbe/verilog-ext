@@ -125,7 +125,7 @@ Find recursively tasks and functions inside classes."
     (let* ((data (and (verilog-ext-find-class-bwd)
                       (verilog-ext-forward-sexp)
                       (verilog-ext-find-function-task-class-bwd)))
-           (pos (when data
+           (pos (when (alist-get 'pos data)
                   (save-excursion
                     (goto-char (alist-get 'pos data))
                     (line-beginning-position))))
