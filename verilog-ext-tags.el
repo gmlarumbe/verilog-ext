@@ -130,12 +130,12 @@ completion."
                                         (when ignore-paren-decl
                                           (verilog-in-parenthesis-p))
                                         (not tag))
-                              (setq desc (verilog-ext-tags-desc tag))
+                              (setq desc (verilog-ext-tags-desc))
                               (verilog-ext-tags-table-push-tag table tag type desc file parent))))
           ("tf" (while (setq data (verilog-ext-find-function-task-fwd limit))
                   (setq type (alist-get 'type data))
                   (setq tag (match-string-no-properties 1))
-                  (setq desc (verilog-ext-tags-desc tag))
+                  (setq desc (verilog-ext-tags-desc))
                   (verilog-ext-tags-table-push-tag table tag type desc file parent)
                   ;; Get tasks and function declarations
                   (save-excursion
@@ -147,12 +147,12 @@ completion."
           ("instances" (while (verilog-ext-find-module-instance-fwd limit)
                          (setq tag (match-string-no-properties 2))
                          (setq type (match-string-no-properties 1))
-                         (setq desc (verilog-ext-tags-desc tag))
+                         (setq desc (verilog-ext-tags-desc))
                          (verilog-ext-tags-table-push-tag table tag type desc file parent)))
           ("structs" (while (setq data (verilog-ext-find-struct))
                        (setq tag (alist-get 'name data))
                        (setq type "struct")
-                       (setq desc (verilog-ext-tags-desc tag))
+                       (setq desc (verilog-ext-tags-desc))
                        (verilog-ext-tags-table-push-tag table tag type desc file parent)
                        ;; Get struct items
                        (save-excursion
@@ -163,7 +163,7 @@ completion."
           ("classes" (while (setq data (verilog-ext-find-class-fwd limit))
                        (setq type "class")
                        (setq tag (alist-get 'name data))
-                       (setq desc (verilog-ext-tags-desc tag))
+                       (setq desc (verilog-ext-tags-desc))
                        (verilog-ext-tags-table-push-tag table tag type desc file parent)
                        ;; Get class items
                        (save-excursion
@@ -175,7 +175,7 @@ completion."
           ("top-items" (while (verilog-re-search-forward verilog-ext-top-re nil :no-error)
                          (setq tag (match-string-no-properties 3))
                          (setq type (match-string-no-properties 1))
-                         (setq desc (verilog-ext-tags-desc tag))
+                         (setq desc (verilog-ext-tags-desc))
                          (verilog-ext-tags-table-push-tag table tag type desc file)
                          ;; Get top-block items
                          (setq inner-start (match-beginning 1))
@@ -211,7 +211,7 @@ Limit search between START and LIMIT if provided."
           (setq begin (match-beginning 0))
           (setq tag (match-string-no-properties 0))
           (setq type nil) ; Does not apply for references
-          (setq desc (verilog-ext-tags-desc tag))
+          (setq desc (verilog-ext-tags-desc))
           (unless (or (member tag verilog-keywords) ; Filter verilog keywords
                       ;; Filter existing definitions
                       (and defs-table
@@ -230,15 +230,11 @@ Limit search between START and LIMIT if provided."
     ;; Return updated table
     table))
 
-(defun verilog-ext-tags-desc (tag)
-  "Return propertized description for TAG.
+(defun verilog-ext-tags-desc ()
+  "Return description for current TAG.
 Meant to be used for `xref' backend."
-  (let* ((desc (string-trim (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
-         (desc-prop (replace-regexp-in-string (concat "\\_<" tag "\\_>")
-                                              (propertize tag 'face '(:foreground "goldenrod" :weight bold))
-                                              desc
-                                              :fixedcase)))
-    desc-prop))
+  (string-trim (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
+
 
 (provide 'verilog-ext-tags)
 

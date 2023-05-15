@@ -44,7 +44,10 @@
         (setq file (plist-get loc :file))
         (setq line (plist-get loc :line))
         (setq column nil)
-        (setq desc (plist-get loc :desc))
+        (setq desc (replace-regexp-in-string (concat "\\_<" symbol "\\_>")
+                                             (propertize symbol 'face '(:foreground "goldenrod" :weight bold))
+                                             (plist-get loc :desc)
+                                             :fixedcase))
         (push (xref-make desc (xref-make-file-location file line column)) xref-entries)))
     xref-entries))
 
