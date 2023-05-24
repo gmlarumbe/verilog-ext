@@ -7,7 +7,7 @@ class ${1:class_name} extends ${2:uvm_sequence_item};
 
     $0
 
-    function new(string name);
+    function new(string name = "$1");
         super.new(name);
     endfunction : new
 
