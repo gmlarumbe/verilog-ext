@@ -93,12 +93,9 @@ https://chipsalliance.github.io/verible/lint.html"
     (add-to-list 'flycheck-checkers checker))
   (verilog-ext-flycheck-set-linter verilog-ext-flycheck-linter))
 
-(defun verilog-ext-flycheck-mode-toggle (&optional uarg)
+(defun verilog-ext-flycheck-mode (&optional uarg)
   "`flycheck-mode' Verilog wrapper function.
-If called with UARG select among available linters and enable flycheck.
-
-Disable function `eldoc-mode' if flycheck is enabled
-to avoid minibuffer collisions."
+If called with UARG select among available linters and enable flycheck."
   (interactive "P")
   (let (enable)
     (when buffer-read-only

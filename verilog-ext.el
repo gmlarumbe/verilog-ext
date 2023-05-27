@@ -174,7 +174,7 @@ FEATURES can be a single feature or a list of features."
     (verilog-ext-when-feature 'compilation
       (define-key map (kbd "C-c C-p") 'verilog-ext-preprocess))
     (verilog-ext-when-feature 'flycheck
-      (define-key map (kbd "C-c C-f") 'verilog-ext-flycheck-mode-toggle))
+      (define-key map (kbd "C-c C-f") 'verilog-ext-flycheck-mode))
     (verilog-ext-when-feature 'template
       (define-key map (kbd "C-c C-t") 'verilog-ext-hydra/body))
     (verilog-ext-when-feature 'hierarchy
