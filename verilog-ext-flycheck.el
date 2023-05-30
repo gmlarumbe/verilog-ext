@@ -208,6 +208,7 @@ See URL `https://github.com/MikePopoloski/slang'."
   :command ("slang"
             "--lint-only"
             "--ignore-unknown-modules"
+            "--color-diagnostics=false"
             (option-list "-I" verilog-ext-flycheck-slang-include-path)
             (eval verilog-ext-flycheck-slang-file-list)
             (config-file "-f" flycheck-verilog-slang-command-file)

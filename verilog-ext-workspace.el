@@ -311,7 +311,7 @@ With current-prefix or VERBOSE, dump output log."
      (setq verilog-ext-workspace-cache-tags-refs (cadr result))
      (verilog-ext-workspace-serialize-cache 'tags-refs))))
 
-;;; Typedefs
+;;;; Typedefs
 (defvar verilog-ext-workspace-align-typedef-words nil)
 (defvar verilog-ext-workspace-align-typedef-words-re nil)
 
