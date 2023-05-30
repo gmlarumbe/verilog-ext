@@ -32,6 +32,7 @@
 (require 'verilog-ext-tags)
 (require 'verilog-ext-hierarchy)
 (require 'verilog-ext-template)
+(require 'verilog-ext-compile)
 
 (defgroup verilog-ext-workspace nil
   "Verilog-ext workspace."
@@ -68,6 +69,11 @@ If set to nil default to search for current project files."
   "The directory of Verilog-ext cache files."
   :group 'verilog-ext-workspace
   :type 'file)
+
+(defcustom verilog-ext-workspace-compile-cmd nil
+  "The command used to perform compilation on the workspace."
+  :group 'verilog-ext-workspace
+  :type 'string)
 
 
 (defun verilog-ext-workspace-root ()
@@ -577,6 +583,42 @@ Compiles them with various verilog regexps."
     (setq cmd (concat "cd " (verilog-ext-workspace-root) " && make " target))
     (compile cmd)))
 
+
+;;;; Compilation
+;;;###autoload
+(defun verilog-ext-workspace-compile ()
+  "Compile using command of `verilog-ext-workspace-compile-cmd'.
+Depending on the command, different syntax highlight will be applied.
+The function will detect any of the supported compilation error parsers
+and will set the appropriate mode."
+  (interactive)
+  (unless verilog-ext-workspace-compile-cmd
+    (error "You first need to set `verilog-ext-workspace-compile-cmd'."))
+  (let* ((cmd-list (split-string verilog-ext-workspace-compile-cmd))
+         (cmd-args (cdr cmd-list))
+         (cmd-bin (car cmd-list))
+         (fn (pcase cmd-bin
+               ("verilator" #'verilog-ext-compile-verilator)
+               ("iverilog" #'verilog-ext-compile-iverilog)
+               ("slang" #'verilog-ext-compile-slang)
+               ("svlint" #'verilog-ext-compile-svlint)
+               ("surelog" #'verilog-ext-compile-surelog)
+               (_ #'compile)))
+         (cmd-processed (cond (;; For svlint, make sure the -1 arg is present
+                               (string= cmd-bin "svlint")
+                               (if (member "-1" cmd-args)
+                                   verilog-ext-workspace-compile-cmd
+                                 (mapconcat #'identity (append `(,cmd-bin) '("-1") cmd-args) " ")))
+                              ;; For slang make sure that there is no colored output
+                              ((string= cmd-bin "slang")
+                               (if (member "--color-diagnostics=false" cmd-args)
+                                   verilog-ext-workspace-compile-cmd
+                                 (mapconcat #'identity (append `(,cmd-bin) '("--color-diagnostics=false") cmd-args) " ")))
+                              ;; For the rest use the provided command
+                              (t
+                               verilog-ext-workspace-compile-cmd)))
+         (cmd (concat "cd " (verilog-ext-workspace-root) " && " cmd-processed)))
+    (funcall fn cmd)))
 
 ;;;; Jump-to-parent module
 (defun verilog-ext-workspace-jump-to-parent-module ()
