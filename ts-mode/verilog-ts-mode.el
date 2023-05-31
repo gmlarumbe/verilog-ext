@@ -30,9 +30,11 @@
 ;;; Requirements
 
 (require 'treesit)
-(require 'async) ; Tree-sitter asynchronous identifiers collection
+(require 'async)
+(require 'project)
+(eval-when-compile
+  (require 'verilog-mode))
 
-;; Copied from `c-ts-mode'
 (declare-function treesit-parser-create "treesit.c")
 (declare-function treesit-induce-sparse-tree "treesit.c")
 (declare-function treesit-node-parent "treesit.c")
@@ -42,16 +44,8 @@
 (declare-function treesit-node-child-by-field-name "treesit.c")
 (declare-function treesit-node-type "treesit.c")
 
-(eval-when-compile
-  (require 'verilog-mode))
-
 
 ;;; Customization
-(defcustom verilog-ts-mode-hook nil
-  "Hook run after Verilog Tree-sitter mode is loaded."
-  :type 'hook
-  :group 'verilog-ts)
-
 (defcustom verilog-ts-indent-level 4
   "Tree-sitter indentation of Verilog statements with respect to containing block."
   :group 'verilog-ts
@@ -119,9 +113,7 @@ Snippet fetched from `treesit--indent-1'."
   (if (member (following-char) '(?\( ?\{ ?\[))
       (forward-sexp 1)
     (let* ((node (verilog-ts--highest-node-at-symbol))
-           (beg (treesit-node-start node))
-           (end (treesit-node-end node))
-           (text (treesit-node-text node :no-props)))
+           (end (treesit-node-end node)))
       (goto-char end))))
 
 (defun verilog-ts-backward-sexp ()
@@ -130,9 +122,7 @@ Snippet fetched from `treesit--indent-1'."
   (if (member (preceding-char) '(?\) ?\} ?\]))
       (backward-sexp 1)
     (let* ((node (treesit-node-parent (verilog-ts--node-at-point)))
-           (beg (treesit-node-start node))
-           (end (treesit-node-end node))
-           (text (treesit-node-text node :no-props)))
+           (beg (treesit-node-start node)))
       (goto-char beg))))
 
 
@@ -704,6 +694,7 @@ OVERRIDE, START, END, and ARGS, see `treesit-font-lock-rules'."
 
 
 ;;; Indent
+;;;; Matchers
 (defun verilog-ts--unit-scope (&rest _)
   "A tree-sitter simple indent matcher.
 Matches if point is at $unit scope."
@@ -743,7 +734,8 @@ Always return non-nil."
 
 (defun verilog-ts--ansi-port-after-paren (&rest _)
   "A tree-sitter simple indent matcher.
-Return non-nil if the first ansi-port is in the same line as the opening parenthesis."
+Return non-nil if the first ansi-port is in the same line as the opening
+parenthesis."
   (let* ((node (verilog-ts--node-at-bol))
          (indent-node (verilog-ts--node-has-parent-recursive node "list_of_port_declarations"))
          (indent-node-line (line-number-at-pos (treesit-node-start indent-node)))
@@ -753,7 +745,8 @@ Return non-nil if the first ansi-port is in the same line as the opening parenth
 
 (defun verilog-ts--parameter-port-after-paren (&rest _)
   "A tree-sitter simple indent matcher.
-Return non-nil if the first parameter is in the same line as the opening parenthesis."
+Return non-nil if the first parameter is in the same line as the opening
+parenthesis."
   (let* ((node (verilog-ts--node-at-bol))
          (indent-node (verilog-ts--node-has-parent-recursive node "parameter_port_list"))
          (indent-node-line (line-number-at-pos (treesit-node-start indent-node)))
@@ -770,6 +763,7 @@ parameter A = 0,
   (let ((child-node (treesit-node-child (verilog-ts--node-at-bol) 0)))
     (string= (treesit-node-type child-node) "data_type")))
 
+;;;; Anchors
 (defun verilog-ts--end-indent-anchor (node parent &rest _)
   "A tree-sitter simple indent anchor.
 Handle indentation of block end keywords."
@@ -834,9 +828,13 @@ Indent task/function arguments."
 (defun verilog-ts--ansi-port-anchor (node parent &rest _)
   "A tree-sitter simple indent anchor.
 Indent ansi_ports depending on first port:
- - module foo (input a -> Will indent the rest of the ports right below the first one.
+
+ - module foo (input a
+    -> Will indent the rest of the ports right below the first one.
+
  - module foo (
-     input a -> Will indent the rest of the ports with respect to parent-bol (module)."
+     input a
+    -> Will indent the rest of the ports with respect to parent-bol (module)."
   (let ((indent-node (verilog-ts--node-has-parent-recursive node "list_of_port_declarations")))
     (save-excursion
       (goto-char (treesit-node-start indent-node))
@@ -846,10 +844,12 @@ Indent ansi_ports depending on first port:
 (defun verilog-ts--ansi-port (node parent &rest _)
   "A tree-sitter simple indent anchor.
 Indent ansi_ports according to module definition."
-  (let ((indent-node (verilog-ts--node-has-parent-recursive node "module_declaration")))
-    (save-excursion
-      (goto-char (treesit-node-start indent-node))
-      (point))))
+  (let ((indent-node (or (verilog-ts--node-has-parent-recursive node "module_declaration")
+                         (verilog-ts--node-has-parent-recursive node "interface_declaration"))))
+    (when indent-node
+      (save-excursion
+        (goto-char (treesit-node-start indent-node))
+        (point)))))
 
 (defun verilog-ts--coverpoint-bins-anchor (node parent &rest _)
   "A tree-sitter simple indent anchor.
@@ -868,8 +868,7 @@ Indent cross bins with respect to label of coverpoint."
 (defun verilog-ts--continued-parameter-anchor (node parent &rest _)
   "A tree-sitter simple indent anchor.
 Indent continued line parameters in port declarations."
-  (let* ((param-parent-node (verilog-ts--node-has-parent-recursive node "parameter_port_list"))
-         (param-decl-node (treesit-search-forward node
+  (let* ((param-decl-node (treesit-search-forward node
                                                   (lambda (node)
                                                     (string= (treesit-node-type node) "parameter_declaration"))
                                                   :backward))
@@ -884,9 +883,11 @@ Indent continued line parameters in port declarations."
 (defun verilog-ts--parameter-port-anchor (node parent &rest _)
   "A tree-sitter simple indent anchor.
 Indent parameters depending on first parameter:
- - module foo # (parameter int a = 0 -> Will indent the rest of the ports right below the first one.
+ - module foo # (parameter int a = 0
+    -> Will indent the rest of the ports right below the first one.
  - module foo #(
-     parameter int a = 0, -> Will indent the rest of the ports with respect to parent-bol (module)."
+     parameter int a = 0,
+    -> Will indent the rest of the ports with respect to parent-bol (module)."
   (let ((indent-node (treesit-search-subtree (verilog-ts--node-has-parent-recursive node "parameter_port_list")
                                              (lambda (node)
                                                (string= (treesit-node-type node) "parameter_port_declaration")))))
@@ -1017,10 +1018,10 @@ Return nil if there is no name or if NODE is not a defun node."
 
 ;;; Completion
 (defvar verilog-ts-capf-table nil)
+(defconst verilog-ts-async-inject-variables-re "\\`\\(load-path\\|buffer-file-name\\)")
 
 (defun verilog-ts-capf-create-table ()
-  "Verilog tree-sitter completion at point.
-Complete with identifiers of current buffer."
+  "Verilog tree-sitter create completion at point table synchronously."
   (let (completions)
     (dolist (file (directory-files-recursively (project-root (project-current)) "\\.[s]?v[h]?$"))
       (with-temp-buffer
@@ -1032,34 +1033,21 @@ Complete with identifiers of current buffer."
     (setq verilog-ts-capf-table completions)))
 
 (defun verilog-ts-capf-create-table-async ()
-  "Verilog tree-sitter completion at point.
-Complete with identifiers of current buffer."
-  (let (dirs completions)
-    (dolist (lib '("verilog-ts-mode"))
-      (setq dir (file-name-directory (locate-library lib)))
-      (unless (member dir dirs)
-        (push dir dirs)))
-    (async-start
-     (lambda ()
-       (dolist (dir dirs)
-         (add-to-list 'load-path dir))
-       (require 'verilog-ts-mode)
-       (require 'project)
-       (dolist (file (directory-files-recursively (project-root (project-current)) "\\.[s]?v[h]?$"))
-         (with-temp-buffer
-           (message "Processing %s" file)
-           (insert-file-contents file)
-           (verilog-ts-mode)
-           (setq completions (append (verilog-ts-nodes-current-buffer "simple_identifier") completions))))
-       (delete-dups completions)
-       completions)
-     (lambda (result)
-       (message "Finished collection tags!")
-       (setq verilog-ts-capf-table result)))))
+  "Verilog tree-sitter create completion at point table asynchronously."
+  (message "Starting tag collection for %s" (project-root (project-current)))
+  (async-start
+   `(lambda ()
+      ,(async-inject-variables verilog-ts-async-inject-variables-re)
+      (require 'verilog-mode)
+      (require 'verilog-ts-mode)
+      (verilog-ts-capf-create-table))
+   (lambda (result)
+     (message "Finished collection tags!")
+     (setq verilog-ts-capf-table result))))
 
 (defun verilog-ts-capf ()
   "Verilog tree-sitter completion at point.
-Complete with identifiers of current buffer."
+Complete with identifiers of current project."
   (interactive)
   (let* ((bds (bounds-of-thing-at-point 'symbol))
          (start (car bds))
@@ -1130,3 +1118,4 @@ Complete with identifiers of current buffer."
 (provide 'verilog-ts-mode)
 
 ;;; verilog-ts-mode.el ends here
+

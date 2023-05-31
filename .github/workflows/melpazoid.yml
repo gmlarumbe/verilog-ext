@@ -20,11 +20,20 @@ jobs:
         sudo apt-get install emacs && emacs --version
         git clone https://github.com/riscy/melpazoid.git ~/melpazoid
         pip install ~/melpazoid
-    - name: Run
+    - name: Run Verilog-ext
       env:
         LOCAL_REPO: ${{ github.workspace }}
         # RECIPE is your recipe as written for MELPA:
         RECIPE: (verilog-ext :repo "gmlarumbe/verilog-ext" :fetcher github :files ("verilog-ext.el" "snippets"))
         # set this to false (or remove it) if the package isn't on MELPA:
         EXIST_OK: true
+      run: echo $GITHUB_REF && make -C ~/melpazoid
+
+    - name: Run Verilog-ts
+      env:
+        LOCAL_REPO: ${{ github.workspace }}
+        # RECIPE is your recipe as written for MELPA:
+        RECIPE: (verilog-ext :repo "gmlarumbe/verilog-ext" :fetcher github :files ("ts/mode/*.el"))
+        # set this to false (or remove it) if the package isn't on MELPA:
+        EXIST_OK: false
       run: echo $GITHUB_REF && make -C ~/melpazoid
