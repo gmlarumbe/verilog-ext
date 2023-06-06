@@ -435,18 +435,18 @@ Expects HIERARCHY to be a indented string."
 (defun verilog-ext-hierarchy-setup ()
   "Setup hierarchy backend/frontend depending on available binaries/packages.
 If these have been set before, keep their values."
-  (let ((backend (unless verilog-ext-hierarchy-backend
-                   (cond ((executable-find "vhier")
-                          'vhier)
-                         ((and (>= emacs-major-version 29)
-                               (treesit-available-p)
-                               (treesit-language-available-p 'verilog)
-                               (functionp 'verilog-ts-mode))
-                          'tree-sitter)
-                         (t
-                          'builtin))))
-        (frontend (unless verilog-ext-hierarchy-frontend
-                    'hierarchy)))
+  (let ((backend (or verilog-ext-hierarchy-backend
+                     (cond ((executable-find "vhier")
+                            'vhier)
+                           ((and (>= emacs-major-version 29)
+                                 (treesit-available-p)
+                                 (treesit-language-available-p 'verilog)
+                                 (functionp 'verilog-ts-mode))
+                            'tree-sitter)
+                           (t
+                            'builtin))))
+        (frontend (or verilog-ext-hierarchy-frontend
+                      'hierarchy)))
     (setq verilog-ext-hierarchy-backend backend)
     (setq verilog-ext-hierarchy-frontend frontend)))
 
