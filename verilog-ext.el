@@ -26,6 +26,8 @@
 ;; Extensions for Verilog Mode:
 ;;
 ;;  - Improved syntax highlighting
+;;  - Builtin xref backend
+;;  - Builtin capf function with dot and scope completion
 ;;  - Hierarchy extraction and navigation: builtin and vhier based
 ;;  - LSP configuration for `lsp-mode` and `eglot`
 ;;  - Support for many linters via `flycheck`
@@ -37,16 +39,14 @@
 ;;  - Improve `imenu` entries: detect instances, classes and methods
 ;;  - Enhanced support for `which-func`
 ;;  - Code folding via `hideshow`
+;;  - Workspace tags, typedef analysis and caching
 ;;  - Time-stamp auto-configuration
 ;;  - Convert block end comments to names
 ;;  - Automatically add SystemVerilog keywords to `company-keywords` backend
 ;;  - Port connections utilities
-;;  - Workspace tags, typedef analysis and caching
 ;;
 ;;  Experimental:
 ;;  - Tree-sitter powered `verilog-ts-mode` support
-;;  - Builtin xref backend
-;;  - Builtin capf function with dot and scope completion
 
 ;;; Code:
 
@@ -57,6 +57,8 @@
   :group 'verilog-mode)
 
 (defcustom verilog-ext-feature-list '(font-lock
+                                      xref
+                                      capf
                                       hierarchy
                                       eglot
                                       lsp
@@ -69,16 +71,18 @@
                                       imenu
                                       which-func
                                       hideshow
+                                      typedefs
                                       time-stamp
                                       block-end-comments
                                       company-keywords
-                                      ports
-                                      typedefs
-                                      xref
-                                      capf)
+                                      ports)
   "Which Verilog-ext features to enable."
   :type '(set (const :tag "Improved syntax highlighting via `font-lock'."
                 font-lock)
+              (const :tag "Xref backend to navigate definitions/references in current workspace."
+                xref)
+              (const :tag "Completion at point builtin function with dot and scope completion."
+                capf)
               (const :tag "Hierarchy extraction and visualization."
                 hierarchy)
               (const :tag "Setup LSP servers for `eglot'."
@@ -103,6 +107,8 @@
                 which-func)
               (const :tag "`hideshow' configuration."
                 hideshow)
+              (const :tag "Scan typedefs and classes of current workspace for syntax highlighting and alignment."
+                typedefs)
               (const :tag "`time-stamp' configuration."
                 time-stamp)
               (const :tag "Convert block end comments to names (endmodule // top → endmodule : top)"
@@ -110,13 +116,7 @@
               (const :tag "Add `verilog-keywords' to `company-keywords' backend."
                 company-keywords)
               (const :tag "Port connections utilities."
-                ports)
-              (const :tag "Scan typedefs and classes of current workspace for syntax highlighting and alignment."
-                typedefs)
-              (const :tag "Xref backend to navigate definitions/references in current workspace."
-                xref)
-              (const :tag "Completion at point builtin function with dot and scope completion."
-                capf))
+                ports))
   :group 'verilog-ext)
 
 (defmacro verilog-ext-when-feature (features &rest body)
@@ -172,6 +172,7 @@ FEATURES can be a single feature or a list of features."
     (verilog-ext-when-feature 'formatter
       (define-key map (kbd "C-c C-l") 'verilog-ext-formatter-run))
     (verilog-ext-when-feature 'compilation
+      (define-key map (kbd "C-c <f5>") 'verilog-ext-workspace-compile)
       (define-key map (kbd "C-c C-p") 'verilog-ext-preprocess))
     (verilog-ext-when-feature 'flycheck
       (define-key map (kbd "C-c C-f") 'verilog-ext-flycheck-mode))
@@ -254,7 +255,11 @@ FEATURES can be a single feature or a list of features."
         (setq verilog-library-directories verilog-ext-dir-list)
         ;; Features
         (verilog-ext-when-feature 'flycheck
-          (setq verilog-ext-flycheck-verilator-include-path verilog-ext-dir-list))
+          (if verilog-ext-flycheck-use-open-buffers
+              (progn (setq verilog-ext-flycheck-dirs verilog-ext-dir-list)
+                     (setq verilog-ext-flycheck-files verilog-ext-file-list))
+            (setq verilog-ext-flycheck-dirs nil)
+            (setq verilog-ext-flycheck-files nil)))
         (verilog-ext-when-feature 'which-func
           (verilog-ext-which-func))
         (verilog-ext-when-feature 'block-end-comments

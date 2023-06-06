@@ -22,8 +22,7 @@
 
 ;;; Commentary:
 
-;; Workspace
-;; Also gather typedefs: For more info, see: https://github.com/gmlarumbe/verilog-ext/wiki/Typedefs
+;; Workspace utils
 
 ;;; Code:
 
@@ -66,7 +65,7 @@ If set to nil default to search for current project files."
   :group 'verilog-ext-workspace)
 
 (defcustom verilog-ext-workspace-cache-dir (file-name-concat user-emacs-directory "verilog-ext")
-  "The directory of Verilog-ext cache files."
+  "The directory where Verilog-ext cache files will be placed at."
   :group 'verilog-ext-workspace
   :type 'file)
 
@@ -603,6 +602,7 @@ and will set the appropriate mode."
                ("slang" #'verilog-ext-compile-slang)
                ("svlint" #'verilog-ext-compile-svlint)
                ("surelog" #'verilog-ext-compile-surelog)
+               ("verible-verilog-lint" #'verilog-ext-compile-verible)
                (_ #'compile)))
          (cmd-processed (cond (;; For svlint, make sure the -1 arg is present
                                (string= cmd-bin "svlint")

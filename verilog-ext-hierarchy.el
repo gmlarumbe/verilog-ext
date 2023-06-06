@@ -485,6 +485,7 @@ convert between an indented string and a populated hierarchy struct."
           ;; Fallback
           (t (error "Must set a proper display frontend in `verilog-ext-hierarchy-frontend'")))))
 
+;;;###autoload
 (defun verilog-ext-hierarchy-current-buffer ()
   "Extract and display hierarchy for module of `current-buffer'."
   (interactive)

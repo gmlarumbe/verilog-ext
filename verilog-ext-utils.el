@@ -575,7 +575,7 @@ efficiency and be able to use it for features such as `which-func'."
           (unless (member default-directory verilog-dirs)
             (push default-directory verilog-dirs))
           (when (and buffer-file-name
-                     (string-match verilog-ext-file-extension-re (file-name-extension buffer-file-name)))
+                     (string-match verilog-ext-file-extension-re (concat "." (file-name-extension buffer-file-name))))
             (push buffer-file-name verilog-files)))))
     (setq verilog-ext-buffer-list verilog-buffers)
     (setq verilog-ext-dir-list verilog-dirs)
