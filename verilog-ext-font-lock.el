@@ -49,44 +49,44 @@
 
 (defvar verilog-ext-font-lock-grouping-keywords-face 'verilog-ext-font-lock-grouping-keywords-face)
 (defface verilog-ext-font-lock-grouping-keywords-face
-  '((t (:foreground "dark olive green")))
+  '((t (:inherit font-lock-misc-punctuation-face)))
   "Face for grouping keywords: begin, end."
   :group 'verilog-ext-font-lock)
 
 (defvar verilog-ext-font-lock-punctuation-face 'verilog-ext-font-lock-punctuation-face)
 (defface verilog-ext-font-lock-punctuation-face
-  '((t (:foreground "burlywood")))
+  '((t (:inherit font-lock-punctuation-face)))
   "Face for punctuation symbols, e.g:
 !,;:?'=<>*"
   :group 'verilog-ext-font-lock)
 
-(defvar verilog-ext-font-lock-punctuation-bold-face 'verilog-ext-font-lock-punctuation-bold-face)
-(defface verilog-ext-font-lock-punctuation-bold-face
-  '((t (:inherit verilog-ext-font-lock-punctuation-face :weight extra-bold)))
-  "Face for bold punctuation symbols, such as &^~+-/|."
+(defvar verilog-ext-font-lock-operator-face 'verilog-ext-font-lock-operator-face)
+(defface verilog-ext-font-lock-operator-face
+  '((t (:inherit font-lock-operator-face)))
+  "Face for operator symbols, such as &^~+-/|."
   :group 'verilog-ext-font-lock)
 
 (defvar verilog-ext-font-lock-brackets-face 'verilog-ext-font-lock-brackets-face)
 (defface verilog-ext-font-lock-brackets-face
-  '((t (:foreground "goldenrod")))
+  '((t (:inherit font-lock-bracket-face)))
   "Face for brackets []."
   :group 'verilog-ext-font-lock)
 
 (defvar verilog-ext-font-lock-parenthesis-face 'verilog-ext-font-lock-parenthesis-face)
 (defface verilog-ext-font-lock-parenthesis-face
-  '((t (:foreground "dark goldenrod")))
+  '((t (:inherit font-lock-bracket-face)))
   "Face for parenthesis ()."
   :group 'verilog-ext-font-lock)
 
 (defvar verilog-ext-font-lock-curly-braces-face 'verilog-ext-font-lock-curly-braces-face)
 (defface verilog-ext-font-lock-curly-braces-face
-  '((t (:foreground "DarkGoldenrod2")))
+  '((t (:inherit font-lock-bracket-face)))
   "Face for curly braces {}."
   :group 'verilog-ext-font-lock)
 
 (defvar verilog-ext-font-lock-port-connection-face 'verilog-ext-font-lock-port-connection-face)
 (defface verilog-ext-font-lock-port-connection-face
-  '((t (:foreground "bisque2")))
+  '((t (:inherit font-lock-constant-face)))
   "Face for port connections of instances.
 .portA (signalA),
 .portB (signalB)
@@ -95,7 +95,7 @@
 
 (defvar verilog-ext-font-lock-dot-name-face 'verilog-ext-font-lock-dot-name-face)
 (defface verilog-ext-font-lock-dot-name-face
-  '((t (:foreground "gray70")))
+  '((t (:inherit font-lock-property-name-face)))
   "Face for dot-name regexps:
 - Interface signals, classes attributes/methods and hierarchical refs.
 
@@ -105,13 +105,13 @@ obj.method();"
 
 (defvar verilog-ext-font-lock-braces-content-face 'verilog-ext-font-lock-braces-content-face)
 (defface verilog-ext-font-lock-braces-content-face
-  '((t (:foreground "yellow green")))
+  '((t (:inherit font-lock-number-face)))
   "Face for content between braces: arrays, bit vector width and indexing."
   :group 'verilog-ext-font-lock)
 
 (defvar verilog-ext-font-lock-width-num-face 'verilog-ext-font-lock-width-num-face)
 (defface verilog-ext-font-lock-width-num-face
-  '((t (:foreground "chartreuse2")))
+  '((t (:inherit font-lock-number-face)))
   "Face for the bit width number expressions.
 {1}'b1,
 {4}'hF,
@@ -120,7 +120,7 @@ obj.method();"
 
 (defvar verilog-ext-font-lock-width-type-face 'verilog-ext-font-lock-width-type-face)
 (defface verilog-ext-font-lock-width-type-face
-  '((t (:foreground "sea green" :weight bold)))
+  '((t (:inherit font-lock-builtin-face)))
   "Face for the bit width type expressions.
 1'{b}1,
 4'{h}F,
@@ -129,68 +129,68 @@ obj.method();"
 
 (defvar verilog-ext-font-lock-module-face 'verilog-ext-font-lock-module-face)
 (defface verilog-ext-font-lock-module-face
-  '((t (:foreground "green1")))
+  '((t (:inherit font-lock-function-call-face)))
   "Face for module names."
   :group 'verilog-ext-font-lock)
 
 (defvar verilog-ext-font-lock-instance-face 'verilog-ext-font-lock-instance-face)
 (defface verilog-ext-font-lock-instance-face
-  '((t (:foreground "medium spring green")))
+  '((t (:inherit font-lock-variable-use-face)))
   "Face for instance names."
   :group 'verilog-ext-font-lock)
 
 (defvar verilog-ext-font-lock-time-event-face 'verilog-ext-font-lock-time-event-face)
 (defface verilog-ext-font-lock-time-event-face
-  '((t (:foreground "deep sky blue" :weight bold)))
+  '((t (:inherit font-lock-property-name-face)))
   "Face for time-events: @ and #."
   :group 'verilog-ext-font-lock)
 
 (defvar verilog-ext-font-lock-time-unit-face 'verilog-ext-font-lock-time-unit-face)
 (defface verilog-ext-font-lock-time-unit-face
-  '((t (:foreground "light steel blue")))
+  '((t (:inherit font-lock-property-use-face)))
   "Face for time-units: ms, us, ns, ps, fs (delays and timescale/timeprecision)."
   :group 'verilog-ext-font-lock)
 
 (defvar verilog-ext-font-lock-preprocessor-face 'verilog-ext-font-lock-preprocessor-face)
 (defface verilog-ext-font-lock-preprocessor-face
-  '((t (:foreground "pale goldenrod")))
+  '((t (:inherit font-lock-preprocessor-face)))
   "Face for preprocessor compiler directives (`include, `define, UVM macros...)."
   :group 'verilog-ext-font-lock)
 
 (defvar verilog-ext-font-lock-modport-face 'verilog-ext-font-lock-modport-face)
 (defface verilog-ext-font-lock-modport-face
-  '((t (:foreground "light blue")))
+  '((t (:inherit font-lock-type-face)))
   "Face for interface modports."
   :group 'verilog-ext-font-lock)
 
 (defvar verilog-ext-font-lock-direction-face 'verilog-ext-font-lock-direction-face)
 (defface verilog-ext-font-lock-direction-face
-  '((t (:foreground "RosyBrown3")))
+  '((t (:inherit font-lock-keyword-face)))
   "Face for direction of ports/functions/tasks args."
   :group 'verilog-ext-font-lock)
 
 (defvar verilog-ext-font-lock-typedef-face 'verilog-ext-font-lock-typedef-face)
 (defface verilog-ext-font-lock-typedef-face
-  '((t (:foreground "light blue")))
+  '((t (:inherit font-lock-type-face)))
   "Face for user defined types."
   :group 'verilog-ext-font-lock)
 
 (defvar verilog-ext-font-lock-translate-off-face 'verilog-ext-font-lock-translate-off-face)
 (defface verilog-ext-font-lock-translate-off-face
-  '((t (:background "gray20" :slant italic)))
+  '((t (:slant italic)))
   "Face for pragmas between comments, e.g:
 * translate_off / * translate_on"
   :group 'verilog-ext-font-lock)
 
 (defvar verilog-ext-font-lock-uvm-classes-face 'verilog-ext-font-lock-uvm-classes-face)
 (defface verilog-ext-font-lock-uvm-classes-face
-  '((t (:foreground "light blue")))
+  '((t (:inherit font-lock-type-face)))
   "Face for UVM classes."
   :group 'verilog-ext-font-lock)
 
 (defvar verilog-ext-font-lock-xilinx-attributes-face 'verilog-ext-font-lock-xilinx-attributes-face)
 (defface verilog-ext-font-lock-xilinx-attributes-face
-  '((t (:foreground "orange1")))
+  '((t (:inherit font-lock-property-name-face)))
   "Face for Xilinx Vivado RTL synthesis attributes."
   :group 'verilog-ext-font-lock)
 
@@ -200,7 +200,7 @@ obj.method();"
 (defconst verilog-ext-font-lock-curly-braces-re "[{}]")
 (defconst verilog-ext-font-lock-brackets-re "\\(\\[\\|\\]\\)")
 (defconst verilog-ext-font-lock-punctuation-re "\\([!,;:?'=<>]\\|\\*\\)")
-(defconst verilog-ext-font-lock-punctuation-bold-re "\\([&^~%\+-]\\||\\|\\.\\|\\/\\)")
+(defconst verilog-ext-font-lock-operator-re "\\([&^~%\+-]\\||\\|\\.\\|\\/\\)")
 (defconst verilog-ext-font-lock-system-task-re (concat "\\$" verilog-identifier-re))
 (defconst verilog-ext-font-lock-port-connection-re (concat "^[[:blank:]]*\\.\\(" verilog-identifier-re "\\)"))
 (defconst verilog-ext-font-lock-dot-name-re (concat "\\(" verilog-identifier-re "\\)\\.\\(" verilog-identifier-re "\\)"))
@@ -598,7 +598,7 @@ Similar to `verilog-match-translate-off' but including
    (list verilog-ext-font-lock-dot-name-re           1 verilog-ext-font-lock-dot-name-face)
    (list verilog-ext-font-lock-braces-content-re     1 verilog-ext-font-lock-braces-content-face)
    (list verilog-ext-font-lock-punctuation-re        0 verilog-ext-font-lock-punctuation-face)
-   (list verilog-ext-font-lock-punctuation-bold-re   0 verilog-ext-font-lock-punctuation-bold-face)
+   (list verilog-ext-font-lock-operator-re           0 verilog-ext-font-lock-operator-face)
    (list verilog-ext-font-lock-brackets-re           0 verilog-ext-font-lock-brackets-face)
    (list verilog-ext-font-lock-parenthesis-re        0 verilog-ext-font-lock-parenthesis-face)
    (list verilog-ext-font-lock-curly-braces-re       0 verilog-ext-font-lock-curly-braces-face)
