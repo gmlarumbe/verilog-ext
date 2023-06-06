@@ -147,8 +147,6 @@ To override the value of `workspace` root inside a Git repo:
 
 Enabling of `verilog-ext-mode` minor-mode creates the following keybindings:
 
-<!-- TODO: Add binding for workspace-compile -->
-
 * Features:
   * <kbd>M-i</kbd> `verilog-ext-imenu-list`
   * <kbd>C-c C-l</kbd> `verilog-ext-code-format`
@@ -212,7 +210,7 @@ For configuration information, see the [wiki](https://github.com/gmlarumbe/veril
 
 `verilog-ext` provides a builtin `xref` backend to navigate definitions and references of the [workspace](#workspace).
 
-<!-- TODO: Insert image -->
+<img src="https://github.com/gmlarumbe/verilog-ext/assets/51021955/d196a676-6d28-4bfa-9cee-2662d592b3fb" width=400 height=300>
 
 For configuration information, see the [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Xref).
 
@@ -221,20 +219,17 @@ For configuration information, see the [wiki](https://github.com/gmlarumbe/veril
 
 Complete with tags from current [workspace](#workspace). Supports dot and scope completion for module signals, class attributes and methods.
 
-<!-- TODO: Insert image -->
+<img src="https://github.com/gmlarumbe/verilog-ext/assets/51021955/7e0e6e49-8d5d-4be0-bb61-290c950e8623" width=400 height=300>
 
 For configuration information, see the [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Completion).
 
 
 ## Hierarchy extraction ##
 
-<!-- TODO: Update with the builtin and the outshine/hierarchy.el-->
-
-<img src="https://user-images.githubusercontent.com/51021955/209574234-eda2d151-87b4-44db-8edd-e41e2e1b79d4.gif" width=400 height=300>
+<img src="https://github.com/gmlarumbe/verilog-ext/assets/51021955/94e009c3-e61c-496a-bacf-02e7d022157a" width=400 height=300>
 
 Hierarchy extraction of module at current buffer.
 
-<!-- TODO: Update this entry -->
 For configuration information, see the [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Hierarchy).
 
 
@@ -248,7 +243,6 @@ Auto-configure various SystemVerilog language servers for `lsp-mode` and `eglot`
 - [svls](https://github.com/dalance/svls)
 - [veridian](https://github.com/vivekmalneedi/veridian)
 
-<!-- TODO: Check instructions, talk about the verilog-ext-feature-list -->
 For configuration instructions, see the [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Language-Server-Protocol)
 
 ## Linting ##
@@ -329,13 +323,12 @@ See configuration in the [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Co
 Provides functions to perform compilations with syntax highlighting
 and jump to error, buffer preprocessing and makefile development:
 
-  - `verilog-ext-workspace-compile`: <kbd>C-c <f5></kbd>
+<img src="https://github.com/gmlarumbe/verilog-ext/assets/51021955/1a78cc1b-da3e-4219-baaf-cb1fb11d335c" width=400 height=300>
+
+  - `verilog-ext-workspace-compile`: <kbd>C-c \<f5\></kbd>
   - `verilog-ext-preprocess`: <kbd>C-c C-p</kbd>
   - `verilog-ext-workspace-makefile-create`
   - `verilog-ext-workspace-makefile-compile`
-
-<!-- TODO: Add recording -->
-<!-- TODO: Add wiki page -->
 
 See configuration in the [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Compilation).
 
@@ -374,15 +367,13 @@ Enhanced `which-func` support: show current block/instance at point in the mode-
 Add support for syntax-higlighting and alignment via
 `verilog-pretty-declarations` of user defined types and classes.
 
-<!-- TODO: Add screenshot -->
+<img src="https://github.com/gmlarumbe/verilog-ext/assets/51021955/5e654ba5-6eaa-4699-865c-628cadeda75a" width=400 height=300>
 
 For configuration see [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Typedefs)
 
 ## Time-stamp ##
 
 Automatic update of header timestamp after file saving.
-
-<!-- TODO: Beautify this a bit -->
 
    - `verilog-ext-time-stamp-mode`
 
@@ -399,8 +390,6 @@ Auto convert block comments to names after file saving.
 
 
 Setup `company` to complete with SystemVerilog keywords
-
-<!-- TODO: Basic information -->
 
 
 ## Port connections ##
