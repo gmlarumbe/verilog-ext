@@ -40,6 +40,31 @@
   "Verilog-ext flycheck."
   :group 'verilog-ext)
 
+(defcustom verilog-ext-flycheck-use-open-buffers t
+  "Set to non-nil to use list of open Verilog buffers/dirs for linters."
+  :type 'boolean
+  :group 'verilog-ext-flycheck)
+
+(defcustom verilog-ext-flycheck-verilator-include-path nil
+  "List of include paths for verilator linter."
+  :type '(repeat string)
+  :group 'verilog-ext-flycheck)
+
+(defcustom verilog-ext-flycheck-verilator-file-list nil
+  "List of extra files besides current buffer for verilator linter."
+  :type '(repeat string)
+  :group 'verilog-ext-flycheck)
+
+(defcustom verilog-ext-flycheck-iverilog-include-path nil
+  "List of include paths for iverilog linter."
+  :type '(repeat string)
+  :group 'verilog-ext-flycheck)
+
+(defcustom verilog-ext-flycheck-iverilog-file-list nil
+  "List of extra files besides current buffer for iverilog linter."
+  :type '(repeat string)
+  :group 'verilog-ext-flycheck)
+
 (defcustom verilog-ext-flycheck-verible-rules nil
   "List of strings containing verible liner rules.
 Use - or + prefixes depending on enabling/disabling of rules.
@@ -47,18 +72,59 @@ https://chipsalliance.github.io/verible/lint.html"
   :type '(repeat string)
   :group 'verilog-ext-flycheck)
 
+(defcustom verilog-ext-flycheck-slang-include-path nil
+  "List of include paths for slang linter."
+  :type '(repeat string)
+  :group 'verilog-ext-flycheck)
+
+(defcustom verilog-ext-flycheck-slang-file-list nil
+  "List of extra files besides current buffer for slang linter."
+  :type '(repeat string)
+  :group 'verilog-ext-flycheck)
+
+(defcustom verilog-ext-flycheck-svlint-include-path nil
+  "List of include paths for svlint linter.
+
+Variables is needed since svlint doesn't allow both source and -f command file
+at the same time."
+  :type '(repeat string)
+  :group 'verilog-ext-flycheck)
+
+(defcustom verilog-ext-flycheck-svlint-file-list nil
+  "List of include paths for svlint linter.
+
+Variable is needed since svlint doesn't allow both source and -f command file
+at the same time."
+  :type '(repeat string)
+  :group 'verilog-ext-flycheck)
+
+(defcustom verilog-ext-flycheck-surelog-include-path nil
+  "List of include paths for surelog linter."
+  :type '(repeat string)
+  :group 'verilog-ext-flycheck)
+
+(defcustom verilog-ext-flycheck-surelog-file-list nil
+  "List of extra files besides current buffer for surelog linter."
+  :type '(repeat string)
+  :group 'verilog-ext-flycheck)
+
 
 (defvar verilog-ext-flycheck-linter 'verilog-verilator
   "Verilog-ext flycheck linter.")
 
-(defvar verilog-ext-flycheck-linters '(verilog-verible
-                                       verilog-verilator
-                                       verilog-slang
-                                       verilog-surelog
-                                       verilog-iverilog
-                                       verilog-svlint
-                                       verilog-cadence-hal)
+(defconst verilog-ext-flycheck-linters '(verilog-verible
+                                         verilog-verilator
+                                         verilog-slang
+                                         verilog-surelog
+                                         verilog-iverilog
+                                         verilog-svlint
+                                         verilog-cadence-hal)
   "List of supported linters.")
+
+
+(defvar verilog-ext-flycheck-dirs nil "List of open dirs for `verilog-ext-flycheck'.")
+(defvar verilog-ext-flycheck-files nil "List of open files for `verilog-ext-flycheck'.")
+(defconst verilog-ext-flycheck-commands-file-name "commands.f")
 
 
 (defun verilog-ext-flycheck-setup-linter (linter)
@@ -76,11 +142,11 @@ https://chipsalliance.github.io/verible/lint.html"
     (setq linter (intern (completing-read "Select linter: " verilog-ext-flycheck-linters nil t))))
   (unless (member linter verilog-ext-flycheck-linters)
     (error "Linter %s not available" linter))
-  (setq verilog-ext-flycheck-linter linter) ; Save state for reporting
   ;; Set it at the head of the list
   (delete linter flycheck-checkers)
   (add-to-list 'flycheck-checkers linter)
   (verilog-ext-flycheck-setup-linter linter)
+  (setq verilog-ext-flycheck-linter linter) ; Save state for reporting
   ;; Refresh linter if in a verilog buffer
   (when (eq major-mode 'verilog-mode)
     (flycheck-select-checker linter))
@@ -117,8 +183,7 @@ If called with UARG select among available linters and enable flycheck."
 
 
 ;;;; Verilator
-(defvar verilog-ext-flycheck-verilator-include-path nil)
-(flycheck-def-config-file-var flycheck-verilog-verilator-command-file verilog-verilator "verilator.f")
+(flycheck-def-config-file-var flycheck-verilog-verilator-command-file verilog-verilator verilog-ext-flycheck-commands-file-name)
 
 (flycheck-define-checker verilog-verilator
   "A Verilog syntax checker using the Verilator Verilog HDL simulator.
@@ -131,7 +196,10 @@ See URL `https://www.veripool.org/wiki/verilator'."
             "--bbox-unsup" ; Blackbox unsupported language features to avoid errors on verification sources
             "--bbox-sys"  ;  Blackbox unknown $system calls
             (option-list "-I" verilog-ext-flycheck-verilator-include-path concat)
+            (option-list "-I" verilog-ext-flycheck-dirs concat)
             (config-file "-f" flycheck-verilog-verilator-command-file)
+            (eval (remove buffer-file-name verilog-ext-flycheck-verilator-file-list))
+            (eval (remove buffer-file-name verilog-ext-flycheck-files))
             source)
   :error-patterns
   ((warning line-start "%Warning-" (zero-or-more not-newline) ": " (file-name) ":" line ":" column ": " (message) line-end)
@@ -142,6 +210,8 @@ See URL `https://www.veripool.org/wiki/verilator'."
 
 
 ;;;; Iverilog
+(flycheck-def-config-file-var flycheck-verilog-iverilog-command-file verilog-iverilog verilog-ext-flycheck-commands-file-name)
+
 (flycheck-define-checker verilog-iverilog
   "A Verilog syntax checker using Icarus Verilog.
 
@@ -151,6 +221,11 @@ See URL `http://iverilog.icarus.com/'"
   ;;   - The +libext+.sv will only work with command files (equivalent to -f in xrun), not with command line arguments.
   ;;      - That means that a file that specifies the libraries/plusargs should be used with the -c <COMMAND_FILE> command line argument.
   :command ("iverilog" "-g2012" "-Wall" "-gassertions" "-t" "null" "-i" ; -i ignores missing modules
+            (option-list "-I" verilog-ext-flycheck-iverilog-include-path concat)
+            (option-list "-I" verilog-ext-flycheck-dirs concat)
+            (config-file "-f" flycheck-verilog-iverilog-command-file)
+            (eval (remove buffer-file-name verilog-ext-flycheck-iverilog-file-list))
+            (eval (remove buffer-file-name verilog-ext-flycheck-files))
             source)
   :error-patterns
   ((info    (file-name) ":" line ":" (zero-or-more not-newline) "sorry:"   (message) line-end) ; Unsupported
@@ -193,10 +268,7 @@ See URL `https://github.com/chipsalliance/verible'."
 
 
 ;;;; Slang
-(flycheck-def-config-file-var flycheck-verilog-slang-command-file verilog-slang "slang.f")
-
-(defvar verilog-ext-flycheck-slang-include-path nil) ; e.g. (list (file-name-concat (getenv "UVM_HOME") "src"))
-(defvar verilog-ext-flycheck-slang-file-list nil)    ; e.g. (list (file-name-concat (getenv "UVM_HOME") "src/uvm_pkg.sv"))
+(flycheck-def-config-file-var flycheck-verilog-slang-command-file verilog-slang verilog-ext-flycheck-commands-file-name)
 
 (flycheck-define-checker verilog-slang
   "SystemVerilog Language Services.
@@ -209,9 +281,11 @@ See URL `https://github.com/MikePopoloski/slang'."
             "--lint-only"
             "--ignore-unknown-modules"
             "--color-diagnostics=false"
-            (option-list "-I" verilog-ext-flycheck-slang-include-path)
-            (eval verilog-ext-flycheck-slang-file-list)
+            (option-list "-I" verilog-ext-flycheck-slang-include-path concat)
+            (option-list "-I" verilog-ext-flycheck-dirs concat)
             (config-file "-f" flycheck-verilog-slang-command-file)
+            (eval (remove buffer-file-name verilog-ext-flycheck-slang-file-list))
+            (eval (remove buffer-file-name verilog-ext-flycheck-files))
             source)
   :error-patterns
   ((error   (file-name) ":" line ":" column ": error: "   (message))
@@ -221,11 +295,8 @@ See URL `https://github.com/MikePopoloski/slang'."
 
 
 ;;;; Svlint
+;; For svlint we prefer using variables since it does not allow both source and -f command file at the same time.
 (flycheck-def-config-file-var flycheck-verilog-svlint-config-file verilog-svlint ".svlint.toml")
-
-;; Variables are needed since svlint doesn't allow both source and -f command file at the same time
-(defvar verilog-ext-flycheck-svlint-include-path nil) ; e.g. (list (file-name-concat (getenv "UVM_HOME") "src"))
-(defvar verilog-ext-flycheck-svlint-file-list nil)    ; e.g. (list (file-name-concat (getenv "UVM_HOME") "src/uvm_pkg.sv"))
 
 (flycheck-define-checker verilog-svlint
   "A Verilog syntax checker using svlint.
@@ -234,9 +305,11 @@ See URL `https://github.com/dalance/svlint'"
   :command ("svlint"
             "-1" ; one-line output
             "--ignore-include"
-            (config-file "-f" flycheck-verilog-svlint-config-file)
-            (option-list "-i" verilog-ext-flycheck-svlint-include-path)
-            (eval verilog-ext-flycheck-svlint-file-list)
+            (config-file "-c" flycheck-verilog-svlint-config-file)
+            (option-list "-i" verilog-ext-flycheck-svlint-include-path concat)
+            (option-list "-i" verilog-ext-flycheck-dirs concat)
+            (eval (remove buffer-file-name verilog-ext-flycheck-svlint-file-list))
+            (eval (remove buffer-file-name verilog-ext-flycheck-files))
             source)
   :error-patterns
   ((warning line-start "Fail"  (zero-or-more blank) (file-name) ":" line ":" column (zero-or-more blank) (zero-or-more not-newline) "hint: " (message) line-end)
@@ -245,7 +318,9 @@ See URL `https://github.com/dalance/svlint'"
 
 
 ;;;; Surelog
-(defvar verilog-ext-flycheck-surelog-directory "/tmp")
+(defconst verilog-ext-flycheck-surelog-directory "/tmp")
+
+(flycheck-def-config-file-var flycheck-verilog-surelog-command-file verilog-surelog verilog-ext-flycheck-commands-file-name)
 
 (defun verilog-ext-flycheck-surelog-directory-fn (_checker)
   "Return directory where surelog is executed.
@@ -260,6 +335,11 @@ slpp_all outputs will be stored at this directory.."
 See URL `https://github.com/chipsalliance/Surelog'"
   :command ("surelog"
             "-parseonly" ; one-line output
+            (option-list "-I" verilog-ext-flycheck-surelog-include-path concat)
+            (option-list "-I" verilog-ext-flycheck-dirs concat)
+            (config-file "-f" flycheck-verilog-surelog-command-file)
+            (eval (remove buffer-file-name verilog-ext-flycheck-surelog-file-list))
+            (eval (remove buffer-file-name verilog-ext-flycheck-files))
             source)
   :error-patterns
   ((info    line-start "[INF:" (one-or-more alnum) "] " (file-name) ":" line ":" column ":" blank (message) line-end)
