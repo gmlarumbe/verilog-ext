@@ -17,7 +17,7 @@ This package provides some extensions on top of the great Emacs [verilog-mode](h
 * [Support for many linters via `flycheck`](#linting)
 * [Beautify modules and instances](#beautify-instances)
 * [Code navigation functions for RTL and Verification environments](#navigation)
-* [Extended collection of templates via `yasnippet` and `hydra`](#snippets)
+* [Extended collection of templates via `yasnippet` and `hydra`](#templates)
 * [Code formatter via `apheleia`](#code-formatter)
 * [Compilation with colored errors/warnings and jump to file/line](#compilation)
 * [Improve `imenu` entries: detect instances, classes and methods](#imenu)
@@ -35,7 +35,7 @@ This package provides some extensions on top of the great Emacs [verilog-mode](h
 
 `verilog-ext` is available on MELPA.
 
-`verilog-ts-mode` is not yet available on MELPA. See [notes](https://github.com/gmlarumbe/verilog-ext/wiki/Tree-sitter#notes) for more info.
+`verilog-ts-mode` is not yet available on MELPA. See the [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Tree-sitter) for more info.
 
 
 ### straight.el ###
@@ -289,8 +289,8 @@ Features:
 For detailed info see the [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Navigation).
 
 
-## Snippets ##
-Select between snippets that cover most frequently used SystemVerilog constructs:
+## Templates ##
+Select among snippets that cover most frequently used SystemVerilog constructs:
 
 <img src="https://user-images.githubusercontent.com/51021955/209577453-730014b7-d261-4884-9eb2-baa8eaa02a66.gif" width=400 height=300>
 
