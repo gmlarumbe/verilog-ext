@@ -32,7 +32,7 @@
 (set-face-attribute 'verilog-ext-font-lock-curly-braces-face nil      :foreground "DarkGoldenrod2")
 (set-face-attribute 'verilog-ext-font-lock-port-connection-face nil   :foreground "bisque2")
 (set-face-attribute 'verilog-ext-font-lock-dot-name-face nil          :foreground "gray70")
-(set-face-attribute 'verilog-ext-font-lock-braces-content-face nil    :foreground "yellow green")
+(set-face-attribute 'verilog-ext-font-lock-brackets-content-face nil  :foreground "yellow green")
 (set-face-attribute 'verilog-ext-font-lock-width-num-face nil         :foreground "chartreuse2")
 (set-face-attribute 'verilog-ext-font-lock-width-type-face nil        :foreground "sea green" :weight 'bold)
 (set-face-attribute 'verilog-ext-font-lock-module-face nil            :foreground "green1")

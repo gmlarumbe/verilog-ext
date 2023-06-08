@@ -103,10 +103,10 @@ axi_if.Ready <= 1'b1;
 obj.method();"
   :group 'verilog-ext-font-lock)
 
-(defvar verilog-ext-font-lock-braces-content-face 'verilog-ext-font-lock-braces-content-face)
-(defface verilog-ext-font-lock-braces-content-face
+(defvar verilog-ext-font-lock-brackets-content-face 'verilog-ext-font-lock-brackets-content-face)
+(defface verilog-ext-font-lock-brackets-content-face
   '((t (:inherit font-lock-number-face)))
-  "Face for content between braces: arrays, bit vector width and indexing."
+  "Face for content between brackets: arrays, bit vector width and indexing."
   :group 'verilog-ext-font-lock)
 
 (defvar verilog-ext-font-lock-width-num-face 'verilog-ext-font-lock-width-num-face)
@@ -204,7 +204,7 @@ obj.method();"
 (defconst verilog-ext-font-lock-system-task-re (concat "\\$" verilog-identifier-re))
 (defconst verilog-ext-font-lock-port-connection-re (concat "^[[:blank:]]*\\.\\(" verilog-identifier-re "\\)"))
 (defconst verilog-ext-font-lock-dot-name-re (concat "\\(" verilog-identifier-re "\\)\\.\\(" verilog-identifier-re "\\)"))
-(defconst verilog-ext-font-lock-braces-content-re "\\[\\(?1:[ +'\*/()$0-9a-zA-Z:_-]*\\)\\]")
+(defconst verilog-ext-font-lock-brackets-content-re "\\[\\(?1:[ +'\*/()$0-9a-zA-Z:_-]*\\)\\]")
 (defconst verilog-ext-font-lock-width-signal-re "\\(?1:[0-9]*\\)'[sS]?\\(?2:[hHdDxXbBoO]\\)\\(?3:[0-9a-fA-F_xzXZ]+\\)")
 (defconst verilog-ext-font-lock-time-event-re "\\([@#]\\)")
 (defconst verilog-ext-font-lock-time-unit-re "[0-9]+\\(\\.[0-9]+\\)?\\(?2:[umnpf]s\\)")
@@ -596,7 +596,7 @@ Similar to `verilog-match-translate-off' but including
    (list verilog-ext-font-lock-time-event-re         0 verilog-ext-font-lock-time-event-face)
    (list verilog-ext-font-lock-port-connection-re    1 verilog-ext-font-lock-port-connection-face)
    (list verilog-ext-font-lock-dot-name-re           1 verilog-ext-font-lock-dot-name-face)
-   (list verilog-ext-font-lock-braces-content-re     1 verilog-ext-font-lock-braces-content-face)
+   (list verilog-ext-font-lock-brackets-content-re   1 verilog-ext-font-lock-brackets-content-face)
    (list verilog-ext-font-lock-punctuation-re        0 verilog-ext-font-lock-punctuation-face)
    (list verilog-ext-font-lock-operator-re           0 verilog-ext-font-lock-operator-face)
    (list verilog-ext-font-lock-brackets-re           0 verilog-ext-font-lock-brackets-face)

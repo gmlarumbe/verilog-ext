@@ -19,8 +19,8 @@
 »
 
 «k:module» «f:ucontroller» «:verilog-ext-font-lock-time-event-face:#» «:verilog-ext-font-lock-parenthesis-face:(»
-    «t:parameter» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-braces-content-face:31:0»«:verilog-ext-font-lock-brackets-face:]» FREQ_CLK «:verilog-ext-font-lock-punctuation-face:=» 100000000«:verilog-ext-font-lock-punctuation-face:,»
-    «t:parameter» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-braces-content-face:31:0»«:verilog-ext-font-lock-brackets-face:]» TX_SPEED «:verilog-ext-font-lock-punctuation-face:=» 115200
+    «t:parameter» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:31:0»«:verilog-ext-font-lock-brackets-face:]» FREQ_CLK «:verilog-ext-font-lock-punctuation-face:=» 100000000«:verilog-ext-font-lock-punctuation-face:,»
+    «t:parameter» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:31:0»«:verilog-ext-font-lock-brackets-face:]» TX_SPEED «:verilog-ext-font-lock-punctuation-face:=» 115200
     «:verilog-ext-font-lock-parenthesis-face:)» «:verilog-ext-font-lock-parenthesis-face:(»
     «:verilog-ext-font-lock-direction-face:input» «t:logic»         Clk«:verilog-ext-font-lock-punctuation-face:,»
     «:verilog-ext-font-lock-direction-face:input» «t:logic»         Rst_n«:verilog-ext-font-lock-punctuation-face:,»
@@ -28,11 +28,11 @@
 »    «:verilog-ext-font-lock-direction-face:input» «t:logic»         RXD«:verilog-ext-font-lock-punctuation-face:,»
     «:verilog-ext-font-lock-direction-face:output» «t:logic»        TXD«:verilog-ext-font-lock-punctuation-face:,»
     «m:// »«x:ROM
-»    «:verilog-ext-font-lock-direction-face:input» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-braces-content-face:11:0»«:verilog-ext-font-lock-brackets-face:]»  ROM_Data«:verilog-ext-font-lock-punctuation-face:,»
-    «:verilog-ext-font-lock-direction-face:output» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-braces-content-face:11:0»«:verilog-ext-font-lock-brackets-face:]» ROM_Addr«:verilog-ext-font-lock-punctuation-face:,»
+»    «:verilog-ext-font-lock-direction-face:input» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:11:0»«:verilog-ext-font-lock-brackets-face:]»  ROM_Data«:verilog-ext-font-lock-punctuation-face:,»
+    «:verilog-ext-font-lock-direction-face:output» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:11:0»«:verilog-ext-font-lock-brackets-face:]» ROM_Addr«:verilog-ext-font-lock-punctuation-face:,»
     «m:// »«x:Exteral HW
-»    «:verilog-ext-font-lock-direction-face:output» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-braces-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]»  Temp«:verilog-ext-font-lock-punctuation-face:,»
-    «:verilog-ext-font-lock-direction-face:output» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-braces-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]»  Switches
+»    «:verilog-ext-font-lock-direction-face:output» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]»  Temp«:verilog-ext-font-lock-punctuation-face:,»
+    «:verilog-ext-font-lock-direction-face:output» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]»  Switches
     «:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
 
 
@@ -43,32 +43,32 @@
     «t:logic»       CPU_Oen«:verilog-ext-font-lock-punctuation-face:;»
     «t:logic»       CPU_Wen«:verilog-ext-font-lock-punctuation-face:;»
     «t:logic»       CPU_Cs«:verilog-ext-font-lock-punctuation-face:;»
-    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-braces-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» CPU_Address«:verilog-ext-font-lock-punctuation-face:;»
-    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-braces-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» DMA_Address«:verilog-ext-font-lock-punctuation-face:;»
-    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-braces-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» DMA_DataOut«:verilog-ext-font-lock-punctuation-face:;»
-    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-braces-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» CPU_DataOut«:verilog-ext-font-lock-punctuation-face:;»
+    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» CPU_Address«:verilog-ext-font-lock-punctuation-face:;»
+    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» DMA_Address«:verilog-ext-font-lock-punctuation-face:;»
+    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» DMA_DataOut«:verilog-ext-font-lock-punctuation-face:;»
+    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» CPU_DataOut«:verilog-ext-font-lock-punctuation-face:;»
     «t:logic»       Dma_Idle«:verilog-ext-font-lock-punctuation-face:;»
     «m:// »«x:Serial <-> DMA
-»    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-braces-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» TX_Data«:verilog-ext-font-lock-punctuation-face:;»
+»    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» TX_Data«:verilog-ext-font-lock-punctuation-face:;»
     «t:logic»       TX_Ready«:verilog-ext-font-lock-punctuation-face:;»
     «t:logic»       TX_Valid«:verilog-ext-font-lock-punctuation-face:;»
     «t:logic»       Data_Read«:verilog-ext-font-lock-punctuation-face:;»
-    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-braces-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» RX_Data«:verilog-ext-font-lock-punctuation-face:;»
+    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» RX_Data«:verilog-ext-font-lock-punctuation-face:;»
     «t:logic»       RX_Empty«:verilog-ext-font-lock-punctuation-face:;»
     «t:logic»       RX_Full«:verilog-ext-font-lock-punctuation-face:;»
     «m:// »«x:DMA/CPU <-> RAM
-»    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-braces-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» RAM_DataOut«:verilog-ext-font-lock-punctuation-face:;»
-    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-braces-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» RAM_DataIn«:verilog-ext-font-lock-punctuation-face:;»
+»    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» RAM_DataOut«:verilog-ext-font-lock-punctuation-face:;»
+    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» RAM_DataIn«:verilog-ext-font-lock-punctuation-face:;»
     «m:// »«x:ALU <-> CPU
-»    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-braces-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» ALU_DataIn«:verilog-ext-font-lock-punctuation-face:;»
-    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-braces-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» ALU_DataOut«:verilog-ext-font-lock-punctuation-face:;»
+»    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» ALU_DataIn«:verilog-ext-font-lock-punctuation-face:;»
+    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» ALU_DataOut«:verilog-ext-font-lock-punctuation-face:;»
     «:verilog-ext-font-lock-typedef-face:alu_op»      ALU_op«:verilog-ext-font-lock-punctuation-face:;»
     «t:logic»       FlagE«:verilog-ext-font-lock-punctuation-face:;»
     «t:logic»       FlagN«:verilog-ext-font-lock-punctuation-face:;»
     «t:logic»       FlagC«:verilog-ext-font-lock-punctuation-face:;»
     «t:logic»       FlagZ«:verilog-ext-font-lock-punctuation-face:;»
     «m:// »«x:RAM signals
-»    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-braces-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» RAM_Address«:verilog-ext-font-lock-punctuation-face:;»
+»    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» RAM_Address«:verilog-ext-font-lock-punctuation-face:;»
     «t:logic»       RAM_Wen«:verilog-ext-font-lock-punctuation-face:;»
     «t:logic»       RAM_Oen«:verilog-ext-font-lock-punctuation-face:;»
     «t:logic»       RAM_Cs«:verilog-ext-font-lock-punctuation-face:;»
