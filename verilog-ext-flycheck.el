@@ -36,6 +36,8 @@
 (require 'flycheck)
 (require 'verilog-ext-utils)
 
+
+;;; Custom
 (defgroup verilog-ext-flycheck nil
   "Verilog-ext flycheck."
   :group 'verilog-ext)
@@ -47,22 +49,22 @@
 
 (defcustom verilog-ext-flycheck-verilator-include-path nil
   "List of include paths for verilator linter."
-  :type '(repeat string)
+  :type '(repeat directory)
   :group 'verilog-ext-flycheck)
 
 (defcustom verilog-ext-flycheck-verilator-file-list nil
   "List of extra files besides current buffer for verilator linter."
-  :type '(repeat string)
+  :type '(repeat file)
   :group 'verilog-ext-flycheck)
 
 (defcustom verilog-ext-flycheck-iverilog-include-path nil
   "List of include paths for iverilog linter."
-  :type '(repeat string)
+  :type '(repeat directory)
   :group 'verilog-ext-flycheck)
 
 (defcustom verilog-ext-flycheck-iverilog-file-list nil
   "List of extra files besides current buffer for iverilog linter."
-  :type '(repeat string)
+  :type '(repeat file)
   :group 'verilog-ext-flycheck)
 
 (defcustom verilog-ext-flycheck-verible-rules nil
@@ -74,12 +76,12 @@ https://chipsalliance.github.io/verible/lint.html"
 
 (defcustom verilog-ext-flycheck-slang-include-path nil
   "List of include paths for slang linter."
-  :type '(repeat string)
+  :type '(repeat directory)
   :group 'verilog-ext-flycheck)
 
 (defcustom verilog-ext-flycheck-slang-file-list nil
   "List of extra files besides current buffer for slang linter."
-  :type '(repeat string)
+  :type '(repeat file)
   :group 'verilog-ext-flycheck)
 
 (defcustom verilog-ext-flycheck-svlint-include-path nil
@@ -87,7 +89,7 @@ https://chipsalliance.github.io/verible/lint.html"
 
 Variables is needed since svlint doesn't allow both source and -f command file
 at the same time."
-  :type '(repeat string)
+  :type '(repeat directory)
   :group 'verilog-ext-flycheck)
 
 (defcustom verilog-ext-flycheck-svlint-file-list nil
@@ -95,20 +97,21 @@ at the same time."
 
 Variable is needed since svlint doesn't allow both source and -f command file
 at the same time."
-  :type '(repeat string)
+  :type '(repeat file)
   :group 'verilog-ext-flycheck)
 
 (defcustom verilog-ext-flycheck-surelog-include-path nil
   "List of include paths for surelog linter."
-  :type '(repeat string)
+  :type '(repeat directory)
   :group 'verilog-ext-flycheck)
 
 (defcustom verilog-ext-flycheck-surelog-file-list nil
   "List of extra files besides current buffer for surelog linter."
-  :type '(repeat string)
+  :type '(repeat file)
   :group 'verilog-ext-flycheck)
 
 
+;;; Vars
 (defvar verilog-ext-flycheck-linter 'verilog-verilator
   "Verilog-ext flycheck linter.")
 
@@ -127,61 +130,7 @@ at the same time."
 (defconst verilog-ext-flycheck-commands-file-name "commands.f")
 
 
-(defun verilog-ext-flycheck-setup-linter (linter)
-  "Setup LINTER before enabling flycheck."
-  (pcase linter
-    ('verilog-verible
-     (verilog-ext-flycheck-verible-rules-fmt))
-    ('verilog-cadence-hal
-     (verilog-ext-flycheck-setup-hal))))
-
-(defun verilog-ext-flycheck-set-linter (&optional linter)
-  "Set LINTER as default and enable it if flycheck is on."
-  (interactive)
-  (unless linter
-    (setq linter (intern (completing-read "Select linter: " verilog-ext-flycheck-linters nil t))))
-  (unless (member linter verilog-ext-flycheck-linters)
-    (error "Linter %s not available" linter))
-  ;; Set it at the head of the list
-  (delete linter flycheck-checkers)
-  (add-to-list 'flycheck-checkers linter)
-  (verilog-ext-flycheck-setup-linter linter)
-  (setq verilog-ext-flycheck-linter linter) ; Save state for reporting
-  ;; Refresh linter if in a verilog buffer
-  (when (eq major-mode 'verilog-mode)
-    (flycheck-select-checker linter))
-  (message "Linter set to: %s " linter))
-
-(defun verilog-ext-flycheck-setup ()
-  "Add available linters from `verilog-ext-flycheck-linters' and set default one."
-  (interactive)
-  (dolist (checker verilog-ext-flycheck-linters)
-    (add-to-list 'flycheck-checkers checker))
-  (verilog-ext-flycheck-set-linter verilog-ext-flycheck-linter))
-
-(defun verilog-ext-flycheck-mode (&optional uarg)
-  "`flycheck-mode' Verilog wrapper function.
-If called with UARG select among available linters and enable flycheck."
-  (interactive "P")
-  (let (enable)
-    (when buffer-read-only
-      (error "Flycheck does not work on read-only buffers!"))
-    (if uarg
-        (progn
-          (verilog-ext-flycheck-set-linter)
-          (setq enable t))
-      (unless flycheck-mode
-        (setq enable t)))
-    (when (flycheck-disabled-checker-p verilog-ext-flycheck-linter)
-      (user-error "[%s] Current checker is disabled by flycheck.\nEnable it with C-u M-x `flycheck-disable-checker'" verilog-ext-flycheck-linter))
-    (if enable
-        (progn
-          (flycheck-mode 1)
-          (message "[%s] Flycheck enabled" verilog-ext-flycheck-linter))
-      (flycheck-mode -1)
-      (message "Flycheck disabled"))))
-
-
+;;; Linters
 ;;;; Verilator
 (flycheck-def-config-file-var flycheck-verilog-verilator-command-file verilog-verilator verilog-ext-flycheck-commands-file-name)
 
@@ -437,6 +386,64 @@ be undefined when defining the checker."
       (warning (zero-or-more not-newline) ": *W," (zero-or-more not-newline) "(" (file-name) "," line "|" column "): " (message) line-end)
       (error   (zero-or-more not-newline) ": *E," (zero-or-more not-newline) "(" (file-name) "," line "|" column "): " (message) line-end))
     :modes '(verilog-mode verilog-ts-mode)))
+
+
+;;; Functions
+(defun verilog-ext-flycheck-setup-linter (linter)
+  "Setup LINTER before enabling flycheck."
+  (pcase linter
+    ('verilog-verible
+     (verilog-ext-flycheck-verible-rules-fmt))
+    ('verilog-cadence-hal
+     (verilog-ext-flycheck-setup-hal))))
+
+(defun verilog-ext-flycheck-set-linter (&optional linter)
+  "Set LINTER as default and enable it if flycheck is on."
+  (interactive)
+  (unless linter
+    (setq linter (intern (completing-read "Select linter: " verilog-ext-flycheck-linters nil t))))
+  (unless (member linter verilog-ext-flycheck-linters)
+    (error "Linter %s not available" linter))
+  ;; Set it at the head of the list
+  (delete linter flycheck-checkers)
+  (add-to-list 'flycheck-checkers linter)
+  (verilog-ext-flycheck-setup-linter linter)
+  (setq verilog-ext-flycheck-linter linter) ; Save state for reporting
+  ;; Refresh linter if in a verilog buffer
+  (when (eq major-mode 'verilog-mode)
+    (flycheck-select-checker linter))
+  (message "Linter set to: %s " linter))
+
+(defun verilog-ext-flycheck-setup ()
+  "Add available linters from `verilog-ext-flycheck-linters' and set default one."
+  (interactive)
+  (dolist (checker verilog-ext-flycheck-linters)
+    (add-to-list 'flycheck-checkers checker))
+  (verilog-ext-flycheck-set-linter verilog-ext-flycheck-linter))
+
+;;;###autoload
+(defun verilog-ext-flycheck-mode (&optional uarg)
+  "`flycheck-mode' Verilog wrapper function.
+If called with UARG select among available linters and enable flycheck."
+  (interactive "P")
+  (let (enable)
+    (when buffer-read-only
+      (error "Flycheck does not work on read-only buffers!"))
+    (if uarg
+        (progn
+          (verilog-ext-flycheck-set-linter)
+          (setq enable t))
+      (unless flycheck-mode
+        (setq enable t)))
+    (when (flycheck-disabled-checker-p verilog-ext-flycheck-linter)
+      (user-error "[%s] Current checker is disabled by flycheck.\nEnable it with C-u M-x `flycheck-disable-checker'" verilog-ext-flycheck-linter))
+    (if enable
+        (progn
+          (flycheck-mode 1)
+          (message "[%s] Flycheck enabled" verilog-ext-flycheck-linter))
+      (flycheck-mode -1)
+      (message "Flycheck disabled"))))
+
 
 
 (provide 'verilog-ext-flycheck)
