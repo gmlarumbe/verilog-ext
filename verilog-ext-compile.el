@@ -41,19 +41,23 @@
 
 (require 'verilog-mode)
 
+(defgroup verilog-ext-compile nil
+  "Verilog-ext compilation."
+  :group 'verilog-ext)
+
 (defconst verilog-ext-compile-filename-re "[a-zA-Z0-9-_\\.\\/]+")
 
 (defconst verilog-ext-compile-msg-code-face 'verilog-ext-compile-msg-code-face)
 (defface verilog-ext-compile-msg-code-face
-  '((t (:foreground "gray55")))
+  '((t (:inherit font-lock-comment-face)))
   "Face for compilation message codes."
-  :group 'fpga)
+  :group 'verilog-ext-compile)
 
 (defconst verilog-ext-compile-bin-face 'verilog-ext-compile-bin-face)
 (defface verilog-ext-compile-bin-face
-  '((t (:foreground "goldenrod")))
+  '((t (:inherit font-lock-function-name-face)))
   "Face for compilation binaries."
-  :group 'fpga)
+  :group 'verilog-ext-compile)
 
 (defmacro verilog-ext-compile-define-mode (name &rest args)
   "Macro to define a compilation derived mode for a Verilog error regexp.

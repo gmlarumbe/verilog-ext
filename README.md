@@ -387,10 +387,10 @@ Auto convert block comments to names after file saving.
 
    - `verilog-ext-block-end-comments-to-names-mode`
 
-## Company-keywords ##
+## Company keywords ##
 
 
-Setup `company` to complete with SystemVerilog keywords
+Setup `company` to complete with SystemVerilog keywords.
 
 
 ## Port connections ##
