@@ -33,7 +33,7 @@
          (verilog-ext-workspace-ignore-files `(,(file-name-concat verilog-ext-workspace-root-dir "files/beautify/axi_demux.beauty.sv")
                                                ,(file-name-concat verilog-ext-workspace-root-dir "files/beautify/instances.beauty.sv")
                                                ,(file-name-concat verilog-ext-workspace-root-dir "files/beautify/ucontroller.beauty.sv"))))
-    (mapcar (lambda (file) (string-remove-prefix (concat verilog-ext-workspace-root-dir "/") file))
+    (mapcar (lambda (file) (string-remove-prefix (file-name-as-directory verilog-ext-workspace-root-dir) file))
             (verilog-ext-workspace-files))))
 
 (ert-deftest workspace::files ()
@@ -44,7 +44,7 @@
          (verilog-ext-workspace-ignore-files `(,(file-name-concat verilog-ext-workspace-root-dir "files/beautify/axi_demux.beauty.sv")
                                                ,(file-name-concat verilog-ext-workspace-root-dir "files/beautify/instances.beauty.sv")
                                                ,(file-name-concat verilog-ext-workspace-root-dir "files/beautify/ucontroller.beauty.sv"))))
-    (should (equal (mapcar (lambda (file) (string-remove-prefix (concat verilog-ext-workspace-root-dir "/") file))
+    (should (equal (mapcar (lambda (file) (string-remove-prefix (file-name-as-directory verilog-ext-workspace-root-dir) file))
                            (verilog-ext-workspace-files))
                    '("files/common/axi_demux.sv"
                      "files/common/axi_test.sv"

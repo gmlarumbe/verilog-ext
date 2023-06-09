@@ -16,7 +16,7 @@ jobs:
         emacs_version:
           - 28.2
           - release-snapshot
-          - snapshot
+          # - snapshot
     steps:
       - name: Set up Emacs
         uses: purcell/setup-emacs@master
