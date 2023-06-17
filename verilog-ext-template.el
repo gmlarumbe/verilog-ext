@@ -461,7 +461,7 @@ Syntactic sugar for `verilog-ext-template-inst-auto-from-file'."
       (verilog-ext-replace-string "/*AUTOINSTPARAM*/" "" beg end)
       ;; Remove ' // Parameters ' string
       (forward-line 1)
-      (beginning-of-line)
+      (goto-char (line-beginning-position))
       (kill-line 1))))
 
 (defun verilog-ext-template-inst-auto-from-file (file &optional template inst-template)
@@ -657,15 +657,15 @@ endmodule // tb_<module_name>
                                   (point) (verilog-pos-at-end-of-statement)))
     (save-excursion
       (while (re-search-forward "/\\*AUTO.*\*\/" nil t)
-        (beginning-of-line)
+        (goto-char (line-beginning-position))
         (kill-line 1)))
     (save-excursion
       (while (search-forward "// Beginning of automatic" nil t)
-        (beginning-of-line)
+        (goto-char (line-beginning-position))
         (kill-line 1)))
     (save-excursion
       (while (search-forward "// End of automatics" nil t)
-        (beginning-of-line)
+        (goto-char (line-beginning-position))
         (kill-line 1)))
     (search-forward "// TODO")
     (write-file outfile)))

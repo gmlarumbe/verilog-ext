@@ -58,7 +58,7 @@ of current port instead of toggling."
          (re (concat "\\(?1:^\\s-*\\)\\.\\(?2:" verilog-identifier-re "\\)\\(?3:\\s-*\\)\\(?4:(\\s-*\\(?5:" verilog-identifier-re "\\)*\\s-*)\\)?"))
          port-found port conn sig)
     (save-excursion
-      (beginning-of-line)
+      (goto-char (line-beginning-position))
       (if (looking-at re)
           (progn
             (setq port-found t)

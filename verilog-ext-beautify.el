@@ -95,10 +95,10 @@
     (setq current-module (car current-ids))
     (save-excursion
       (goto-char (match-beginning 0))
-      (beginning-of-line)
+      (goto-char (line-beginning-position))
       (setq beg (point))
       (goto-char (match-end 0))
-      (end-of-line)
+      (goto-char (line-end-position))
       (setq end (point)))
     (verilog-ext-indent-region beg end)
     (message "Indented %s" current-module)))
@@ -136,10 +136,10 @@ FILES is a list of strings containing the filepaths."
       (error "File %s does not exist! Aborting!" file)))
   (save-window-excursion
     (dolist (file files)
-      (find-file file)
-      (verilog-mode)
-      (verilog-ext-beautify-current-buffer)
-      (write-file file))))
+      (with-temp-file file
+        (insert-file-contents file)
+        (verilog-mode)
+        (verilog-ext-beautify-current-buffer)))))
 
 (defun verilog-ext-beautify-dir-files (dir)
   "Beautify Verilog files on DIR."

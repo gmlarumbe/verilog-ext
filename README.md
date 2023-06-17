@@ -150,7 +150,7 @@ Enabling of `verilog-ext-mode` minor-mode creates the following keybindings:
 
 * Features:
   * <kbd>M-i</kbd> `verilog-ext-imenu-list`
-  * <kbd>C-c C-l</kbd> `verilog-ext-code-format`
+  * <kbd>C-c C-l</kbd> `verilog-ext-formatter-run`
   * <kbd>C-c \<f5\></kbd> `verilog-ext-workspace-compile`
   * <kbd>C-c C-p</kbd> `verilog-ext-preprocess`
   * <kbd>C-c C-f</kbd> `verilog-ext-flycheck-mode`
@@ -159,8 +159,8 @@ Enabling of `verilog-ext-mode` minor-mode creates the following keybindings:
   * <kbd>C-\<tab\></kbd> `verilog-ext-hs-toggle-hiding`
 
 * Code beautifying
-  * <kbd>C-M-i</kbd> `verilog-ext-indent-block-at-point`
-  * <kbd>C-c C-b</kbd> `verilog-ext-module-at-point-beautify`
+  * <kbd>C-M-i</kbd> `verilog-ext-beautify-block-at-point-indent`
+  * <kbd>C-c C-b</kbd> `verilog-ext-beautify-module-at-point`
 
 * Dwim navigation
   * <kbd>C-M-a</kbd> `verilog-ext-nav-beg-of-defun-dwim`
@@ -178,9 +178,9 @@ Enabling of `verilog-ext-mode` minor-mode creates the following keybindings:
   * <kbd>C-M-.</kbd> `verilog-ext-workspace-jump-to-parent-module`
 
 * Port connections
-  * <kbd>C-c C-c c</kbd> `verilog-ext-clean-port-blanks`
-  * <kbd>C-c C-c t</kbd> `verilog-ext-toggle-connect-port`
-  * <kbd>C-c C-c r</kbd> `verilog-ext-connect-ports-recursively`
+  * <kbd>C-c C-c c</kbd> `verilog-ext-ports-clean-blanks`
+  * <kbd>C-c C-c t</kbd> `verilog-ext-ports-toggle-connect`
+  * <kbd>C-c C-c r</kbd> `verilog-ext-ports-connect-recursively`
 
 * Syntax table override functions:
   * <kbd>TAB</kbd> `verilog-ext-tab`
@@ -267,13 +267,13 @@ Indent and align parameters and ports of RTL instances.
 
 Interactive functions:
 
-* `verilog-ext-module-at-point-beautify`: <kbd>C-c C-b</kbd>
+* `verilog-ext-beautify-module-at-point`: <kbd>C-c C-b</kbd>
 * `verilog-ext-beautify-current-buffer`
 
 Batch-mode functions:
 
 * `verilog-ext-beautify-files`
-* `verilog-ext-beautify-files-current-dir`
+* `verilog-ext-beautify-dir-files`
 
 ## Navigation ##
 
@@ -399,9 +399,9 @@ Toggle connections of ports under instance at point
 
   <img src="https://user-images.githubusercontent.com/51021955/220176192-d823ba19-099f-4484-abc7-8269fd92928b.gif" width=400 height=300>
 
-  * `verilog-ext-toggle-connect-port`: <kbd>C-c C-c t</kbd>
-  * `verilog-ext-connect-ports-recursively`: <kbd>C-c C-c r</kbd>
-  * `verilog-ext-clean-port-blanks`: <kbd>C-c C-c c</kbd>
+  * `verilog-ext-ports-toggle-connect`: <kbd>C-c C-c t</kbd>
+  * `verilog-ext-ports-connect-recursively`: <kbd>C-c C-c r</kbd>
+  * `verilog-ext-ports-clean-blanks`: <kbd>C-c C-c c</kbd>
 
 
 ## Misc ##

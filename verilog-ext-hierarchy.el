@@ -342,7 +342,7 @@ Move through headings and point at the beginning of the tag."
   (declare (indent 0) (debug t))
   `(defun ,verilog-ext-func ()
      (interactive)
-     (beginning-of-line) ; Required for `outline-hide-sublevels'
+     (goto-char (line-beginning-position)) ; Required for `outline-hide-sublevels'
      (call-interactively ,outshine-func)
      (skip-chars-forward (car (car outshine-promotion-headings)))))
 
@@ -414,7 +414,7 @@ Expects HIERARCHY to be a indented string."
       (goto-char (point-min))
       (re-search-forward "// \\* ")
       (when (re-search-forward "// \\* " nil t)
-        (beginning-of-line)
+        (goto-char (line-beginning-position))
         (open-line 3)
         (forward-line 2)
         (insert "// * Not found module references")

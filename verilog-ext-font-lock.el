@@ -525,7 +525,7 @@ Bound search by LIMIT."
       (while (and (not found)
                   (verilog-re-search-forward decl-typedef-re limit t))
         (when (save-excursion
-                (beginning-of-line)
+                (goto-char (line-beginning-position))
                 (looking-at decl-typedef-re))
           (setq found t)))
       (when found
