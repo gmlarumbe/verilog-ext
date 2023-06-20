@@ -65,6 +65,11 @@ backend."
   :type '(repeat directory)
   :group 'verilog-ext-hierarchy)
 
+(defcustom verilog-ext-hierarchy-twidget-init-expand nil
+  "Set to non-nil to initially expand the hierarchy using hierarchy.el frontend."
+  :group 'verilog-ext-hierarchy
+  :type 'boolean)
+
 
 ;;;; Utils
 (defun verilog-ext-hierarchy--get-node-leaf (node)
@@ -75,7 +80,9 @@ E.g: return \"leaf\" for \"top.block.subblock.leaf\"."
 (defun verilog-ext-hierarchy--get-node-prefix (node)
   "Return prefix name of hierarchical reference NODE.
 E.g: return \"top.block.subblock\" for \"top.block.subblock.leaf\"."
-  (car (butlast (split-string node "\\."))))
+  (let ((prefix (string-join (butlast (split-string node "\\.")) ".")))
+    (unless (string= prefix "")
+      prefix)))
 
 (defun verilog-ext-hierarchy--convert-struct-to-string (hierarchy-struct)
   "Convert HIERARCHY-STRUCT to a string.
@@ -157,14 +164,14 @@ Alist will be of the form (module instance1:NAME1 instance2:NAME2 ...)."
 
 ;;;; Backends/extraction
 ;;;;; Vhier
-(defvar verilog-ext-hierarchy-vhier-buffer-name "*Verilog-Perl*"
+(defconst verilog-ext-hierarchy-vhier-buffer-name "*Verilog-Perl*"
   "Buffer name to use for the hierarchy file.")
-(defvar verilog-ext-hierarchy-vhier-shell-cmds-buffer-name "*Verilog-Perl-Shell*"
+(defconst verilog-ext-hierarchy-vhier-shell-cmds-buffer-name "*Verilog-Perl-Shell*"
   "Buffer name to use for the output of the shell commands vppreproc and vhier.")
-(defvar verilog-ext-hierarchy-vhier-bin-args '("--cells"
-                                               "--instance"
-                                               "--no-missing"
-                                               "--missing-modules"))
+(defconst verilog-ext-hierarchy-vhier-bin-args '("--cells"
+                                                 "--instance"
+                                                 "--no-missing"
+                                                 "--missing-modules"))
 
 (defun verilog-ext-hierarchy-extract-vhier (module)
   "Extract hierarchy of MODULE using Verilog-Perl vhier as a backend.
@@ -332,7 +339,8 @@ Show only module name, discard instance name after colon (mod:INST)."
     (lambda (item _) (insert (car (split-string (verilog-ext-hierarchy--get-node-leaf item) ":"))))))
   ;; Navigation mode and initial expansion
   (verilog-ext-hierarchy-twidget-nav-mode)
-  (verilog-ext-hierarchy-twidget-nav-init-expand))
+  (when verilog-ext-hierarchy-twidget-init-expand
+    (verilog-ext-hierarchy-twidget-nav-init-expand)))
 
 ;;;;; outshine
 (defmacro verilog-ext-hierarchy-outshine-nav (verilog-ext-func outshine-func)

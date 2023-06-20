@@ -160,12 +160,6 @@ FEATURES can be a single feature or a list of features."
 ;;; Major-mode
 (defvar verilog-ext-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "TAB") 'verilog-ext-tab)
-    (define-key map (kbd "M-d") 'verilog-ext-kill-word)
-    (define-key map (kbd "M-f") 'verilog-ext-forward-word)
-    (define-key map (kbd "M-b") 'verilog-ext-backward-word)
-    (define-key map (kbd "C-<backspace>") 'verilog-ext-backward-kill-word)
-    (define-key map (kbd "M-DEL") 'verilog-ext-backward-kill-word)
     ;; Features
     (verilog-ext-when-feature 'hideshow
       (define-key map (kbd "C-<tab>") 'verilog-ext-hs-toggle-hiding))
@@ -180,11 +174,9 @@ FEATURES can be a single feature or a list of features."
       (define-key map (kbd "C-c C-t") 'verilog-ext-hydra/body))
     (verilog-ext-when-feature 'hierarchy
       (define-key map (kbd "C-c C-v") 'verilog-ext-hierarchy-current-buffer))
-    ;; Code beautifying
     (verilog-ext-when-feature 'beautify
       (define-key map (kbd "C-M-i") 'verilog-ext-beautify-block-at-point-indent)
       (define-key map (kbd "C-c C-b") 'verilog-ext-beautify-module-at-point))
-    ;; Navigation
     (verilog-ext-when-feature 'navigation
       (define-key map (kbd "C-M-a") 'verilog-ext-nav-beg-of-defun-dwim)
       (define-key map (kbd "C-M-e") 'verilog-ext-nav-end-of-defun-dwim)
@@ -195,11 +187,17 @@ FEATURES can be a single feature or a list of features."
       (define-key map (kbd "C-c M-.") 'verilog-ext-jump-to-module-at-point-def)
       (define-key map (kbd "C-c M-?") 'verilog-ext-jump-to-module-at-point-ref)
       (define-key map (kbd "C-M-.") 'verilog-ext-workspace-jump-to-parent-module))
-    ;; Port connections
     (verilog-ext-when-feature 'ports
       (define-key map (kbd "C-c C-c c") 'verilog-ext-ports-clean-blanks)
       (define-key map (kbd "C-c C-c t") 'verilog-ext-ports-toggle-connect)
-      (define-key map (kbd "C-c C-c r") 'verilog-ext-ports-connect-recursively))
+      (define-key map (kbd "C-c C-c r") 'verilog-ext-ports-connect-recursively)
+    ;; Misc
+    (define-key map (kbd "TAB") 'verilog-ext-tab)
+    (define-key map (kbd "M-d") 'verilog-ext-kill-word)
+    (define-key map (kbd "M-f") 'verilog-ext-forward-word)
+    (define-key map (kbd "M-b") 'verilog-ext-backward-word)
+    (define-key map (kbd "C-<backspace>") 'verilog-ext-backward-kill-word)
+    (define-key map (kbd "M-DEL") 'verilog-ext-backward-kill-word))
     map)
   "Key map for the `verilog-ext'.")
 
