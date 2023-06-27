@@ -522,15 +522,15 @@ Use inst INST-TEMPLATE or prompt to choose one if nil."
   "Instantiate from FILE with simple template: connected ports and no parameters."
   (interactive "FSelect module from file:")
   (verilog-ext-template-inst-auto-from-file file
-                                         verilog-ext-template-inst-auto-conn-ports
-                                         verilog-ext-template-inst-auto-simple))
+                                            verilog-ext-template-inst-auto-conn-ports
+                                            verilog-ext-template-inst-auto-simple))
 
 (defun verilog-ext-template-inst-auto-from-file-params (file)
   "Instantiate from FILE with params template: connected ports with parameters."
   (interactive "FSelect module from file:")
   (verilog-ext-template-inst-auto-from-file file
-                                         verilog-ext-template-inst-auto-conn-ports
-                                         verilog-ext-template-inst-auto-params))
+                                            verilog-ext-template-inst-auto-conn-ports
+                                            verilog-ext-template-inst-auto-params))
 
 (defun verilog-ext-template-inst-auto-from-file-tb-dut (file)
   "Instantiate from FILE with params template:
@@ -538,8 +538,8 @@ Use inst INST-TEMPLATE or prompt to choose one if nil."
 - Required by TB template instantiation to auto detect width of signals."
   (interactive "FSelect module from file:")
   (verilog-ext-template-inst-auto-from-file file
-                                         verilog-ext-template-inst-auto-conn-ports-ss
-                                         verilog-ext-template-inst-auto-params))
+                                            verilog-ext-template-inst-auto-conn-ports-ss
+                                            nil))
 
 (defun verilog-ext-template-inst-auto-from-file-prompt (file)
   "Instantiate from FILE and prompt for template and parameters."
