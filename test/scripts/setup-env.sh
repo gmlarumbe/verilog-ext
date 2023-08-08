@@ -6,6 +6,8 @@
 PKGS_TO_INSTALL=(global universal-ctags python3-pygments silversearcher-ag ripgrep libverilog-perl verilator iverilog nodejs npm)
 EXPECTED_INSTALLED_BINARIES=(python global gtags ctags ag rg vhier verilator iverilog nodejs npm)
 
+sudo apt-get update
+
 for pkg in "${PKGS_TO_INSTALL[@]}"; do
     echo ""
     echo "Installing $pkg"
@@ -31,7 +33,9 @@ echo "Setting up Verible tools..."
 curl -L -o $LATEST_RELEASE_FILE $VERIBLE_GITHUB_URL/$LATEST_RELEASE_URL/$LATEST_RELEASE_FILE
 tar xvzf $LATEST_RELEASE_FILE
 cd verible-*/bin
-export PATH=$PWD:$PATH
+sudo cp verible-verilog-ls /usr/bin/verible-verilog-ls
+sudo cp verible-verilog-format /usr/bin/verible-verilog-format
+sudo cp verible-verilog-lint /usr/bin/verible-verilog-lint
 cd -
 
 echo ""

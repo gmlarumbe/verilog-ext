@@ -64,11 +64,6 @@ If set to nil default to search for current project files."
   :type '(repeat file)
   :group 'verilog-ext-workspace)
 
-(defcustom verilog-ext-workspace-cache-dir (file-name-concat user-emacs-directory "verilog-ext")
-  "The directory where Verilog-ext cache files will be placed at."
-  :group 'verilog-ext-workspace
-  :type 'file)
-
 (defcustom verilog-ext-workspace-compile-cmd nil
   "The command used to perform compilation on the workspace."
   :group 'verilog-ext-workspace
@@ -101,6 +96,9 @@ Follow symlinks if optional argument FOLLOW-SYMLINKS is non-nil."
 
 
 ;;;; Cache
+(defconst verilog-ext-workspace-cache-dir (file-name-concat user-emacs-directory "verilog-ext")
+  "The directory where Verilog-ext cache files will be placed at.")
+
 (defvar verilog-ext-workspace-cache-typedefs nil)
 (defvar verilog-ext-workspace-cache-tags-defs nil)
 (defvar verilog-ext-workspace-cache-tags-refs nil)
@@ -163,11 +161,13 @@ If optional TYPE arg is passed, only clear that TYPE."
     ('typedefs  (setq verilog-ext-workspace-cache-typedefs  nil))
     ('tags-defs (setq verilog-ext-workspace-cache-tags-defs nil))
     ('tags-refs (setq verilog-ext-workspace-cache-tags-refs nil))
-    ('hierarchy (setq verilog-ext-workspace-cache-hierarchy nil))
+    ('hierarchy (setq verilog-ext-workspace-cache-hierarchy nil)
+                (setq verilog-ext-hierarchy-builtin-current-flat-hierarchy nil))
     (_ (setq verilog-ext-workspace-cache-typedefs  nil)
        (setq verilog-ext-workspace-cache-tags-defs nil)
        (setq verilog-ext-workspace-cache-tags-refs nil)
-       (setq verilog-ext-workspace-cache-hierarchy nil)))
+       (setq verilog-ext-workspace-cache-hierarchy nil)
+       (setq verilog-ext-hierarchy-builtin-current-flat-hierarchy nil)))
   (verilog-ext-workspace-serialize-cache type)
   (message "Cleared cache!"))
 

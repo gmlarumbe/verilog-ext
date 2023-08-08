@@ -245,7 +245,7 @@ Arg ITEM are hierarchy nodes."
     hierarchy))
 
 (defun verilog-ext-hierarchy-extract-builtin (module &optional flat-hierarchy)
-  "Construct hierarchy for MODULE using builtin `hierarchy' package.
+  "Construct hierarchy for MODULE using builtin backend.
 
 Modules and instances will be analyzed from FLAT-HIERARCHY input if provided.
 Otherwise, extract from `verilog-ext-hierarchy-builtin-current-flat-hierarchy':
