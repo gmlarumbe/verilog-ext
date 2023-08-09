@@ -36,7 +36,9 @@
                        verilog-ext-workspace-tags-refs-table)
                       (t
                        (error "Wrong table"))))
-         (table-entry (gethash symbol table))
+         (table-entry (if table
+                          (gethash symbol table)
+                        (error "Tags table empty.  Run first `verilog-ext-workspace-get-tags' or `verilog-ext-workspace-get-tags-async'")))
          (entry-locs (plist-get table-entry :locs))
          file line column desc xref-entries)
     (when table-entry
