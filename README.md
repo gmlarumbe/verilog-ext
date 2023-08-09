@@ -304,6 +304,9 @@ Create basic testbench environment from DUT file:
 
 <img src="https://user-images.githubusercontent.com/51021955/209578258-1db8eb6b-37ce-4be0-8cd6-ec380116d0cd.gif" width=400 height=300>
 
+UVM Agent template:
+
+<img src="https://github.com/gmlarumbe/verilog-ext/assets/51021955/255e4b4b-afb7-4720-8b21-55796ae887eb" width=400 height=300>
 
 Functions:
 
