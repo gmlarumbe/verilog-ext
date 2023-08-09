@@ -1,0 +1,363 @@
+* Misc notes
+** Why this package
+Why not inside `verilog-mode`?
+
+One of the reasons is that `verilog-ext` overrides some functionality
+of `verilog-mode` (e.g. syntax highlighting).  Since not every user of
+`verilog-mode` would accept some of these changes, `verilog-ext`
+offers modularity with respect to which functionality to use.
+
+Another reason is that `verilog-ext` only supports GNU Emacs (tested
+in 28.1) in contrast to `verilog-mode` which also aims to be
+compatible with XEmacs.  Backwards compatibility with XEmacs would
+prevent development from using new neat features such as `lsp` or
+`tree-sitter`.
+
+On the other hand, since the development of `verilog-ext` happens on
+GitHub, it is not restricted by the FSF contributor agreement and
+everyone can easily contribute to the project.  Eventually,
+maintainers of `verilog-mode` could agree on including some
+`verilog-ext` functionality inside `verilog-mode` for newer Emacs
+releases.
+
+** LSP
+*** hdl_checker: doesn't seem to support definitions/references or completion. More 'compilation oriented for both VHDL/SystemVerilog
+- eglot & lsp: similar results on both, very limited
+- requires .hdl_checker.config file
+
+*** svlangserver: Flycheck works, can extract hierarchy
+- lsp: good builtin support, built index with lsp command and then navigate only definitions (not references)
+- eglot: limited support. Requires somehow adding the command to index code to be able to navigate sources (couldn't make it work)
+   - Check `eglot-execute-command'
+   - eglot requires adding some stuff to make it work properly (navigation and completion)
+
+*** verible:
+- linting, code formatting and imenu. Hovering gave errors... No navigation find def/ref implementedVerilog-ext:
+
+*** svls: only offers svlint based linting
+- requires .svls.toml
+
+*** veridian: makes use of verible tools for linting/formatting (similar to verible-ls). Requires veridian.yml file
+- hovering, imenu (very weird), (claims it find references but couldn't make it work), syntax/linter doesn't work well with verible-verilog syntax, and completion
+
+*** Summary:
+- svlangserver/veridian are prety good because of navigation/linting capabilities,Verilog-ext:
+
+** Flycheck
+*** Verilator:
+- Advantages:
+  - Very complete linter for RTL code
+  - Good SystemVerilog support for RTL constructs
+- Drawbacks:
+  - Lacks support for SystemVerilog simulation constructs
+  - Does not support ignoring missing modules (https://github.com/verilator/verilator/issues/2835)
+  - Cannot lint unpreprocessed code (`defines/`includes/UVM macros)
+
+*** Iverilog
+- Advantages:
+  - Supports ignoring missing modules
+- Drawbacks:
+  - Very small amount of support for SystemVerilog
+
+*** Verible
+- Advantages:
+  - Allows linting of single files
+  - Allows linting of unpreprocessed code
+  - Best option to find syntax errors on single complex testbench files
+- Drawbacks:
+  - Lacks support for SystemVerilog simulation constructs
+
+*** Svlint
+- Advantages:
+  - It seems it uses slang under the hood (very good SV support)
+- Drawbacks:
+  - Not many linting rules available, not very complete
+  - Doesn't allow linting of unpreprocessed code (errors with defines/includes)
+- Notes:
+  - A bit rudimentary, with not many rules but enough to check for parsing errors.
+  - Could be useful for small RTL self-contained blocks (i.e, almost never).
+  - Some of its failures didn't have a file line/number and that makes it impossible for flycheck to test them properly
+
+*** Cadence HAL
+- Advantages:
+  - Complete support for RTL
+  - Huge amount of linting rules for code quality
+- Drawbacks:
+  - Not free
+
+*** Slang
+- Advantages:
+  - Full support of SV/UVM
+- Disadvantages:
+  - Doesn't support linting of unpreprocessed code/single files
+- Notes:
+  - "--lint-only": Elaborate but do not expect a top-module
+  - "--ignore-unknown-modules": Ignore not found modules but still do type checking
+  - "--parse-only": Don't do type checking, just check syntax errors, but still checks macros (so it's a bit of a mess for large TB projects)
+
+** Imenu
+*** Issues with instance detection
+1. Imenu must work on current buffer.  Creates an alist of (elements . #<mark pos at buffer>)
+   Therefore, must be executed on the buffer on which it will have the effect (cannot use with-temp-buffer in a buffer with no comments
+   and trying to reassociate afterwards)
+
+2. Imenu just ignores comments starting at the beginning of line, not inline comments that might be within the instance regexp.
+
+3. It is not possible to work with (with-comments-hidden) since it makes comments invisible, and imenu ignores invisible characters
+   by looking for the next non-invisible regexp, since `re-search-forward' cannot ignore invisible, just skip to the next.
+   The problem is that instances regexp are multiline, and if an unexpected character such as comment with semicolon appears, it won't
+   be recognized, and there wont be any chance of skip to the next.  It will be missed.
+
+4. A first solution seemed to be executing `imenu' after erasing comments from current buffer and then returning it to its initial state
+   But that would require use of `delete-comments-from-buffer' (very slow) and `undo', with some issues programatically.
+   That would need  to be done with `verilog-ext-find-module-instance-fwd' as well.
+   The profit would not be worth the effort due to an extreme fall in performance.
+
+5. Best solution is to create a function that checks if there are problematic regexps in a verilog file, and set is as a hook every time
+   a file is opened, or Imenu is executed.
+
+*** Create index-alist
+- There are 3 ways of creating the index-alist for Imenu mode (from simpler to more complex):Misc notes:
+  1. Define `imenu-generic-expression' (categories and regexps).  This is the most common and default one.
+
+  2. Define `imenu-prev-index-position-function' and `imenu-extract-index-name-function'.
+     If these variables are defined, the imenu-list creation function uses them to find the tags.  For example:
+     #+begin_src elisp
+        (setq imenu-prev-index-position-function 'verilog-ext-imenu-prev-index-position-function)
+        (setq imenu-extract-index-name-function 'verilog-ext-imenu-extract-index-name)
+     #+end_src
+      Check `verilog-ext-imenu-prev-index-position-function' and `verilog-ext-imenu-extract-index-name'
+
+  3. Redefine `imenu-create-index-function' to make a custom more complex alist (e.g a tree recursively for nested classes)
+      This is the most complex and the one used in python mode.  Check `verilog-ext-imenu-index'.
+
+
+* Code snippets
+** Beautify
+#+begin_src elisp
+;; Canceled: Add a function (C-c C-M-i) that aligns declarations of current paragraph
+;; Canceled: Add a function (C-c C-M-o) that aligns expressions of current paragraph
+;; Problem: paragraphs might not always be blocks of decl/expressions if there are no blank lines in between
+
+;; DANGER: These didn't work because only work if point is at a declaration or at a expression
+;; Or in the case of a region, if the beginning or the point (don't remember)
+;; So these are not useful at all!
+(defun verilog-ext-pretty-declarations-block-at-point ()
+  "Align declarations of current block at point."
+  (interactive)
+  (save-mark-and-excursion
+    (let ((data (verilog-ext-block-at-point))
+          block name)
+      (unless data
+        (user-error "Not inside a block"))
+      (setq block (car data))
+      (setq name (nth 1 data))
+      (goto-char (nth 3 data))
+      (end-of-line)
+      (push-mark)
+      (goto-char (nth 2 data))
+      (beginning-of-line)
+      (setq mark-active t)
+      (verilog-pretty-declarations)
+      (message "Aligned declarations of %s : %s" block name))))
+
+(defun verilog-ext-pretty-expr-block-at-point ()
+  "Align expressions of current block at point."
+  (interactive)
+  (save-mark-and-excursion
+    (let ((data (verilog-ext-block-at-point))
+          block name)
+      (unless data
+        (user-error "Not inside a block"))
+      (setq block (car data))
+      (setq name (nth 1 data))
+      (goto-char (nth 3 data))
+      (end-of-line)
+      (push-mark)
+      (goto-char (nth 2 data))
+      (beginning-of-line)
+      (setq mark-active t)
+      (verilog-pretty-expr)
+      (message "Aligned expressions of %s : %s" block name))))
+#+end_src
+
+** Imenu
+*** Nested classes
+- Attempted adding support of nested classes at some point (almost never used):
+#+begin_src elisp
+;; The original definition held a jump-label lexical variable, fetched from python-mode imenu build function
+;; However, the add argument was not used.
+(defun verilog-ext-imenu--class-put-parent (type name pos tree &optional add)
+  "Create parent tag with TYPE and NAME.
+If optional arg ADD is non-nil, add the parent with TYPE, NAME and POS to TREE."
+  (let* ((label (funcall #'verilog-ext-imenu--format-class-item-label type name))
+         (jump-label label))
+    (if (not tree)
+        (cons label pos)
+      (if add
+          (cons label (cons (cons jump-label pos) tree))
+        (cons label tree)))))
+
+(defun verilog-ext-imenu--build-class-tree (&optional tree)
+  "Build the imenu alist TREE recursively.
+Coded to work with verification files with CLASSES and METHODS.
+Adapted from `python-mode' imenu build-tree function."
+  (save-restriction
+    (narrow-to-region (point-min) (point))
+    (let* ((pos (progn
+                  (verilog-re-search-backward verilog-ext-class-re nil t)
+                  (verilog-forward-sexp)
+                  (verilog-re-search-backward "\\<\\(function\\|task\\|class\\)\\>" nil t)))
+           type
+           (name (when (and pos
+                            (or (looking-at verilog-ext-task-re)
+                                (looking-at verilog-ext-function-re)
+                                (looking-at verilog-ext-class-re)))
+                   (setq type (match-string-no-properties 1))
+                   (match-string-no-properties 2)))
+           (label (when name
+                    (funcall #'verilog-ext-imenu--format-class-item-label type name))))
+      (cond ((not pos)
+             nil)
+            ((looking-at verilog-ext-class-re)
+             ;; TODO: Do something here, instead of nil do some recursive magic
+             (verilog-ext-imenu--class-put-parent type name pos tree nil)) ; Do not want class imenu redundancy (tags+entries)
+            ;; End of TODO
+            (t
+             (verilog-ext-imenu--build-class-tree
+              (if (or (looking-at verilog-ext-task-re)
+                      (looking-at verilog-ext-function-re))
+                  (cons (cons label pos) tree)
+                (cons
+                 (verilog-ext-imenu--build-class-tree
+                  (list (cons label pos)))
+                 tree))))))))
+#+end_src
+
+*** Fonts
+- Tried using fonts for Imenu to differentiate between functions/tasks
+  - Tested and worked!
+#+begin_src elisp
+(defun verilog-ext-imenu--format-class-item-label (type name)
+  "Return Imenu label for single node using TYPE and NAME."
+  (let ((props (pcase type
+                 ("task"     'italic)
+                 ("function" 'bold)
+                 ("class"    nil)
+                 (_          nil))))
+    (format "%s" (propertize name 'face prop))))
+
+;; INFO: Different imenu implementations override faces:
+;;  - e.g. ivy-imenu somehow ignores faces? It worked once, but other times it didn't...
+;;  - imenu-list will only be affected by bold/italic, but not by foreground (overrides faces)
+;;  - So probably the best option is use a tag at the beginning as it was first
+(defun verilog-ext-imenu--format-class-item-label (type name)
+  "Return Imenu label for single node using TYPE and NAME."
+  (let ((props (pcase type
+                 ("task"     '(:foreground "red"))
+                 ("function" '(:foreground "blue" :weight bold))
+                 ("class"    nil)
+                 (_          nil))))
+    (format "%s" (propertize name 'font-lock-face props))))
+#+end_src
+
+** Vhier
+- Project based vhier parsing
+#+begin_src elisp
+(defvar verilog-ext-vhier-projects nil
+  "Projects list:
+Name of the project (+plus)
+1) Name of the top-module
+2) Input files for hierarchy elaboration
+3) Output hierarchy file path")
+(defvar verilog-ext-vhier-top-module  nil)
+(defvar verilog-ext-vhier-project-dir nil)
+(defvar verilog-ext-vhier-input-files nil)
+
+(defun verilog-ext-vhier-set-active-project ()
+  "Retrieve Vhier project list and set variables accordingly."
+  (let ((vhier-project)
+        (files-list))
+    ;; Get Project name
+    (setq vhier-project (completing-read "Select project: " (mapcar 'car verilog-ext-vhier-projects))) ;; Read previous variable and get list of first element of each assoc list
+    (setq files-list (cdr (assoc vhier-project verilog-ext-vhier-projects)))
+    ;; Set parameters accordingly
+    (setq verilog-ext-vhier-top-module  (nth 0 files-list))
+    (setq verilog-ext-vhier-input-files (nth 1 files-list))
+    (setq verilog-ext-vhier-project-dir (nth 2 files-list))
+    (setq verilog-ext-vhier-pp-outfile
+          (concat (verilog-ext-path-join verilog-ext-vhier-project-dir verilog-ext-vhier-top-module)
+                  "_pp.sv"))
+    (setq verilog-ext-vhier-pp-args (concat "-o " verilog-ext-vhier-pp-outfile))
+    (setq verilog-ext-vhier-vhier-filelist-path (verilog-ext-path-join verilog-ext-vhier-project-dir verilog-ext-vhier-vhier-filelist-name))))
+
+(defun verilog-ext-vhier-create-filelist (&optional sort-defs-pkg)
+  "Generate verilog-ext-vhier-vhier-filelist-name filelist.
+Generate from `verilog-ext-vhier-input-files'file (normally gtags.files).
+
+INFO: Assumes that files fetched from `verilog-ext-vhier-input-files' are
+relative paths.
+
+If optional arg SORT-DEFS-PKG is set then move every *_defs_pkg.sv file
+to the beginning."
+  (let ((exp-dir (file-name-directory verilog-ext-vhier-input-files))
+        (debug nil)) ; INFO: Debug `with-temp-buffer', set to non-nil to debug temp buffer contents.
+    (make-directory verilog-ext-vhier-project-dir t) ; Create vhier folder if it did not exist
+    (with-temp-buffer
+      (when debug
+        (clone-indirect-buffer-other-window "*debug*" t))
+      (insert-file-contents verilog-ext-vhier-input-files)
+      (larumbe/buffer-expand-filenames t exp-dir)
+      (verilog-ext-replace-regexp-whole-buffer "\\(.*/\\).*\.[s]?vh$" "-y \\1") ; Replace header `include' files with -y library flag
+      (when sort-defs-pkg
+        (larumbe/sort-regexp-at-the-beginning-of-file "_defs_pkg.sv"))
+      (write-file verilog-ext-vhier-vhier-filelist-path))))
+
+;;;###autoload
+(defun verilog-ext-vhier-from-project ()
+  "Extract hierarchy of top level module using Verilog-Perl backend."
+  (interactive)
+  (unless (executable-find "vhier")
+    (error "Executable vhier not found"))
+  (verilog-ext-vhier-set-active-project)
+  (verilog-ext-vhier-create-filelist)
+  (verilog-ext-vhier-extract-hierarchy))
+#+end_src
+
+** Misc
+#+begin_src elisp
+(defun verilog-ext-inside-procedural ()
+  "Return cons cell with start/end pos if point is inside a procedural block.
+If point is inside a begin-end block inside a procedural, return begin-end
+positions."
+  (save-match-data
+    (save-excursion
+      (let* ((block-data (verilog-ext-block-at-point))
+             (block-type (alist-get 'type block-data))
+             (beg-end-data (verilog-ext-point-inside-block-p 'begin-end)))
+        (cond (beg-end-data ; If on a begin-end block outside a generate, it will always be procedural
+               (unless (string= block-type "generate") ; Relies on `verilog-ext-block-at-point' having higher precedence ...
+                 (cons (alist-get 'beg-point beg-end-data) (alist-get 'end-point beg-end-data)))) ; ... for always than for generate
+              ;; If outside a begin-end, look for
+              ((or (string= block-type "function")
+                   (string= block-type "task")
+                   (string= block-type "class")
+                   (string= block-type "package")
+                   (string= block-type "initial")
+                   (string= block-type "final")
+                   (string= block-type "program"))
+               (cons (alist-get 'beg-point block-data) (alist-get 'end-point block-data)))
+              ;; Default, not in a procedural block
+              (t
+               nil))))))
+
+(defun verilog-ext-find-module-instance--legal-p ()
+  "Return non-nil if it point position would be legal for an instantiation.
+DANGER: Still very inefficient, removed funcall in
+`verilog-ext-find-module-instance-fwd'."
+  (and (not (verilog-parenthesis-depth))
+       (not (verilog-ext-inside-procedural))))
+#+end_src
+
+
+
