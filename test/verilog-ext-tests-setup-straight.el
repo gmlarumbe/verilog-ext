@@ -60,7 +60,6 @@
 ;; Overwrite with latest version instead of the one pointed by Package-Requires:
 (use-package verilog-mode
   :straight (:repo "veripool/verilog-mode")
-  ;; :straight nil ; TODO: Uncomment/replace when gnu archive has a newer version where tests pass
   :config
   (defvar verilog-ext-test-indent-level 4)
   (setq verilog-indent-level             verilog-ext-test-indent-level)
