@@ -60,17 +60,18 @@
 
 (defun verilog-ext-which-func ()
   "Hook for `verilog-mode' to enable `which-func'."
-  (setq-local which-func-functions '(verilog-ext-which-func-function))
-  (setq-local which-func-format
-              `("["
-                (:propertize which-func-current
-                 face (which-func :weight bold)
-                 mouse-face mode-line-highlight)
-                ":"
-                (:propertize verilog-ext-which-func-extra
-                 face which-func
-                 mouse-face mode-line-highlight)
-                "]")))
+  (when (eq major-mode 'verilog-mode)
+    (setq-local which-func-functions '(verilog-ext-which-func-function))
+    (setq-local which-func-format
+                `("["
+                  (:propertize which-func-current
+                   face (which-func :weight bold)
+                   mouse-face mode-line-highlight)
+                  ":"
+                  (:propertize verilog-ext-which-func-extra
+                   face which-func
+                   mouse-face mode-line-highlight)
+                  "]"))))
 
 
 (provide 'verilog-ext-which-func)

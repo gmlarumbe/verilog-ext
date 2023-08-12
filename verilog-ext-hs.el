@@ -66,7 +66,7 @@
 (defun verilog-ext-hs-setup ()
   "Configure hideshow."
   (dolist (mode '((verilog-mode    . verilog-forward-sexp-function)
-                  (verilog-ts-mode . verilog-forward-sexp-function))) ; TODO: Eventually replace with `verilog-ts-mode' forward-sexp function
+                  (verilog-ts-mode . verilog-ts-forward-sexp)))
     (add-to-list 'hs-special-modes-alist `(,(car mode)
                                            ,verilog-ext-hs-block-start-keywords-re
                                            ,verilog-ext-hs-block-end-keywords-re

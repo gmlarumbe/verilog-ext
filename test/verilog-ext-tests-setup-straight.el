@@ -94,8 +94,6 @@
 ;;;; Setup package
 (message "Installing and setting up verilog-ext")
 (use-package verilog-ext
-  :straight (:host github :repo "gmlarumbe/verilog-ext"
-             :files (:defaults "snippets" "ts-mode/*.el"))
   :after verilog-mode
   :hook ((verilog-mode . verilog-ext-mode))
   :demand
@@ -104,6 +102,11 @@
   (verilog-ext-mode-setup)
   (add-hook 'verilog-ts-mode-hook #'(lambda () ; Applies also to verilog-ts-mode since it's derived
                                       (setq treesit-font-lock-level 4))))
+
+
+(use-package verilog-ts-mode
+  :straight (:host github :repo "gmlarumbe/verilog-ext"
+             :files ("ts-mode/verilog-ts-mode.el")))
 
 
 (provide 'verilog-ext-tests-setup-straight)
