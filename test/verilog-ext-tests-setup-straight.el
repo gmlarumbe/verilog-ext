@@ -99,14 +99,27 @@
   :demand
   :config
   (setq verilog-ext-feature-list (remove 'typedefs verilog-ext-feature-list)) ; Do not override `verilog-align-typedef-regexp'
-  (verilog-ext-mode-setup)
-  (add-hook 'verilog-ts-mode-hook #'(lambda () ; Applies also to verilog-ts-mode since it's derived
-                                      (setq treesit-font-lock-level 4))))
+  (verilog-ext-mode-setup))
 
 
-(use-package verilog-ts-mode
-  :straight (:host github :repo "gmlarumbe/verilog-ext"
-             :files ("ts-mode/verilog-ts-mode.el")))
+;;;; Tree-sitter
+(defvar verilog-ext-tests-tree-sitter-available-p nil)
+
+(message "Emacs version: %s" emacs-version)
+(when (and (>= emacs-major-version 29)
+           (treesit-available-p)
+           (treesit-language-available-p 'verilog))
+  (require 'treesit)
+  (setq verilog-ext-tests-tree-sitter-available-p t)
+  (message "verilog-ext-tests-tree-sitter-available-p: %s" verilog-ext-tests-tree-sitter-available-p))
+
+(when verilog-ext-tests-tree-sitter-available-p
+  (use-package verilog-ts-mode
+    :straight (:host github :repo "gmlarumbe/verilog-ext"
+               :files ("ts-mode/verilog-ts-mode.el"))
+    :config
+    ;; Applies also to verilog-ts-mode since it's derived
+    (add-hook 'verilog-ts-mode-hook #'(lambda () (setq treesit-font-lock-level 4)))))
 
 
 (provide 'verilog-ext-tests-setup-straight)

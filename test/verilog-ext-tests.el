@@ -82,19 +82,10 @@ Otherwise, byte-compile."
 (require 'verilog-ext-tests-hierarchy)
 (require 'verilog-ext-tests-tags)
 (require 'verilog-ext-tests-workspace)
+(if verilog-ext-tests-tree-sitter-available-p
+    (require 'verilog-ext-tests-tree-sitter)
+  (message "Skipping verilog-ext-tests-tree-sitter..."))
 
-(message "Emacs version: %s" emacs-version)
-(if (< emacs-major-version 29)
-    (message "Skipping verilog-ext-tests-tree-sitter...")
-  ;; Else
-  (message "(treesit-available-p): %s" (treesit-available-p))
-  (when (treesit-available-p)
-    (require 'treesit)
-    (message "(treesit-language-available-p 'verilog): %s" (treesit-language-available-p 'verilog))
-    (when (treesit-language-available-p 'verilog)
-      (message "(functionp 'verilog-ts-mode): %s" (functionp 'verilog-ts-mode))
-      (when (functionp 'verilog-ts-mode)
-        (require 'verilog-ext-tests-tree-sitter)))))
 
 ;;; CI
 (when (getenv "GITHUB_WORKSPACE")
