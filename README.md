@@ -439,7 +439,7 @@ To run a subset of tests (e.g. navigation):
 
 ```shell
 $ cd ~/.emacs.d/verilog-ext
-$ test/scripts/ert-tests.sh recompile_run navigation::
+$ make subset TESTS=navigation
 ```
 
 ## Other packages
