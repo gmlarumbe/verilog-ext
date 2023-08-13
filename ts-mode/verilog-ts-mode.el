@@ -802,7 +802,7 @@ Finds the (module_or_generate_item) indentation and return its position."
              (back-to-indentation)
              (point))))))
 
-(defun verilog-ts--anchor-grandparent-bol (node parent &rest _)
+(defun verilog-ts--anchor-grandparent-bol (_node parent &rest _)
   "A tree-sitter simple indent anchor for NODE and PARENT.
 Find the beginning of line of node's grandparent.
 INFO: Might be present in future Emacs releases.
@@ -810,8 +810,8 @@ Check `treesit' and `treesit-simple-indent-presets'."
   (save-excursion
     (goto-char (treesit-node-start (treesit-node-parent parent)))))
 
-(defun verilog-ts--anchor-tf-port-list (node parent &rest _)
-  "A tree-sitter simple indent anchor for NODE and PARENT.
+(defun verilog-ts--anchor-tf-port-list (node &rest _)
+  "A tree-sitter simple indent anchor for NODE.
 Indent task/function arguments."
   (let ((indent-node (or (verilog-ts--node-has-parent-recursive node "class_method")
                          (verilog-ts--node-has-parent-recursive node "task_declaration")
@@ -821,8 +821,8 @@ Indent task/function arguments."
           (goto-char (treesit-node-start indent-node))
         (point)))))
 
-(defun verilog-ts--anchor-tf-port-item1 (node parent &rest _)
-  "A tree-sitter simple indent anchor for NODE and PARENT.
+(defun verilog-ts--anchor-tf-port-item1 (node &rest _)
+  "A tree-sitter simple indent anchor for NODE.
 Indent task/function arguments."
   (let ((indent-node (verilog-ts--node-has-parent-recursive node "tf_port_list")))
     (save-excursion
@@ -830,8 +830,8 @@ Indent task/function arguments."
           (goto-char (treesit-node-start indent-node))
         (point)))))
 
-(defun verilog-ts--anchor-first-ansi-port (node parent &rest _)
-  "A tree-sitter simple indent anchor for NODE and PARENT.
+(defun verilog-ts--anchor-first-ansi-port (node &rest _)
+  "A tree-sitter simple indent anchor for NODE.
 Indent ansi_ports depending on first port:
 
  - module foo (input a
@@ -846,8 +846,8 @@ Indent ansi_ports depending on first port:
       (skip-chars-forward "( \t")
       (point))))
 
-(defun verilog-ts--anchor-ansi-port (node parent &rest _)
-  "A tree-sitter simple indent anchor for NODE and PARENT.
+(defun verilog-ts--anchor-ansi-port (node &rest _)
+  "A tree-sitter simple indent anchor for NODE.
 Indent ansi_ports according to module definition."
   (let ((indent-node (or (verilog-ts--node-has-parent-recursive node "module_declaration")
                          (verilog-ts--node-has-parent-recursive node "interface_declaration"))))
@@ -856,22 +856,22 @@ Indent ansi_ports according to module definition."
         (goto-char (treesit-node-start indent-node))
         (point)))))
 
-(defun verilog-ts--anchor-coverpoint-bins (node parent &rest _)
-  "A tree-sitter simple indent anchor for NODE and PARENT.
+(defun verilog-ts--anchor-coverpoint-bins (node &rest _)
+  "A tree-sitter simple indent anchor for NODE.
 Indent bins with respect to label of coverpoint."
   (let ((indent-node (verilog-ts--node-has-parent-recursive node "cover_point")))
     (save-excursion
       (goto-char (treesit-node-start indent-node)))))
 
-(defun verilog-ts--anchor-cross-bins (node parent &rest _)
-  "A tree-sitter simple indent anchor for NODE and PARENT.
+(defun verilog-ts--anchor-cross-bins (node &rest _)
+  "A tree-sitter simple indent anchor for NODE.
 Indent cross bins with respect to label of coverpoint."
   (let ((indent-node (verilog-ts--node-has-parent-recursive node "cover_cross")))
     (save-excursion
       (goto-char (treesit-node-start indent-node)))))
 
-(defun verilog-ts--anchor-continued-parameter (node parent &rest _)
-  "A tree-sitter simple indent anchor for NODE and PARENT.
+(defun verilog-ts--anchor-continued-parameter (node &rest _)
+  "A tree-sitter simple indent anchor for NODE.
 Indent continued line parameters in port declarations."
   (let* ((param-decl-node (treesit-search-forward node
                                                   (lambda (node)
@@ -885,7 +885,7 @@ Indent continued line parameters in port declarations."
       (save-excursion
         (goto-char param-decl-start-node)))))
 
-(defun verilog-ts--anchor-parameter-port (node parent &rest _)
+(defun verilog-ts--anchor-parameter-port (node &rest _)
   "A tree-sitter simple indent anchor for NODE and PARENT.
 Indent parameters depending on first parameter:
  - module foo # (parameter int a = 0
@@ -901,8 +901,8 @@ Indent parameters depending on first parameter:
       (skip-chars-forward "( \t")
       (point))))
 
-(defun verilog-ts--anchor-point-min (node parent &rest _)
-  "A tree-sitter simple indent anchor for NODE and PARENT."
+(defun verilog-ts--anchor-point-min (&rest _)
+  "A tree-sitter simple indent anchor."
   (save-excursion
     (point-min)))
 
