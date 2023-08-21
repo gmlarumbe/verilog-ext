@@ -40,9 +40,15 @@
                           (gethash symbol table)
                         (error "Tags table empty.  Run first `verilog-ext-workspace-get-tags' or `verilog-ext-workspace-get-tags-async'")))
          (entry-locs (plist-get table-entry :locs))
+         (entry-locs-grouped (seq-group-by (lambda (loc)
+                                             (equal buffer-file-name (plist-get loc :file)))
+                                           entry-locs))
+         ;; Locs in current file should show up first
+         (entry-locs-sorted (append (alist-get nil entry-locs-grouped)
+                                    (alist-get t entry-locs-grouped)))
          file line column desc xref-entries)
-    (when table-entry
-      (dolist (loc entry-locs)
+    (when entry-locs-sorted
+      (dolist (loc entry-locs-sorted)
         (setq file (plist-get loc :file))
         (setq line (plist-get loc :line))
         (setq column nil)
@@ -56,28 +62,28 @@
 (defun verilog-ext-xref-backend ()
   "Verilog-ext backend for Xref."
   (when (verilog-ext-workspace-root)
-    'verilog-ext-xref))
+    'verilog-ext))
 
-(cl-defmethod xref-backend-identifier-at-point ((_backend (eql verilog-ext-xref)))
+(cl-defmethod xref-backend-identifier-at-point ((_backend (eql verilog-ext)))
   "Implementation of `xref-backend-identifier-at-point' for verilog-ext-xref."
   (thing-at-point 'symbol :no-props))
 
-(cl-defmethod xref-backend-definitions ((_backend (eql verilog-ext-xref)) symbol)
+(cl-defmethod xref-backend-definitions ((_backend (eql verilog-ext)) symbol)
   "Implementation of `xref-backend-definitions' for verilog-ext-xref.
 Find definitions of SYMBOL."
   (verilog-ext-xref--find-symbol symbol 'def))
 
-(cl-defmethod xref-backend-references ((_backend (eql verilog-ext-xref)) symbol)
+(cl-defmethod xref-backend-references ((_backend (eql verilog-ext)) symbol)
   "Implementation of `xref-backend-references' for verilog-ext-xref.
 Find references of SYMBOL."
   (verilog-ext-xref--find-symbol symbol 'ref))
 
-(cl-defmethod xref-backend-identifier-completion-table ((_backend (eql verilog-ext-xref)))
+(cl-defmethod xref-backend-identifier-completion-table ((_backend (eql verilog-ext)))
   "Implementation of `xref-backend-identifier-completion-table'."
   nil)
 
 (defun verilog-ext-xref-backend-enable ()
-  "Enable `verilog-ext-xref' backend on current buffer.
+  "Enable `verilog-ext' backend on current buffer.
 Still experimental.  Removes the rest of xref backends."
   (setq-local xref-backend-functions '(verilog-ext-xref-backend t)))
 
@@ -90,8 +96,8 @@ instead of to `verilog-mode', since the first one is loaded later and overwrites
 the hook value.  Otherwise, hooks are not ran in a specific order, and rely on
 the priority argument."
   (if disable
-      (remove-hook 'verilog-ext-mode-hook #'verilog-ext-xref-backend-enable :local)
-    (add-hook 'verilog-ext-mode-hook #'verilog-ext-xref-backend-enable nil :local)))
+      (remove-hook 'verilog-ext-mode-hook #'verilog-ext-xref-backend-enable)
+    (add-hook 'verilog-ext-mode-hook #'verilog-ext-xref-backend-enable)))
 
 
 

@@ -69,6 +69,7 @@ Otherwise, byte-compile."
 (defvar verilog-ext-tests-indent-dir (file-name-concat verilog-ext-tests-files-dir "indent"))
 (defvar verilog-ext-tests-jump-parent-dir (file-name-concat verilog-ext-tests-files-dir "jump-parent"))
 (defvar verilog-ext-tests-hierarchy-dir (file-name-concat verilog-ext-tests-files-dir "hierarchy"))
+(defvar verilog-ext-tests-tags-dir (file-name-concat verilog-ext-tests-files-dir "tags"))
 
 (unless (member verilog-ext-tests-test-dir load-path)
   (add-to-list 'load-path verilog-ext-tests-test-dir))
@@ -82,9 +83,10 @@ Otherwise, byte-compile."
 (require 'verilog-ext-tests-hierarchy)
 (require 'verilog-ext-tests-tags)
 (require 'verilog-ext-tests-workspace)
-(if verilog-ext-tests-tree-sitter-available-p
-    (require 'verilog-ext-tests-tree-sitter)
-  (message "Skipping verilog-ext-tests-tree-sitter..."))
+(if (not verilog-ext-tests-tree-sitter-available-p)
+    (message "Skipping verilog-ext-tests-tree-sitter...")
+  (defvar verilog-ext-tests-tree-sitter-dir (file-name-concat verilog-ext-tests-files-dir "tree-sitter"))
+  (require 'verilog-ext-tests-tree-sitter))
 
 
 ;;; CI

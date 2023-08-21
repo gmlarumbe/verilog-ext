@@ -64,7 +64,23 @@ gen_indent_dir () {
 }
 
 gen_beautify_dir () {
-    run_elisp_cmd "(verilog-ext-test-beautify-gen-expected-files)"
+    if [[ $# -ge 1 ]]; then
+        run_elisp_cmd "(verilog-ext-test-beautify-gen-expected-files :tree-sitter)"
+    else
+        run_elisp_cmd "(verilog-ext-test-beautify-gen-expected-files)"
+    fi
+}
+
+gen_tags () {
+    if [[ $# -ge 1 ]]; then
+        run_elisp_cmd "(verilog-ext-test-tags-gen-expected-files :tree-sitter)"
+    else
+        run_elisp_cmd "(verilog-ext-test-tags-gen-expected-files)"
+    fi
+}
+
+gen_pretty_ts () {
+    run_elisp_cmd "(verilog-ext-tests-tree-sitter-pretty-gen-expected-files)"
 }
 
 run_tests () {

@@ -810,9 +810,9 @@
       «k:if» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:traffic_shape»«:verilog-ts-font-lock-operator-face:.»size«:verilog-ts-font-lock-parenthesis-face:()» «:verilog-ts-font-lock-punctuation-face:==» 0«:verilog-ts-font-lock-parenthesis-face:)»
         «:verilog-ts-font-lock-dot-name-face:traffic_shape»«:verilog-ts-font-lock-operator-face:.»push_back«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-curly-braces-face:{»len«:verilog-ts-font-lock-punctuation-face:,» freq«:verilog-ts-font-lock-curly-braces-face:}»«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
       «k:else»
-        «:verilog-ts-font-lock-dot-name-face:traffic_shape»«:verilog-ts-font-lock-operator-face:.»push_back«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-curly-braces-face:{»«w:len, traffic_shape[$].cprob» «:verilog-ts-font-lock-operator-face:+» freq«:verilog-ts-font-lock-curly-braces-face:}»«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
+        «:verilog-ts-font-lock-dot-name-face:traffic_shape»«:verilog-ts-font-lock-operator-face:.»push_back«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-curly-braces-face:{»«:verilog-ts-font-lock-error-face:len, traffic_shape[$].cprob» «:verilog-ts-font-lock-operator-face:+» freq«:verilog-ts-font-lock-curly-braces-face:}»«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
 
-      max_cprob «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-dot-name-face:traffic_shape»«w:[$]»«:verilog-ts-font-lock-operator-face:.»cprob«:verilog-ts-font-lock-punctuation-face:;»
+      max_cprob «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-dot-name-face:traffic_shape»«:verilog-ts-font-lock-error-face:[$]»«:verilog-ts-font-lock-operator-face:.»cprob«:verilog-ts-font-lock-punctuation-face:;»
     «k:endfunction» «:verilog-ts-font-lock-punctuation-face::» «f:add_traffic_shaping»
 
     «k:function» «t:ax_beat_t» «f:new_rand_burst»«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-direction-face:input» «t:logic» is_read«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
@@ -1195,7 +1195,7 @@
           «k:automatic» «t:logic» «:verilog-ts-font-lock-brackets-face:[»«:verilog-ts-font-lock-brackets-content-face:AXI_STRB_WIDTH-1:0»«:verilog-ts-font-lock-brackets-face:]» rand_strb«:verilog-ts-font-lock-punctuation-face:,» strb_mask«:verilog-ts-font-lock-punctuation-face:;»
           addr «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-dot-name-face:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»beat_addr«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:aw_beat»«:verilog-ts-font-lock-operator-face:.»ax_addr«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-dot-name-face:aw_beat»«:verilog-ts-font-lock-operator-face:.»ax_size«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-dot-name-face:aw_beat»«:verilog-ts-font-lock-operator-face:.»ax_len«:verilog-ts-font-lock-punctuation-face:,»
                                     «:verilog-ts-font-lock-dot-name-face:aw_beat»«:verilog-ts-font-lock-operator-face:.»ax_burst«:verilog-ts-font-lock-punctuation-face:,» i«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
-`«:verilog-ts-font-lock-preprocessor-face:ifdef» «w:XSIM»
+`«:verilog-ts-font-lock-preprocessor-face:ifdef» «:verilog-ts-font-lock-error-face:XSIM»
           «x:// std::randomize(w_beat) may behave differently to w_beat.randomize() wrt. limited ranges»
           «x:// Keeping alternate implementation for XSIM only»
           rand_success «:verilog-ts-font-lock-punctuation-face:=» std«:verilog-ts-font-lock-punctuation-face:::»«k:randomize»«:verilog-ts-font-lock-parenthesis-face:(»w_beat«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;» «k:assert» «:verilog-ts-font-lock-parenthesis-face:(»rand_success«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
@@ -1317,8 +1317,8 @@
     «k:endfunction»
 
     «k:function» «t:void» «f:reset»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:;»
-      «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«w:.reset_slave»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:;»
-      «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»memory_q«w:.delete»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:;»
+      «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«:verilog-ts-font-lock-error-face:.reset_slave»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:;»
+      «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»memory_q«:verilog-ts-font-lock-error-face:.delete»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:;»
     «k:endfunction»
 
     «x:// TODO: The `rand_wait` task exists in `rand_verif_pkg`, but that task cannot be called with»
@@ -1355,7 +1355,7 @@
         «k:wait» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:ar_queue»«:verilog-ts-font-lock-operator-face:.»size «:verilog-ts-font-lock-punctuation-face:>» 0«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
         ar_beat      «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-dot-name-face:ar_queue»«:verilog-ts-font-lock-operator-face:.»peek«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:;»
         byte_addr    «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-dot-name-face:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»aligned_addr«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:ar_beat»«:verilog-ts-font-lock-operator-face:.»ax_addr«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-dot-name-face:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»size_t'«:verilog-ts-font-lock-parenthesis-face:(»«b:$clog2»«:verilog-ts-font-lock-parenthesis-face:(»DW«:verilog-ts-font-lock-operator-face:/»8«:verilog-ts-font-lock-parenthesis-face:)))»«:verilog-ts-font-lock-punctuation-face:;»
-`«:verilog-ts-font-lock-preprocessor-face:ifdef» «w:XSIM»
+`«:verilog-ts-font-lock-preprocessor-face:ifdef» «:verilog-ts-font-lock-error-face:XSIM»
         «x:// std::randomize(r_beat) may behave differently to r_beat.randomize() wrt. limited ranges»
         «x:// Keeping alternate implementation for XSIM only»
         rand_success «:verilog-ts-font-lock-punctuation-face:=» std«:verilog-ts-font-lock-punctuation-face:::»«k:randomize»«:verilog-ts-font-lock-parenthesis-face:(»r_beat«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;» «k:assert»«:verilog-ts-font-lock-parenthesis-face:(»rand_success«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
@@ -1365,7 +1365,7 @@
         «k:if» «:verilog-ts-font-lock-parenthesis-face:(»MAPPED«:verilog-ts-font-lock-parenthesis-face:)» «:verilog-ts-font-lock-grouping-keywords-face:begin»
           «x:// Either use the actual data, or save the random generated.»
           «k:for» «:verilog-ts-font-lock-parenthesis-face:(»«t:int» «t:unsigned» i «:verilog-ts-font-lock-punctuation-face:=» 0«:verilog-ts-font-lock-punctuation-face:;» i «:verilog-ts-font-lock-punctuation-face:<» «:verilog-ts-font-lock-parenthesis-face:(»DW«:verilog-ts-font-lock-operator-face:/»8«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;» i«:verilog-ts-font-lock-punctuation-face:++»«:verilog-ts-font-lock-parenthesis-face:)» «:verilog-ts-font-lock-grouping-keywords-face:begin»
-            «k:if» «:verilog-ts-font-lock-parenthesis-face:(»«w:this.memory_q.exists»«:verilog-ts-font-lock-parenthesis-face:(»byte_addr«:verilog-ts-font-lock-parenthesis-face:))» «:verilog-ts-font-lock-grouping-keywords-face:begin»
+            «k:if» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-error-face:this.memory_q.exists»«:verilog-ts-font-lock-parenthesis-face:(»byte_addr«:verilog-ts-font-lock-parenthesis-face:))» «:verilog-ts-font-lock-grouping-keywords-face:begin»
               r_beat«:verilog-ts-font-lock-operator-face:.»r_data«:verilog-ts-font-lock-brackets-face:[»«:verilog-ts-font-lock-brackets-content-face:i*8»«:verilog-ts-font-lock-punctuation-face:+:»«:verilog-ts-font-lock-brackets-content-face:8»«:verilog-ts-font-lock-brackets-face:]» «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»memory_q«:verilog-ts-font-lock-brackets-face:[»«:verilog-ts-font-lock-brackets-content-face:byte_addr»«:verilog-ts-font-lock-brackets-face:]»«:verilog-ts-font-lock-punctuation-face:;»
             «:verilog-ts-font-lock-grouping-keywords-face:end» «k:else» «:verilog-ts-font-lock-grouping-keywords-face:begin»
               «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»memory_q«:verilog-ts-font-lock-brackets-face:[»«:verilog-ts-font-lock-brackets-content-face:byte_addr»«:verilog-ts-font-lock-brackets-face:]» «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-dot-name-face:r_beat»«:verilog-ts-font-lock-operator-face:.»r_data«:verilog-ts-font-lock-brackets-face:[»«:verilog-ts-font-lock-brackets-content-face:i*8»«:verilog-ts-font-lock-punctuation-face:+:»«:verilog-ts-font-lock-brackets-content-face:8»«:verilog-ts-font-lock-brackets-face:]»«:verilog-ts-font-lock-punctuation-face:;»
@@ -1455,7 +1455,7 @@
         «k:automatic» «t:logic» rand_success«:verilog-ts-font-lock-punctuation-face:;»
         «k:wait» «:verilog-ts-font-lock-parenthesis-face:(»b_wait_cnt «:verilog-ts-font-lock-punctuation-face:>» 0 «:verilog-ts-font-lock-operator-face:&&» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:aw_queue»«:verilog-ts-font-lock-operator-face:.»size«:verilog-ts-font-lock-parenthesis-face:()» «:verilog-ts-font-lock-punctuation-face:!=» 0«:verilog-ts-font-lock-parenthesis-face:))»«:verilog-ts-font-lock-punctuation-face:;»
         aw_beat «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-dot-name-face:aw_queue»«:verilog-ts-font-lock-operator-face:.»pop_front«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:;»
-`«:verilog-ts-font-lock-preprocessor-face:ifdef» «w:XSIM»
+`«:verilog-ts-font-lock-preprocessor-face:ifdef» «:verilog-ts-font-lock-error-face:XSIM»
         «x:// std::randomize(b_beat) may behave differently to b_beat.randomize() wrt. limited ranges»
         «x:// Keeping alternate implementation for XSIM only»
         rand_success «:verilog-ts-font-lock-punctuation-face:=» std«:verilog-ts-font-lock-punctuation-face:::»«k:randomize»«:verilog-ts-font-lock-parenthesis-face:(»b_beat«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;» «k:assert» «:verilog-ts-font-lock-parenthesis-face:(»rand_success«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
@@ -1571,7 +1571,7 @@
       «k:automatic» «t:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»«t:resp_t»  r_resp«:verilog-ts-font-lock-punctuation-face:;»
       «k:repeat» «:verilog-ts-font-lock-parenthesis-face:(»n_reads«:verilog-ts-font-lock-parenthesis-face:)» «:verilog-ts-font-lock-grouping-keywords-face:begin»
         «k:wait» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:ar_queue»«:verilog-ts-font-lock-operator-face:.»size«:verilog-ts-font-lock-parenthesis-face:()» «:verilog-ts-font-lock-punctuation-face:>» 0«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
-        ar_addr «:verilog-ts-font-lock-punctuation-face:=» «w:this.ar_queue.pop_front();
+        ar_addr «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-error-face:this.ar_queue.pop_front();
         rand_wait(RESP_MIN_WAIT_CYCLES, RESP_MAX_WAIT_CYCLES);»
         «:verilog-ts-font-lock-dot-name-face:drv»«:verilog-ts-font-lock-operator-face:.»recv_r«:verilog-ts-font-lock-parenthesis-face:(»r_data«:verilog-ts-font-lock-punctuation-face:,» r_resp«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
         «b:$display»«:verilog-ts-font-lock-parenthesis-face:(»«s:"%0t %s> Recv  R with DATA: %h RESP: %0h"»«:verilog-ts-font-lock-punctuation-face:,» «b:$time»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»name«:verilog-ts-font-lock-punctuation-face:,» r_data«:verilog-ts-font-lock-punctuation-face:,» r_resp«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
@@ -1587,7 +1587,7 @@
         aw_prot «:verilog-ts-font-lock-punctuation-face:=» prot_t'«:verilog-ts-font-lock-parenthesis-face:(»«b:$urandom»«:verilog-ts-font-lock-parenthesis-face:())»«:verilog-ts-font-lock-punctuation-face:;»
         «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»aw_queue«:verilog-ts-font-lock-operator-face:.»push_back«:verilog-ts-font-lock-parenthesis-face:(»aw_addr«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
         «b:$display»«:verilog-ts-font-lock-parenthesis-face:(»«s:"%0t %s> Send AW with ADDR: %h PROT: %b"»«:verilog-ts-font-lock-punctuation-face:,» «b:$time»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»name«:verilog-ts-font-lock-punctuation-face:,» aw_addr«:verilog-ts-font-lock-punctuation-face:,» aw_prot«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
-        «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«w:.send_aw»«:verilog-ts-font-lock-parenthesis-face:(»aw_addr«:verilog-ts-font-lock-punctuation-face:,» aw_prot«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
+        «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«:verilog-ts-font-lock-error-face:.send_aw»«:verilog-ts-font-lock-parenthesis-face:(»aw_addr«:verilog-ts-font-lock-punctuation-face:,» aw_prot«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
         «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»b_queue«:verilog-ts-font-lock-operator-face:.»push_back«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-width-num-face:1»«:verilog-ts-font-lock-punctuation-face:'»«:verilog-ts-font-lock-width-type-face:b»1«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
       «:verilog-ts-font-lock-grouping-keywords-face:end»
     «k:endtask» «:verilog-ts-font-lock-punctuation-face::» «f:send_aws»
@@ -1604,7 +1604,7 @@
         rand_success «:verilog-ts-font-lock-punctuation-face:=» std«:verilog-ts-font-lock-punctuation-face:::»«k:randomize»«:verilog-ts-font-lock-parenthesis-face:(»w_data«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;» «k:assert»«:verilog-ts-font-lock-parenthesis-face:(»rand_success«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
         rand_success «:verilog-ts-font-lock-punctuation-face:=» std«:verilog-ts-font-lock-punctuation-face:::»«k:randomize»«:verilog-ts-font-lock-parenthesis-face:(»w_strb«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;» «k:assert»«:verilog-ts-font-lock-parenthesis-face:(»rand_success«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
         «b:$display»«:verilog-ts-font-lock-parenthesis-face:(»«s:"%0t %s> Send  W with DATA: %h STRB: %h"»«:verilog-ts-font-lock-punctuation-face:,» «b:$time»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»name«:verilog-ts-font-lock-punctuation-face:,» w_data«:verilog-ts-font-lock-punctuation-face:,» w_strb«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
-        «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«w:.send_w»«:verilog-ts-font-lock-parenthesis-face:(»w_data«:verilog-ts-font-lock-punctuation-face:,» w_strb«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
+        «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«:verilog-ts-font-lock-error-face:.send_w»«:verilog-ts-font-lock-parenthesis-face:(»w_data«:verilog-ts-font-lock-punctuation-face:,» w_strb«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
         «:verilog-ts-font-lock-dot-name-face:w_queue»«:verilog-ts-font-lock-operator-face:.»push_back«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-width-num-face:1»«:verilog-ts-font-lock-punctuation-face:'»«:verilog-ts-font-lock-width-type-face:b»1«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
       «:verilog-ts-font-lock-grouping-keywords-face:end»
     «k:endtask» «:verilog-ts-font-lock-punctuation-face::» «f:send_ws»
@@ -1614,7 +1614,7 @@
       «k:automatic» «t:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»«t:resp_t» b_resp«:verilog-ts-font-lock-punctuation-face:;»
       «k:repeat» «:verilog-ts-font-lock-parenthesis-face:(»n_writes«:verilog-ts-font-lock-parenthesis-face:)» «:verilog-ts-font-lock-grouping-keywords-face:begin»
         «k:wait» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:b_queue»«:verilog-ts-font-lock-operator-face:.»size«:verilog-ts-font-lock-parenthesis-face:()» «:verilog-ts-font-lock-punctuation-face:>» 0 «:verilog-ts-font-lock-operator-face:&&» «:verilog-ts-font-lock-dot-name-face:w_queue»«:verilog-ts-font-lock-operator-face:.»size«:verilog-ts-font-lock-parenthesis-face:()» «:verilog-ts-font-lock-punctuation-face:>» 0«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
-        go_b «:verilog-ts-font-lock-punctuation-face:=» «w:this.b_queue.pop_front();
+        go_b «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-error-face:this.b_queue.pop_front();
         go_b = this.w_queue.pop_front();»
         rand_wait«:verilog-ts-font-lock-parenthesis-face:(»RESP_MIN_WAIT_CYCLES«:verilog-ts-font-lock-punctuation-face:,» RESP_MAX_WAIT_CYCLES«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
         «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«:verilog-ts-font-lock-operator-face:.»recv_b«:verilog-ts-font-lock-parenthesis-face:(»b_resp«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
@@ -1639,8 +1639,8 @@
       «b:$display»«:verilog-ts-font-lock-parenthesis-face:(»«s:"%0t %s> Write to ADDR: %h, PROT: %b DATA: %h, STRB: %h"»«:verilog-ts-font-lock-punctuation-face:,»
           «b:$time»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»name«:verilog-ts-font-lock-punctuation-face:,» w_addr«:verilog-ts-font-lock-punctuation-face:,» w_prot«:verilog-ts-font-lock-punctuation-face:,» w_data«:verilog-ts-font-lock-punctuation-face:,» w_strb«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
       «k:fork»
-        «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«w:.send_aw»«:verilog-ts-font-lock-parenthesis-face:(»w_addr«:verilog-ts-font-lock-punctuation-face:,» w_prot«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
-        «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«w:.send_w»«:verilog-ts-font-lock-parenthesis-face:(»w_data«:verilog-ts-font-lock-punctuation-face:,» w_strb«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
+        «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«:verilog-ts-font-lock-error-face:.send_aw»«:verilog-ts-font-lock-parenthesis-face:(»w_addr«:verilog-ts-font-lock-punctuation-face:,» w_prot«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
+        «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«:verilog-ts-font-lock-error-face:.send_w»«:verilog-ts-font-lock-parenthesis-face:(»w_data«:verilog-ts-font-lock-punctuation-face:,» w_strb«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
       «k:join»
       «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«:verilog-ts-font-lock-operator-face:.»recv_b«:verilog-ts-font-lock-parenthesis-face:(»b_resp«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
       «b:$display»«:verilog-ts-font-lock-parenthesis-face:(»«s:"%0t %s> Received write response from ADDR: %h RESP: %h"»«:verilog-ts-font-lock-punctuation-face:,»
@@ -1652,8 +1652,8 @@
                         «:verilog-ts-font-lock-direction-face:output» «t:data_t» r_data«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-direction-face:output» «t:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»«t:resp_t» r_resp«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
       «b:$display»«:verilog-ts-font-lock-parenthesis-face:(»«s:"%0t %s> Read from ADDR: %h PROT: %b"»«:verilog-ts-font-lock-punctuation-face:,»
           «b:$time»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»name«:verilog-ts-font-lock-punctuation-face:,» r_addr«:verilog-ts-font-lock-punctuation-face:,» r_prot«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
-      «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«w:.send_ar»«:verilog-ts-font-lock-parenthesis-face:(»r_addr«:verilog-ts-font-lock-punctuation-face:,» r_prot«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
-      «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«w:.recv_r»«:verilog-ts-font-lock-parenthesis-face:(»r_data«:verilog-ts-font-lock-punctuation-face:,» r_resp«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
+      «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«:verilog-ts-font-lock-error-face:.send_ar»«:verilog-ts-font-lock-parenthesis-face:(»r_addr«:verilog-ts-font-lock-punctuation-face:,» r_prot«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
+      «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«:verilog-ts-font-lock-error-face:.recv_r»«:verilog-ts-font-lock-parenthesis-face:(»r_data«:verilog-ts-font-lock-punctuation-face:,» r_resp«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
       «b:$display»«:verilog-ts-font-lock-parenthesis-face:(»«s:"%0t %s> Recieved read response from ADDR: %h DATA: %h RESP: %h"»«:verilog-ts-font-lock-punctuation-face:,»
           «b:$time»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»name«:verilog-ts-font-lock-punctuation-face:,» r_addr«:verilog-ts-font-lock-punctuation-face:,» r_data«:verilog-ts-font-lock-punctuation-face:,» r_resp«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
     «k:endtask» «:verilog-ts-font-lock-punctuation-face::» «f:read»
@@ -1702,7 +1702,7 @@
     «k:endfunction»
 
     «k:function» «t:void» «f:reset»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:;»
-      «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«w:.reset_slave»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:;»
+      «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«:verilog-ts-font-lock-error-face:.reset_slave»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:;»
     «k:endfunction»
 
     «k:task» «k:automatic» «f:rand_wait»«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-direction-face:input» «t:int» «t:unsigned» min«:verilog-ts-font-lock-punctuation-face:,» max«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
@@ -1720,7 +1720,7 @@
         «k:automatic» «t:addr_t» ar_addr«:verilog-ts-font-lock-punctuation-face:;»
         «k:automatic» «t:prot_t» ar_prot«:verilog-ts-font-lock-punctuation-face:;»
         rand_wait«:verilog-ts-font-lock-parenthesis-face:(»AX_MIN_WAIT_CYCLES«:verilog-ts-font-lock-punctuation-face:,» AX_MAX_WAIT_CYCLES«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
-        «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«w:.recv_ar»«:verilog-ts-font-lock-parenthesis-face:(»ar_addr«:verilog-ts-font-lock-punctuation-face:,» ar_prot«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
+        «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«:verilog-ts-font-lock-error-face:.recv_ar»«:verilog-ts-font-lock-parenthesis-face:(»ar_addr«:verilog-ts-font-lock-punctuation-face:,» ar_prot«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
         «b:$display»«:verilog-ts-font-lock-parenthesis-face:(»«s:"%0t %s> Recv AR with ADDR: %h PROT: %b"»«:verilog-ts-font-lock-punctuation-face:,» «b:$time»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»name«:verilog-ts-font-lock-punctuation-face:,» ar_addr«:verilog-ts-font-lock-punctuation-face:,» ar_prot«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
         «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»ar_queue«:verilog-ts-font-lock-operator-face:.»push_back«:verilog-ts-font-lock-parenthesis-face:(»ar_addr«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
       «:verilog-ts-font-lock-grouping-keywords-face:end»
@@ -1732,11 +1732,11 @@
         «k:automatic» «t:addr_t» ar_addr«:verilog-ts-font-lock-punctuation-face:;»
         «k:automatic» «t:data_t» r_data«:verilog-ts-font-lock-punctuation-face:;»
         «k:wait» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:ar_queue»«:verilog-ts-font-lock-operator-face:.»size«:verilog-ts-font-lock-parenthesis-face:()» «:verilog-ts-font-lock-punctuation-face:>» 0«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
-        ar_addr «w:= this.ar_queue.pop_front();
+        ar_addr «:verilog-ts-font-lock-error-face:= this.ar_queue.pop_front();
         rand_success» «:verilog-ts-font-lock-punctuation-face:=» std«:verilog-ts-font-lock-punctuation-face:::»«k:randomize»«:verilog-ts-font-lock-parenthesis-face:(»r_data«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;» «k:assert»«:verilog-ts-font-lock-parenthesis-face:(»rand_success«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
         rand_wait«:verilog-ts-font-lock-parenthesis-face:(»R_MIN_WAIT_CYCLES«:verilog-ts-font-lock-punctuation-face:,» R_MAX_WAIT_CYCLES«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
         «b:$display»«:verilog-ts-font-lock-parenthesis-face:(»«s:"%0t %s> Send  R with DATA: %h"»«:verilog-ts-font-lock-punctuation-face:,» «b:$time»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»name«:verilog-ts-font-lock-punctuation-face:,» r_data«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
-        «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«w:.send_r»«:verilog-ts-font-lock-parenthesis-face:(»r_data«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-dot-name-face:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»RESP_OKAY«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
+        «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«:verilog-ts-font-lock-error-face:.send_r»«:verilog-ts-font-lock-parenthesis-face:(»r_data«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-dot-name-face:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»RESP_OKAY«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
       «:verilog-ts-font-lock-grouping-keywords-face:end»
     «k:endtask» «:verilog-ts-font-lock-punctuation-face::» «f:send_rs»
 
@@ -1745,7 +1745,7 @@
         «k:automatic» «t:addr_t» aw_addr«:verilog-ts-font-lock-punctuation-face:;»
         «k:automatic» «t:prot_t» aw_prot«:verilog-ts-font-lock-punctuation-face:;»
         rand_wait«:verilog-ts-font-lock-parenthesis-face:(»AX_MIN_WAIT_CYCLES«:verilog-ts-font-lock-punctuation-face:,» AX_MAX_WAIT_CYCLES«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
-        «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«w:.recv_aw»«:verilog-ts-font-lock-parenthesis-face:(»aw_addr«:verilog-ts-font-lock-punctuation-face:,» aw_prot«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
+        «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«:verilog-ts-font-lock-error-face:.recv_aw»«:verilog-ts-font-lock-parenthesis-face:(»aw_addr«:verilog-ts-font-lock-punctuation-face:,» aw_prot«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
         «b:$display»«:verilog-ts-font-lock-parenthesis-face:(»«s:"%0t %s> Recv AW with ADDR: %h PROT: %b"»«:verilog-ts-font-lock-punctuation-face:,» «b:$time»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»name«:verilog-ts-font-lock-punctuation-face:,» aw_addr«:verilog-ts-font-lock-punctuation-face:,» aw_prot«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
         «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»aw_queue«:verilog-ts-font-lock-operator-face:.»push_back«:verilog-ts-font-lock-parenthesis-face:(»aw_addr«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
       «:verilog-ts-font-lock-grouping-keywords-face:end»
@@ -1756,7 +1756,7 @@
         «k:automatic» «t:data_t» w_data«:verilog-ts-font-lock-punctuation-face:;»
         «k:automatic» «t:strb_t» w_strb«:verilog-ts-font-lock-punctuation-face:;»
         rand_wait«:verilog-ts-font-lock-parenthesis-face:(»RESP_MIN_WAIT_CYCLES«:verilog-ts-font-lock-punctuation-face:,» RESP_MAX_WAIT_CYCLES«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
-        «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«w:.recv_w»«:verilog-ts-font-lock-parenthesis-face:(»w_data«:verilog-ts-font-lock-punctuation-face:,» w_strb«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
+        «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»drv«:verilog-ts-font-lock-error-face:.recv_w»«:verilog-ts-font-lock-parenthesis-face:(»w_data«:verilog-ts-font-lock-punctuation-face:,» w_strb«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
         «b:$display»«:verilog-ts-font-lock-parenthesis-face:(»«s:"%0t %s> Recv  W with DATA: %h SRTB: %h"»«:verilog-ts-font-lock-punctuation-face:,» «b:$time»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»name«:verilog-ts-font-lock-punctuation-face:,» w_data«:verilog-ts-font-lock-punctuation-face:,» w_strb«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
         «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»b_queue«:verilog-ts-font-lock-operator-face:.»push_back«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-width-num-face:1»«:verilog-ts-font-lock-punctuation-face:'»«:verilog-ts-font-lock-width-type-face:b»1«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
       «:verilog-ts-font-lock-grouping-keywords-face:end»
@@ -1769,7 +1769,7 @@
         «k:automatic» «t:logic»           go_b«:verilog-ts-font-lock-punctuation-face:;»
         «k:automatic» «t:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»«t:resp_t» b_resp«:verilog-ts-font-lock-punctuation-face:;»
         «k:wait» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:aw_queue»«:verilog-ts-font-lock-operator-face:.»size«:verilog-ts-font-lock-parenthesis-face:()» «:verilog-ts-font-lock-punctuation-face:>» 0 «:verilog-ts-font-lock-operator-face:&&» «:verilog-ts-font-lock-dot-name-face:b_queue»«:verilog-ts-font-lock-operator-face:.»size«:verilog-ts-font-lock-parenthesis-face:()» «:verilog-ts-font-lock-punctuation-face:>» 0«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
-        go_aw «:verilog-ts-font-lock-punctuation-face:=» «w:this.aw_queue.pop_front();
+        go_aw «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-error-face:this.aw_queue.pop_front();
         go_b  = this.b_queue.pop_front();»
         rand_wait«:verilog-ts-font-lock-parenthesis-face:(»RESP_MIN_WAIT_CYCLES«:verilog-ts-font-lock-punctuation-face:,» RESP_MAX_WAIT_CYCLES«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
         rand_success «:verilog-ts-font-lock-punctuation-face:=» std«:verilog-ts-font-lock-punctuation-face:::»«k:randomize»«:verilog-ts-font-lock-parenthesis-face:(»b_resp«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;» «k:assert»«:verilog-ts-font-lock-parenthesis-face:(»rand_success«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
@@ -1900,7 +1900,7 @@
     «x:// Number of checks»
     «k:localparam» «t:int» «t:unsigned» NUM_CHECKS  «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-width-num-face:32»«:verilog-ts-font-lock-punctuation-face:'»«:verilog-ts-font-lock-width-type-face:d»3«:verilog-ts-font-lock-punctuation-face:;»
     «x:// Size of the AXI4+ATOP bus, used for alignment of the beat address»
-    «k:localparam» «t:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»«t:size_t» BUS_SIZE «:verilog-ts-font-lock-punctuation-face:=» «c:$»«w:clog2(DW/8)»«:verilog-ts-font-lock-punctuation-face:;»
+    «k:localparam» «t:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»«t:size_t» BUS_SIZE «:verilog-ts-font-lock-punctuation-face:=» «c:$»«:verilog-ts-font-lock-error-face:clog2(DW/8)»«:verilog-ts-font-lock-punctuation-face:;»
 
     «x:// Typedefs»
     «k:typedef» «k:enum» «t:logic» «:verilog-ts-font-lock-brackets-face:[»«:verilog-ts-font-lock-brackets-content-face:1:0»«:verilog-ts-font-lock-brackets-face:]» «:verilog-ts-font-lock-curly-braces-face:{»
@@ -1968,8 +1968,8 @@
       «t:w_beat_t»   w_beat«:verilog-ts-font-lock-punctuation-face:;»
       «t:byte_t»     write_data«:verilog-ts-font-lock-punctuation-face:;»
       «k:forever» «:verilog-ts-font-lock-grouping-keywords-face:begin»
-        «k:wait» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»aw_sample«w:.size()» «:verilog-ts-font-lock-punctuation-face:>» 0«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
-        «w:aw_beat        = this.aw_sample.pop_front();»
+        «k:wait» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»aw_sample«:verilog-ts-font-lock-error-face:.size()» «:verilog-ts-font-lock-punctuation-face:>» 0«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
+        «:verilog-ts-font-lock-error-face:aw_beat        = this.aw_sample.pop_front();»
         «x:// This scoreborad only supports this type of burst:»
         «k:assert» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:aw_beat»«:verilog-ts-font-lock-operator-face:.»ax_burst «:verilog-ts-font-lock-punctuation-face:==» «:verilog-ts-font-lock-dot-name-face:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»BURST_INCR «:verilog-ts-font-lock-operator-face:||» «:verilog-ts-font-lock-dot-name-face:aw_beat»«:verilog-ts-font-lock-operator-face:.»ax_len «:verilog-ts-font-lock-punctuation-face:==» '0«:verilog-ts-font-lock-parenthesis-face:)» «k:else»
             «b:$warning»«:verilog-ts-font-lock-parenthesis-face:(»«s:"Not supported AW burst: BURST: %0h."»«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-dot-name-face:aw_beat»«:verilog-ts-font-lock-operator-face:.»ax_burst«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
@@ -1982,7 +1982,7 @@
               «:verilog-ts-font-lock-dot-name-face:aw_beat»«:verilog-ts-font-lock-operator-face:.»ax_burst«:verilog-ts-font-lock-punctuation-face:,» i«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
           bus_address       «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-dot-name-face:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»aligned_addr«:verilog-ts-font-lock-parenthesis-face:(»beat_addresses«:verilog-ts-font-lock-brackets-face:[»«:verilog-ts-font-lock-brackets-content-face:i»«:verilog-ts-font-lock-brackets-face:]»«:verilog-ts-font-lock-punctuation-face:,» BUS_SIZE«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
           «x:// Check if the memory array is initialyzed at this beat address (aligned on the bus)»
-          «k:if» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-operator-face:!»«:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»memory_q«w:.exists»«:verilog-ts-font-lock-parenthesis-face:(»bus_address«:verilog-ts-font-lock-parenthesis-face:))» «:verilog-ts-font-lock-grouping-keywords-face:begin»
+          «k:if» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-operator-face:!»«:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»memory_q«:verilog-ts-font-lock-error-face:.exists»«:verilog-ts-font-lock-parenthesis-face:(»bus_address«:verilog-ts-font-lock-parenthesis-face:))» «:verilog-ts-font-lock-grouping-keywords-face:begin»
             «k:for» «:verilog-ts-font-lock-parenthesis-face:(»«t:int» «t:unsigned» j «:verilog-ts-font-lock-punctuation-face:=» 0«:verilog-ts-font-lock-punctuation-face:;» j «:verilog-ts-font-lock-punctuation-face:<» «:verilog-ts-font-lock-dot-name-face:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»num_bytes«:verilog-ts-font-lock-parenthesis-face:(»BUS_SIZE«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;» j«:verilog-ts-font-lock-punctuation-face:++»«:verilog-ts-font-lock-parenthesis-face:)» «:verilog-ts-font-lock-grouping-keywords-face:begin»
               «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»memory_q«:verilog-ts-font-lock-brackets-face:[»«:verilog-ts-font-lock-brackets-content-face:bus_address+j»«:verilog-ts-font-lock-brackets-face:]»«:verilog-ts-font-lock-operator-face:.»push_back«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-width-num-face:8»«:verilog-ts-font-lock-punctuation-face:'»«:verilog-ts-font-lock-width-type-face:b»xxxxxxxx«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
             «:verilog-ts-font-lock-grouping-keywords-face:end»
@@ -1990,8 +1990,8 @@
         «:verilog-ts-font-lock-grouping-keywords-face:end»
         «x:// handle all write beats for this write access»
         «k:for» «:verilog-ts-font-lock-parenthesis-face:(»«t:int» «t:unsigned» i «:verilog-ts-font-lock-punctuation-face:=» 0«:verilog-ts-font-lock-punctuation-face:;» i «:verilog-ts-font-lock-punctuation-face:<=» «:verilog-ts-font-lock-dot-name-face:aw_beat»«:verilog-ts-font-lock-operator-face:.»ax_len«:verilog-ts-font-lock-punctuation-face:;» i«:verilog-ts-font-lock-punctuation-face:++»«:verilog-ts-font-lock-parenthesis-face:)» «:verilog-ts-font-lock-grouping-keywords-face:begin»
-          «k:wait» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»w_sample«w:.size()» «:verilog-ts-font-lock-punctuation-face:>» 0«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
-          w_beat      «w:= this.w_sample.pop_front();
+          «k:wait» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»w_sample«:verilog-ts-font-lock-error-face:.size()» «:verilog-ts-font-lock-punctuation-face:>» 0«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
+          w_beat      «:verilog-ts-font-lock-error-face:= this.w_sample.pop_front();
           bus_address» «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-dot-name-face:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»aligned_addr«:verilog-ts-font-lock-parenthesis-face:(»beat_addresses«:verilog-ts-font-lock-brackets-face:[»«:verilog-ts-font-lock-brackets-content-face:i»«:verilog-ts-font-lock-brackets-face:]»«:verilog-ts-font-lock-punctuation-face:,» BUS_SIZE«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
           «k:for» «:verilog-ts-font-lock-parenthesis-face:(»«t:int» «t:unsigned» j «:verilog-ts-font-lock-punctuation-face:=» 0«:verilog-ts-font-lock-punctuation-face:;» j «:verilog-ts-font-lock-punctuation-face:<» «:verilog-ts-font-lock-dot-name-face:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»num_bytes«:verilog-ts-font-lock-parenthesis-face:(»BUS_SIZE«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;» j«:verilog-ts-font-lock-punctuation-face:++»«:verilog-ts-font-lock-parenthesis-face:)» «:verilog-ts-font-lock-grouping-keywords-face:begin»
             write_data «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»memory_q«:verilog-ts-font-lock-brackets-face:[»«:verilog-ts-font-lock-brackets-content-face:bus_address+j»«:verilog-ts-font-lock-brackets-face:][»«:verilog-ts-font-lock-brackets-content-face:$»«:verilog-ts-font-lock-brackets-face:]»«:verilog-ts-font-lock-punctuation-face:;»
@@ -2010,8 +2010,8 @@
       «t:b_beat_t»   b_beat«:verilog-ts-font-lock-punctuation-face:;»
       «t:axi_addr_t» bus_address«:verilog-ts-font-lock-punctuation-face:;»
       «k:forever» «:verilog-ts-font-lock-grouping-keywords-face:begin»
-        «w:wait (this.b_sample[id].size() > 0)»«:verilog-ts-font-lock-punctuation-face:;»
-        «w:assert (this.b_queue[id].size() > 0) else
+        «:verilog-ts-font-lock-error-face:wait (this.b_sample[id].size() > 0)»«:verilog-ts-font-lock-punctuation-face:;»
+        «:verilog-ts-font-lock-error-face:assert (this.b_queue[id].size() > 0) else
             wait (this.b_queue[id].size() > 0)»«:verilog-ts-font-lock-punctuation-face:;»
         aw_beat «:verilog-ts-font-lock-punctuation-face:=» b_queue«:verilog-ts-font-lock-brackets-face:[»«:verilog-ts-font-lock-brackets-content-face:id»«:verilog-ts-font-lock-brackets-face:]»«:verilog-ts-font-lock-operator-face:.»pop_front«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:;»
         b_beat  «:verilog-ts-font-lock-punctuation-face:=» b_sample«:verilog-ts-font-lock-brackets-face:[»«:verilog-ts-font-lock-brackets-content-face:id»«:verilog-ts-font-lock-brackets-face:]»«:verilog-ts-font-lock-operator-face:.»pop_front«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:;»
@@ -2043,20 +2043,20 @@
       «t:byte_t»     exp_data«:verilog-ts-font-lock-brackets-face:[»«c:$»«:verilog-ts-font-lock-brackets-face:]»«:verilog-ts-font-lock-punctuation-face:;»
       «t:byte_t»     tst_data«:verilog-ts-font-lock-brackets-face:[»«c:$»«:verilog-ts-font-lock-brackets-face:]»«:verilog-ts-font-lock-punctuation-face:;»
       «k:forever» «:verilog-ts-font-lock-grouping-keywords-face:begin»
-        «w:wait (this.ar_sample[id].size() > 0);
+        «:verilog-ts-font-lock-error-face:wait (this.ar_sample[id].size() > 0);
         ar_beat = this.ar_sample[id].pop_front()»«:verilog-ts-font-lock-punctuation-face:;»
         «x:// This scoreborad only supports this type of burst:»
         «k:assert» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:ar_beat»«:verilog-ts-font-lock-operator-face:.»ax_burst «:verilog-ts-font-lock-punctuation-face:==» «:verilog-ts-font-lock-dot-name-face:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»BURST_INCR «:verilog-ts-font-lock-operator-face:||» «:verilog-ts-font-lock-dot-name-face:ar_beat»«:verilog-ts-font-lock-operator-face:.»ax_len «:verilog-ts-font-lock-punctuation-face:==» '0«:verilog-ts-font-lock-parenthesis-face:)» «k:else»
             «b:$warning»«:verilog-ts-font-lock-parenthesis-face:(»«s:"Not supported AR burst: BURST: %0h."»«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-dot-name-face:ar_beat»«:verilog-ts-font-lock-operator-face:.»ax_burst«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
 
         «k:for» «:verilog-ts-font-lock-parenthesis-face:(»«t:int» «t:unsigned» i «:verilog-ts-font-lock-punctuation-face:=» 0«:verilog-ts-font-lock-punctuation-face:;» i «:verilog-ts-font-lock-punctuation-face:<=» «:verilog-ts-font-lock-dot-name-face:ar_beat»«:verilog-ts-font-lock-operator-face:.»ax_len«:verilog-ts-font-lock-punctuation-face:;» i«:verilog-ts-font-lock-punctuation-face:++»«:verilog-ts-font-lock-parenthesis-face:)» «:verilog-ts-font-lock-grouping-keywords-face:begin»
-          «w:wait (this.r_sample[id].size() > 0);
+          «:verilog-ts-font-lock-error-face:wait (this.r_sample[id].size() > 0);
           r_beat = this.r_sample[id].pop_front()»«:verilog-ts-font-lock-punctuation-face:;»
           beat_address «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-dot-name-face:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»beat_addr«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:ar_beat»«:verilog-ts-font-lock-operator-face:.»ax_addr«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-dot-name-face:ar_beat»«:verilog-ts-font-lock-operator-face:.»ax_size«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-dot-name-face:ar_beat»«:verilog-ts-font-lock-operator-face:.»ax_len«:verilog-ts-font-lock-punctuation-face:,»
               «:verilog-ts-font-lock-dot-name-face:ar_beat»«:verilog-ts-font-lock-operator-face:.»ax_burst«:verilog-ts-font-lock-punctuation-face:,» i«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
           beat_address «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-dot-name-face:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»aligned_addr«:verilog-ts-font-lock-parenthesis-face:(»beat_address«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-dot-name-face:ar_beat»«:verilog-ts-font-lock-operator-face:.»ax_size«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
           bus_address  «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-dot-name-face:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»aligned_addr«:verilog-ts-font-lock-parenthesis-face:(»beat_address«:verilog-ts-font-lock-punctuation-face:,» BUS_SIZE«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
-          «k:if» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-operator-face:!»«:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»memory_q«w:.exists»«:verilog-ts-font-lock-parenthesis-face:(»bus_address«:verilog-ts-font-lock-parenthesis-face:))» «:verilog-ts-font-lock-grouping-keywords-face:begin»
+          «k:if» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-operator-face:!»«:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»memory_q«:verilog-ts-font-lock-error-face:.exists»«:verilog-ts-font-lock-parenthesis-face:(»bus_address«:verilog-ts-font-lock-parenthesis-face:))» «:verilog-ts-font-lock-grouping-keywords-face:begin»
             «k:for» «:verilog-ts-font-lock-parenthesis-face:(»«t:int» «t:unsigned» j «:verilog-ts-font-lock-punctuation-face:=» 0«:verilog-ts-font-lock-punctuation-face:;» j «:verilog-ts-font-lock-punctuation-face:<» «:verilog-ts-font-lock-dot-name-face:axi_pkg»«:verilog-ts-font-lock-punctuation-face:::»num_bytes«:verilog-ts-font-lock-parenthesis-face:(»BUS_SIZE«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;» j«:verilog-ts-font-lock-punctuation-face:++»«:verilog-ts-font-lock-parenthesis-face:)» «:verilog-ts-font-lock-grouping-keywords-face:begin»
               «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»memory_q«:verilog-ts-font-lock-brackets-face:[»«:verilog-ts-font-lock-brackets-content-face:bus_address+j»«:verilog-ts-font-lock-brackets-face:]»«:verilog-ts-font-lock-operator-face:.»push_back«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-width-num-face:8»«:verilog-ts-font-lock-punctuation-face:'»«:verilog-ts-font-lock-width-type-face:b»xxxxxxxx«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
             «:verilog-ts-font-lock-grouping-keywords-face:end»
@@ -2142,7 +2142,7 @@
           b_beat«:verilog-ts-font-lock-operator-face:.»b_id   «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»axi«:verilog-ts-font-lock-operator-face:.»b_id«:verilog-ts-font-lock-punctuation-face:;»
           b_beat«:verilog-ts-font-lock-operator-face:.»b_resp «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»axi«:verilog-ts-font-lock-operator-face:.»b_resp«:verilog-ts-font-lock-punctuation-face:;»
           b_beat«:verilog-ts-font-lock-operator-face:.»b_user «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»axi«:verilog-ts-font-lock-operator-face:.»b_user«:verilog-ts-font-lock-punctuation-face:;»
-          «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»b_sample«w:[this.axi.b_id].push_back(b_beat)»«:verilog-ts-font-lock-punctuation-face:;»
+          «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»b_sample«:verilog-ts-font-lock-error-face:[this.axi.b_id].push_back(b_beat)»«:verilog-ts-font-lock-punctuation-face:;»
         «:verilog-ts-font-lock-grouping-keywords-face:end»
         cycle_end«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:;»
       «:verilog-ts-font-lock-grouping-keywords-face:end»
@@ -2167,7 +2167,7 @@
           ar_beat«:verilog-ts-font-lock-operator-face:.»ax_region «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»axi«:verilog-ts-font-lock-operator-face:.»ar_region«:verilog-ts-font-lock-punctuation-face:;»
           ar_beat«:verilog-ts-font-lock-operator-face:.»ax_atop   «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-width-num-face:6»«:verilog-ts-font-lock-punctuation-face:'»«:verilog-ts-font-lock-width-type-face:b»xxxxxx«:verilog-ts-font-lock-punctuation-face:;»
           ar_beat«:verilog-ts-font-lock-operator-face:.»ax_user   «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»axi«:verilog-ts-font-lock-operator-face:.»ar_user«:verilog-ts-font-lock-punctuation-face:;»
-          «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»ar_sample«w:[this.axi.ar_id].push_back(ar_beat)»«:verilog-ts-font-lock-punctuation-face:;»
+          «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»ar_sample«:verilog-ts-font-lock-error-face:[this.axi.ar_id].push_back(ar_beat)»«:verilog-ts-font-lock-punctuation-face:;»
         «:verilog-ts-font-lock-grouping-keywords-face:end»
         cycle_end«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:;»
       «:verilog-ts-font-lock-grouping-keywords-face:end»
@@ -2185,7 +2185,7 @@
           r_beat«:verilog-ts-font-lock-operator-face:.»r_resp «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»axi«:verilog-ts-font-lock-operator-face:.»r_resp«:verilog-ts-font-lock-punctuation-face:;»
           r_beat«:verilog-ts-font-lock-operator-face:.»r_last «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»axi«:verilog-ts-font-lock-operator-face:.»r_last«:verilog-ts-font-lock-punctuation-face:;»
           r_beat«:verilog-ts-font-lock-operator-face:.»r_user «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»axi«:verilog-ts-font-lock-operator-face:.»r_user«:verilog-ts-font-lock-punctuation-face:;»
-          «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»r_sample«w:[this.axi.r_id].push_back(r_beat)»«:verilog-ts-font-lock-punctuation-face:;»
+          «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»r_sample«:verilog-ts-font-lock-error-face:[this.axi.r_id].push_back(r_beat)»«:verilog-ts-font-lock-punctuation-face:;»
         «:verilog-ts-font-lock-grouping-keywords-face:end»
         cycle_end«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:;»
       «:verilog-ts-font-lock-grouping-keywords-face:end»
@@ -2259,14 +2259,14 @@
     «x:/// transactions in flight.»
     «k:task» «k:automatic» «f:reset»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:;»
       «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»check_en «:verilog-ts-font-lock-punctuation-face:=» '0«:verilog-ts-font-lock-punctuation-face:;»
-      «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»memory_q«w:.delete»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:;»
-      «k:assert»«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»aw_sample«w:.size()» «:verilog-ts-font-lock-punctuation-face:==» 0«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
-      «k:assert»«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»w_sample«w:.size()»  «:verilog-ts-font-lock-punctuation-face:==» 0«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
+      «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»memory_q«:verilog-ts-font-lock-error-face:.delete»«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:;»
+      «k:assert»«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»aw_sample«:verilog-ts-font-lock-error-face:.size()» «:verilog-ts-font-lock-punctuation-face:==» 0«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
+      «k:assert»«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»w_sample«:verilog-ts-font-lock-error-face:.size()»  «:verilog-ts-font-lock-punctuation-face:==» 0«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
       «k:for» «:verilog-ts-font-lock-parenthesis-face:(»«t:int» «t:unsigned» i «:verilog-ts-font-lock-punctuation-face:=» 0«:verilog-ts-font-lock-punctuation-face:;» i «:verilog-ts-font-lock-punctuation-face:<» 2«:verilog-ts-font-lock-operator-face:**»IW«:verilog-ts-font-lock-punctuation-face:;» i«:verilog-ts-font-lock-punctuation-face:++»«:verilog-ts-font-lock-parenthesis-face:)» «:verilog-ts-font-lock-grouping-keywords-face:begin»
-        «w:assert(this.b_sample[i].size()  == 0)»«:verilog-ts-font-lock-punctuation-face:;»
-        «w:assert(this.ar_sample[i].size() == 0)»«:verilog-ts-font-lock-punctuation-face:;»
-        «w:assert(this.r_sample[i].size()  == 0)»«:verilog-ts-font-lock-punctuation-face:;»
-        «w:assert(this.b_queue[i].size()   == 0)»«:verilog-ts-font-lock-punctuation-face:;»
+        «:verilog-ts-font-lock-error-face:assert(this.b_sample[i].size()  == 0)»«:verilog-ts-font-lock-punctuation-face:;»
+        «:verilog-ts-font-lock-error-face:assert(this.ar_sample[i].size() == 0)»«:verilog-ts-font-lock-punctuation-face:;»
+        «:verilog-ts-font-lock-error-face:assert(this.r_sample[i].size()  == 0)»«:verilog-ts-font-lock-punctuation-face:;»
+        «:verilog-ts-font-lock-error-face:assert(this.b_queue[i].size()   == 0)»«:verilog-ts-font-lock-punctuation-face:;»
       «:verilog-ts-font-lock-grouping-keywords-face:end»
     «k:endtask» «:verilog-ts-font-lock-punctuation-face::» «f:reset»
 
@@ -2279,7 +2279,7 @@
 
     «x:/// Clear a byte from memoy. Can be used to partially delete mem space.»
     «k:task» «f:clear_byte»«:verilog-ts-font-lock-parenthesis-face:(»«t:axi_addr_t» clear_addr«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
-      «k:if» «:verilog-ts-font-lock-parenthesis-face:(»«w:this.memory_q.exists»«:verilog-ts-font-lock-parenthesis-face:(»clear_addr«:verilog-ts-font-lock-parenthesis-face:))» «:verilog-ts-font-lock-grouping-keywords-face:begin»
+      «k:if» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-error-face:this.memory_q.exists»«:verilog-ts-font-lock-parenthesis-face:(»clear_addr«:verilog-ts-font-lock-parenthesis-face:))» «:verilog-ts-font-lock-grouping-keywords-face:begin»
         «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»memory_q«:verilog-ts-font-lock-operator-face:.»delete«:verilog-ts-font-lock-parenthesis-face:(»clear_addr«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
       «:verilog-ts-font-lock-grouping-keywords-face:end»
     «k:endtask» «:verilog-ts-font-lock-punctuation-face::» «f:clear_byte»
@@ -2296,7 +2296,7 @@
 
     «x:/// Get a byte from the modeled memory.»
     «k:task» «k:automatic» «f:get_byte»«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-direction-face:input» «t:axi_addr_t» byte_addr«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-direction-face:output» «t:byte_t» byte_data«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
-      «k:if» «:verilog-ts-font-lock-parenthesis-face:(»«w:this.memory_q.exists»«:verilog-ts-font-lock-parenthesis-face:(»byte_addr«:verilog-ts-font-lock-parenthesis-face:))» «:verilog-ts-font-lock-grouping-keywords-face:begin»
+      «k:if» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-error-face:this.memory_q.exists»«:verilog-ts-font-lock-parenthesis-face:(»byte_addr«:verilog-ts-font-lock-parenthesis-face:))» «:verilog-ts-font-lock-grouping-keywords-face:begin»
         byte_data «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-operator-face:.»memory_q«:verilog-ts-font-lock-brackets-face:[»«:verilog-ts-font-lock-brackets-content-face:byte_addr»«:verilog-ts-font-lock-brackets-face:][»«:verilog-ts-font-lock-brackets-content-face:0»«:verilog-ts-font-lock-brackets-face:]»«:verilog-ts-font-lock-punctuation-face:;»
       «:verilog-ts-font-lock-grouping-keywords-face:end» «k:else» «:verilog-ts-font-lock-grouping-keywords-face:begin»
         byte_data «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-width-num-face:8»«:verilog-ts-font-lock-punctuation-face:'»«:verilog-ts-font-lock-width-type-face:h»xx«:verilog-ts-font-lock-punctuation-face:;»
@@ -2347,7 +2347,7 @@
   «:verilog-ts-font-lock-direction-face:input» «t:logic»     r_ready_i
 «:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
   «x:// id width from channel»
-  «k:localparam» «t:int» «t:unsigned» IdWidth «:verilog-ts-font-lock-punctuation-face:=» «c:$»«w:bits(aw_chan_i.id)»«:verilog-ts-font-lock-punctuation-face:;»
+  «k:localparam» «t:int» «t:unsigned» IdWidth «:verilog-ts-font-lock-punctuation-face:=» «c:$»«:verilog-ts-font-lock-error-face:bits(aw_chan_i.id)»«:verilog-ts-font-lock-punctuation-face:;»
   «k:localparam» «t:int» «t:unsigned» NoIds   «:verilog-ts-font-lock-punctuation-face:=» 2«:verilog-ts-font-lock-operator-face:**»IdWidth«:verilog-ts-font-lock-punctuation-face:;»
 
   «x:// queues for writes and reads»

@@ -1,4 +1,5 @@
 [![MELPA](https://melpa.org/packages/verilog-ext-badge.svg)](https://melpa.org/#/verilog-ext)
+[![MELPA](https://melpa.org/packages/verilog-ts-mode-badge.svg)](https://melpa.org/#/verilog-ts-mode)
 [![MELPA Stable](https://stable.melpa.org/packages/verilog-ext-badge.svg)](https://stable.melpa.org/#/verilog-ext)
 [![Build Status](https://github.com/gmlarumbe/verilog-ext/workflows/ERT-straight/badge.svg)](https://github.com/gmlarumbe/verilog-ext/actions/workflows/build_straight.yml)
 [![Build Status](https://github.com/gmlarumbe/verilog-ext/workflows/ERT-package-el/badge.svg)](https://github.com/gmlarumbe/verilog-ext/actions/workflows/build_package.yml)
@@ -33,9 +34,10 @@ This package provides some extensions on top of the great Emacs [verilog-mode](h
 
 ### MELPA ###
 
-`verilog-ext` is available on MELPA.
+`verilog-ext` is available on MELPA. It includes `verilog-ts-mode` as a dependency.
 
-`verilog-ts-mode` is not yet available on MELPA. See the [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Tree-sitter) for more info.
+If you only want to experiment with tree-sitter, `verilog-ts-mode` is also available on MELPA as a separate package.
+See the [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Tree-sitter) for more info.
 
 
 ### straight.el ###
@@ -80,6 +82,8 @@ By default all features are enabled:
         ports))
 (verilog-ext-mode-setup)
 (add-hook 'verilog-mode-hook #'verilog-ext-mode)
+;; To use `verilog-ts-mode' as the default major-mode also add the line below:
+(add-to-list 'auto-mode-alist '("\\.s?vh?\\'" . verilog-ts-mode))
 ```
 
 If installed and loaded via `use-package`:
@@ -116,6 +120,10 @@ If installed and loaded via `use-package`:
           ports))
   :config
   (verilog-ext-mode-setup))
+
+;; To use `verilog-ts-mode' as the default major-mode also add the lines below:
+(use-package verilog-ts-mode
+  :mode (("\\.s?vh?\\'" . verilog-ts-mode))
 ```
 
 ## Workspace ##
@@ -149,7 +157,6 @@ To override the value of `workspace` root inside a Git repo:
 Enabling of `verilog-ext-mode` minor-mode creates the following keybindings:
 
 * Features:
-  * <kbd>M-i</kbd> `verilog-ext-imenu-list`
   * <kbd>C-c C-l</kbd> `verilog-ext-formatter-run`
   * <kbd>C-c \<f5\></kbd> `verilog-ext-workspace-compile`
   * <kbd>C-c C-p</kbd> `verilog-ext-preprocess`
@@ -193,9 +200,13 @@ Enabling of `verilog-ext-mode` minor-mode creates the following keybindings:
 # Features #
 
 ## Tree-sitter ##
-The package provides the major-mode `verilog-ts-mode` for syntax highligting and indentation. It is derived from `verilog-mode` making AUTOs and other utilities still available.
+The package `verilog-ts-mode` provides syntax highlighting,
+indentation and a backend for hierarchy extraction, definitions and
+references navigation, and some other features implemented in
+`verilog-ext`. Using tree-sitter as a backend is recommended as it is
+much faster and efficient than internal Emacs lisp parsing.
 
-`verilog-ts-mode` is still work in progress and aims to provide the same functionality as `verilog-ext` but much faster and efficiently.
+`verilog-ts-mode` is derived from `verilog-mode` making AUTOs and other utilities still available.
 
 For more information see the [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Tree-sitter).
 

@@ -110,15 +110,11 @@
            (treesit-language-available-p 'verilog))
   (require 'treesit)
   (setq verilog-ext-tests-tree-sitter-available-p t)
+  (setq treesit-font-lock-level 4)
   (message "verilog-ext-tests-tree-sitter-available-p: %s" verilog-ext-tests-tree-sitter-available-p))
 
 (when verilog-ext-tests-tree-sitter-available-p
-  (use-package verilog-ts-mode
-    :straight (:host github :repo "gmlarumbe/verilog-ext"
-               :files ("ts-mode/verilog-ts-mode.el"))
-    :config
-    ;; Applies also to verilog-ts-mode since it's derived
-    (add-hook 'verilog-ts-mode-hook #'(lambda () (setq treesit-font-lock-level 4)))))
+  (use-package verilog-ts-mode))
 
 
 (provide 'verilog-ext-tests-setup-straight)

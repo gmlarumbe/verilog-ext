@@ -767,7 +767,7 @@
 
   «k:extern» «k:function» «t:void» «f:print_config_with_audit»«:verilog-ts-font-lock-parenthesis-face:(»«t:bit» recurse «:verilog-ts-font-lock-punctuation-face:=» 0«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
 
-  «w:static» «:verilog-ts-font-lock-preprocessor-face:`ifndef» «:verilog-ts-font-lock-preprocessor-face:UVM_ENABLE_DEPRECATED_API» «w:local» «:verilog-ts-font-lock-preprocessor-face:`endif» «t:bit» print_config_matches«:verilog-ts-font-lock-punctuation-face:;»
+  «:verilog-ts-font-lock-error-face:static» «:verilog-ts-font-lock-preprocessor-face:`ifndef» «:verilog-ts-font-lock-preprocessor-face:UVM_ENABLE_DEPRECATED_API» «:verilog-ts-font-lock-error-face:local» «:verilog-ts-font-lock-preprocessor-face:`endif» «t:bit» print_config_matches«:verilog-ts-font-lock-punctuation-face:;»
 
   «x:// Function: get_print_config_matches»
   «x://»
@@ -1558,7 +1558,7 @@
 
   «x:// Do local configuration settings»
   «k:if» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-operator-face:!»«:verilog-ts-font-lock-dot-name-face:uvm_config_db» «:verilog-ts-font-lock-time-event-face:#»«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-port-connection-face:uvm_bitstream_t»«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:::»get«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-punctuation-face:,» «s:""»«:verilog-ts-font-lock-punctuation-face:,» «s:"recording_detail"»«:verilog-ts-font-lock-punctuation-face:,» recording_detail«:verilog-ts-font-lock-parenthesis-face:))»
-        «t:void'»«:verilog-ts-font-lock-parenthesis-face:(»uvm_config_db «w:#»«:verilog-ts-font-lock-parenthesis-face:(»«w:int)::»get«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-punctuation-face:,» «s:""»«:verilog-ts-font-lock-punctuation-face:,» «s:"recording_detail"»«:verilog-ts-font-lock-punctuation-face:,» recording_detail«:verilog-ts-font-lock-parenthesis-face:))»«:verilog-ts-font-lock-punctuation-face:;»
+        «t:void'»«:verilog-ts-font-lock-parenthesis-face:(»uvm_config_db «:verilog-ts-font-lock-error-face:#»«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-error-face:int)::»get«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-grouping-keywords-face:this»«:verilog-ts-font-lock-punctuation-face:,» «s:""»«:verilog-ts-font-lock-punctuation-face:,» «s:"recording_detail"»«:verilog-ts-font-lock-punctuation-face:,» recording_detail«:verilog-ts-font-lock-parenthesis-face:))»«:verilog-ts-font-lock-punctuation-face:;»
 
   m_rh«:verilog-ts-font-lock-operator-face:.»set_name«:verilog-ts-font-lock-parenthesis-face:(»get_full_name«:verilog-ts-font-lock-parenthesis-face:())»«:verilog-ts-font-lock-punctuation-face:;»
   set_report_verbosity_level«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:parent»«:verilog-ts-font-lock-operator-face:.»get_report_verbosity_level«:verilog-ts-font-lock-parenthesis-face:())»«:verilog-ts-font-lock-punctuation-face:;»
@@ -1577,7 +1577,7 @@
       m_children«:verilog-ts-font-lock-brackets-face:[»«:verilog-ts-font-lock-brackets-content-face:child.get_name()»«:verilog-ts-font-lock-brackets-face:]» «:verilog-ts-font-lock-punctuation-face:!=» child«:verilog-ts-font-lock-parenthesis-face:)» «:verilog-ts-font-lock-grouping-keywords-face:begin»
       `«:verilog-ts-font-lock-preprocessor-face:uvm_warning»«:verilog-ts-font-lock-parenthesis-face:(»«s:"BDCLD"»«:verilog-ts-font-lock-punctuation-face:,»
         «b:$sformatf»«:verilog-ts-font-lock-parenthesis-face:(»«s:"A child with the name '%0s' (type=%0s) already exists."»«:verilog-ts-font-lock-punctuation-face:,»
-           «:verilog-ts-font-lock-dot-name-face:child»«:verilog-ts-font-lock-operator-face:.»get_name«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-dot-name-face:m_children»«w:[child.get_name()]»«:verilog-ts-font-lock-operator-face:.»get_type_name«:verilog-ts-font-lock-parenthesis-face:()))»
+           «:verilog-ts-font-lock-dot-name-face:child»«:verilog-ts-font-lock-operator-face:.»get_name«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-dot-name-face:m_children»«:verilog-ts-font-lock-error-face:[child.get_name()]»«:verilog-ts-font-lock-operator-face:.»get_type_name«:verilog-ts-font-lock-parenthesis-face:()))»
       «k:return» 0«:verilog-ts-font-lock-punctuation-face:;»
   «:verilog-ts-font-lock-grouping-keywords-face:end»
 
@@ -1750,7 +1750,7 @@
   «:verilog-ts-font-lock-grouping-keywords-face:end»
 
   «k:if»«:verilog-ts-font-lock-parenthesis-face:(» remainder «:verilog-ts-font-lock-punctuation-face:!=» «s:""» «:verilog-ts-font-lock-parenthesis-face:)»
-    «k:return» «w:comp.m_children[leaf].lookup»«:verilog-ts-font-lock-parenthesis-face:(»remainder«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
+    «k:return» «:verilog-ts-font-lock-error-face:comp.m_children[leaf].lookup»«:verilog-ts-font-lock-parenthesis-face:(»remainder«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
 
   «k:return» «:verilog-ts-font-lock-dot-name-face:comp»«:verilog-ts-font-lock-operator-face:.»m_children«:verilog-ts-font-lock-brackets-face:[»«:verilog-ts-font-lock-brackets-content-face:leaf»«:verilog-ts-font-lock-brackets-face:]»«:verilog-ts-font-lock-punctuation-face:;»
 
@@ -2176,7 +2176,7 @@
     «:verilog-ts-font-lock-dot-name-face:domain»«:verilog-ts-font-lock-operator-face:.»add«:verilog-ts-font-lock-parenthesis-face:(»schedule«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
     common «:verilog-ts-font-lock-punctuation-face:=» «:verilog-ts-font-lock-dot-name-face:uvm_domain»«:verilog-ts-font-lock-punctuation-face:::»get_common_domain«:verilog-ts-font-lock-parenthesis-face:()»«:verilog-ts-font-lock-punctuation-face:;»
     «k:if» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:common»«:verilog-ts-font-lock-operator-face:.»find«:verilog-ts-font-lock-parenthesis-face:(»domain«:verilog-ts-font-lock-punctuation-face:,»0«:verilog-ts-font-lock-parenthesis-face:)» «:verilog-ts-font-lock-punctuation-face:==» «k:null»«:verilog-ts-font-lock-parenthesis-face:)»
-      «:verilog-ts-font-lock-dot-name-face:common»«:verilog-ts-font-lock-operator-face:.»add«:verilog-ts-font-lock-parenthesis-face:(»domain«:verilog-ts-font-lock-punctuation-face:,»«w:.»with_phase«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:uvm_run_phase»«:verilog-ts-font-lock-punctuation-face:::»get«:verilog-ts-font-lock-parenthesis-face:()))»«:verilog-ts-font-lock-punctuation-face:;»
+      «:verilog-ts-font-lock-dot-name-face:common»«:verilog-ts-font-lock-operator-face:.»add«:verilog-ts-font-lock-parenthesis-face:(»domain«:verilog-ts-font-lock-punctuation-face:,»«:verilog-ts-font-lock-error-face:.»with_phase«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:uvm_run_phase»«:verilog-ts-font-lock-punctuation-face:::»get«:verilog-ts-font-lock-parenthesis-face:()))»«:verilog-ts-font-lock-punctuation-face:;»
   «:verilog-ts-font-lock-grouping-keywords-face:end»
 
 «k:endfunction»
@@ -2316,7 +2316,7 @@
 
    «x:// Then make sure this name/type_name combo exists»
    «k:if» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-operator-face:!»«:verilog-ts-font-lock-dot-name-face:m_streams»«:verilog-ts-font-lock-operator-face:.»exists«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:stream»«:verilog-ts-font-lock-operator-face:.»get_name«:verilog-ts-font-lock-parenthesis-face:())» «:verilog-ts-font-lock-operator-face:||»
-       «:verilog-ts-font-lock-operator-face:!»«:verilog-ts-font-lock-dot-name-face:m_streams»«w:[stream.get_name()]»«:verilog-ts-font-lock-operator-face:.»exists«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:stream»«:verilog-ts-font-lock-operator-face:.»get_stream_type_name«:verilog-ts-font-lock-parenthesis-face:()))»
+       «:verilog-ts-font-lock-operator-face:!»«:verilog-ts-font-lock-dot-name-face:m_streams»«:verilog-ts-font-lock-error-face:[stream.get_name()]»«:verilog-ts-font-lock-operator-face:.»exists«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:stream»«:verilog-ts-font-lock-operator-face:.»get_stream_type_name«:verilog-ts-font-lock-parenthesis-face:()))»
      «k:return»«:verilog-ts-font-lock-punctuation-face:;»
 
    «x:// Then make sure this name/type_name combo is THIS stream»
@@ -2324,8 +2324,8 @@
      «k:return»«:verilog-ts-font-lock-punctuation-face:;»
 
    «x:// Then delete it from the arrays»
-   «:verilog-ts-font-lock-dot-name-face:m_streams»«w:[stream.get_name()]»«:verilog-ts-font-lock-operator-face:.»delete«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:stream»«:verilog-ts-font-lock-operator-face:.»get_type_name«:verilog-ts-font-lock-parenthesis-face:())»«:verilog-ts-font-lock-punctuation-face:;»
-   «k:if» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:m_streams»«w:[stream.get_name()]»«:verilog-ts-font-lock-operator-face:.»size«:verilog-ts-font-lock-parenthesis-face:()» «:verilog-ts-font-lock-punctuation-face:==» 0«:verilog-ts-font-lock-parenthesis-face:)»
+   «:verilog-ts-font-lock-dot-name-face:m_streams»«:verilog-ts-font-lock-error-face:[stream.get_name()]»«:verilog-ts-font-lock-operator-face:.»delete«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:stream»«:verilog-ts-font-lock-operator-face:.»get_type_name«:verilog-ts-font-lock-parenthesis-face:())»«:verilog-ts-font-lock-punctuation-face:;»
+   «k:if» «:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:m_streams»«:verilog-ts-font-lock-error-face:[stream.get_name()]»«:verilog-ts-font-lock-operator-face:.»size«:verilog-ts-font-lock-parenthesis-face:()» «:verilog-ts-font-lock-punctuation-face:==» 0«:verilog-ts-font-lock-parenthesis-face:)»
      «:verilog-ts-font-lock-dot-name-face:m_streams»«:verilog-ts-font-lock-operator-face:.»delete«:verilog-ts-font-lock-parenthesis-face:(»«:verilog-ts-font-lock-dot-name-face:stream»«:verilog-ts-font-lock-operator-face:.»get_name«:verilog-ts-font-lock-parenthesis-face:())»«:verilog-ts-font-lock-punctuation-face:;»
 
    «x:// Finally, free the stream if necessary»
@@ -2736,7 +2736,7 @@
       «c:UVM_FULL» «:verilog-ts-font-lock-punctuation-face::» «:verilog-ts-font-lock-dot-name-face:printer»«:verilog-ts-font-lock-operator-face:.»print_generic«:verilog-ts-font-lock-parenthesis-face:(»«s:"recording_detail"»«:verilog-ts-font-lock-punctuation-face:,» «s:"uvm_verbosity"»«:verilog-ts-font-lock-punctuation-face:,»
         «b:$bits»«:verilog-ts-font-lock-parenthesis-face:(»recording_detail«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:,» «s:"UVM_FULL"»«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
       «k:default» «:verilog-ts-font-lock-punctuation-face::» «:verilog-ts-font-lock-dot-name-face:printer»«:verilog-ts-font-lock-operator-face:.»print_field_int«:verilog-ts-font-lock-parenthesis-face:(»«s:"recording_detail"»«:verilog-ts-font-lock-punctuation-face:,» recording_detail«:verilog-ts-font-lock-punctuation-face:,»
-        «b:$bits»«:verilog-ts-font-lock-parenthesis-face:(»recording_detail«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:,» UVM_DEC«:verilog-ts-font-lock-punctuation-face:,» «w:,» «s:"integral"»«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
+        «b:$bits»«:verilog-ts-font-lock-parenthesis-face:(»recording_detail«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:,» UVM_DEC«:verilog-ts-font-lock-punctuation-face:,» «:verilog-ts-font-lock-error-face:,» «s:"integral"»«:verilog-ts-font-lock-parenthesis-face:)»«:verilog-ts-font-lock-punctuation-face:;»
     «k:endcase»
 
 «k:endfunction»

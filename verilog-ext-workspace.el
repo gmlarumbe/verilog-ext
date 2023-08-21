@@ -29,6 +29,8 @@
 (require 'make-mode)
 (require 'async)
 (require 'verilog-ext-tags)
+(require 'verilog-ext-capf)
+(require 'verilog-ext-typedef)
 (require 'verilog-ext-hierarchy)
 (require 'verilog-ext-template)
 (require 'verilog-ext-compile)
@@ -70,6 +72,20 @@ If set to nil default to search for current project files."
   :type 'string)
 
 
+(defvar verilog-ext-workspace-tags-defs-table (make-hash-table :test #'equal))
+(defvar verilog-ext-workspace-tags-refs-table (make-hash-table :test #'equal))
+(defvar verilog-ext-workspace-tags-inst-table (make-hash-table :test #'equal))
+
+(defconst verilog-ext-workspace-cache-dir (file-name-concat user-emacs-directory "verilog-ext")
+  "The directory where Verilog-ext cache files will be placed at.")
+
+(defvar verilog-ext-workspace-cache-typedefs nil)
+(defvar verilog-ext-workspace-cache-tags-defs nil)
+(defvar verilog-ext-workspace-cache-tags-refs nil)
+(defvar verilog-ext-workspace-cache-tags-inst nil)
+(defvar verilog-ext-workspace-cache-hierarchy nil)
+
+
 (defun verilog-ext-workspace-root ()
   "Return directory of current workspace root."
   (or verilog-ext-workspace-root-dir
@@ -96,14 +112,6 @@ Follow symlinks if optional argument FOLLOW-SYMLINKS is non-nil."
 
 
 ;;;; Cache
-(defconst verilog-ext-workspace-cache-dir (file-name-concat user-emacs-directory "verilog-ext")
-  "The directory where Verilog-ext cache files will be placed at.")
-
-(defvar verilog-ext-workspace-cache-typedefs nil)
-(defvar verilog-ext-workspace-cache-tags-defs nil)
-(defvar verilog-ext-workspace-cache-tags-refs nil)
-(defvar verilog-ext-workspace-cache-hierarchy nil)
-
 (defun verilog-ext-workspace-serialize (data filename)
   "Serialize DATA to FILENAME.
 
@@ -134,10 +142,12 @@ If optional TYPE arg is passed, only serialize that TYPE."
     ('typedefs  (verilog-ext-workspace-serialize verilog-ext-workspace-cache-typedefs  (file-name-concat verilog-ext-workspace-cache-dir "typedefs")))
     ('tags-defs (verilog-ext-workspace-serialize verilog-ext-workspace-cache-tags-defs (file-name-concat verilog-ext-workspace-cache-dir "tags-defs")))
     ('tags-refs (verilog-ext-workspace-serialize verilog-ext-workspace-cache-tags-refs (file-name-concat verilog-ext-workspace-cache-dir "tags-refs")))
+    ('tags-inst (verilog-ext-workspace-serialize verilog-ext-workspace-cache-tags-inst (file-name-concat verilog-ext-workspace-cache-dir "tags-inst")))
     ('hierarchy (verilog-ext-workspace-serialize verilog-ext-workspace-cache-hierarchy (file-name-concat verilog-ext-workspace-cache-dir "hierarchy")))
     (_ (verilog-ext-workspace-serialize verilog-ext-workspace-cache-typedefs  (file-name-concat verilog-ext-workspace-cache-dir "typedefs"))
        (verilog-ext-workspace-serialize verilog-ext-workspace-cache-tags-defs (file-name-concat verilog-ext-workspace-cache-dir "tags-defs"))
        (verilog-ext-workspace-serialize verilog-ext-workspace-cache-tags-refs (file-name-concat verilog-ext-workspace-cache-dir "tags-refs"))
+       (verilog-ext-workspace-serialize verilog-ext-workspace-cache-tags-inst (file-name-concat verilog-ext-workspace-cache-dir "tags-inst"))
        (verilog-ext-workspace-serialize verilog-ext-workspace-cache-hierarchy (file-name-concat verilog-ext-workspace-cache-dir "hierarchy")))))
 
 (defun verilog-ext-workspace-unserialize-cache (&optional type)
@@ -147,10 +157,12 @@ If optional TYPE arg is passed, only deserialize that TYPE."
     ('typedefs  (setq verilog-ext-workspace-cache-typedefs  (verilog-ext-workspace-unserialize (file-name-concat verilog-ext-workspace-cache-dir "typedefs"))))
     ('tags-defs (setq verilog-ext-workspace-cache-tags-defs (verilog-ext-workspace-unserialize (file-name-concat verilog-ext-workspace-cache-dir "tags-defs"))))
     ('tags-refs (setq verilog-ext-workspace-cache-tags-refs (verilog-ext-workspace-unserialize (file-name-concat verilog-ext-workspace-cache-dir "tags-refs"))))
+    ('tags-inst (setq verilog-ext-workspace-cache-tags-inst (verilog-ext-workspace-unserialize (file-name-concat verilog-ext-workspace-cache-dir "tags-inst"))))
     ('hierarchy (setq verilog-ext-workspace-cache-hierarchy (verilog-ext-workspace-unserialize (file-name-concat verilog-ext-workspace-cache-dir "hierarchy"))))
     (_ (setq verilog-ext-workspace-cache-typedefs  (verilog-ext-workspace-unserialize (file-name-concat verilog-ext-workspace-cache-dir "typedefs")))
        (setq verilog-ext-workspace-cache-tags-defs (verilog-ext-workspace-unserialize (file-name-concat verilog-ext-workspace-cache-dir "tags-defs")))
        (setq verilog-ext-workspace-cache-tags-refs (verilog-ext-workspace-unserialize (file-name-concat verilog-ext-workspace-cache-dir "tags-refs")))
+       (setq verilog-ext-workspace-cache-tags-inst (verilog-ext-workspace-unserialize (file-name-concat verilog-ext-workspace-cache-dir "tags-inst")))
        (setq verilog-ext-workspace-cache-hierarchy (verilog-ext-workspace-unserialize (file-name-concat verilog-ext-workspace-cache-dir "hierarchy"))))))
 
 (defun verilog-ext-workspace-clear-cache (&optional type)
@@ -158,29 +170,41 @@ If optional TYPE arg is passed, only deserialize that TYPE."
 If optional TYPE arg is passed, only clear that TYPE."
   (interactive)
   (pcase type
-    ('typedefs  (setq verilog-ext-workspace-cache-typedefs  nil))
-    ('tags-defs (setq verilog-ext-workspace-cache-tags-defs nil))
-    ('tags-refs (setq verilog-ext-workspace-cache-tags-refs nil))
+    ('typedefs  (setq verilog-ext-workspace-cache-typedefs  nil)
+                (setq verilog-ext-typedef-align-words-re nil)
+                (setq verilog-align-typedef-regexp nil))
+    ('tags-defs (setq verilog-ext-workspace-cache-tags-defs nil)
+                (setq verilog-ext-workspace-tags-defs-table nil))
+    ('tags-refs (setq verilog-ext-workspace-cache-tags-refs nil)
+                (setq verilog-ext-workspace-tags-refs-table nil))
+    ('tags-inst (setq verilog-ext-workspace-cache-tags-inst nil)
+                (setq verilog-ext-workspace-tags-inst-table nil))
     ('hierarchy (setq verilog-ext-workspace-cache-hierarchy nil)
-                (setq verilog-ext-hierarchy-builtin-current-flat-hierarchy nil))
+                (setq verilog-ext-hierarchy-current-flat-hierarchy nil))
     (_ (setq verilog-ext-workspace-cache-typedefs  nil)
        (setq verilog-ext-workspace-cache-tags-defs nil)
        (setq verilog-ext-workspace-cache-tags-refs nil)
+       (setq verilog-ext-workspace-cache-tags-inst nil)
        (setq verilog-ext-workspace-cache-hierarchy nil)
-       (setq verilog-ext-hierarchy-builtin-current-flat-hierarchy nil)))
+       (setq verilog-ext-typedef-align-words-re nil)
+       (setq verilog-align-typedef-regexp nil)
+       (setq verilog-ext-workspace-tags-defs-table nil)
+       (setq verilog-ext-workspace-tags-refs-table nil)
+       (setq verilog-ext-workspace-tags-inst-table nil)
+       (setq verilog-ext-hierarchy-current-flat-hierarchy nil)))
   (verilog-ext-workspace-serialize-cache type)
   (message "Cleared cache!"))
 
 
 ;;;; Hierarchy
-(defun verilog-ext-workspace-hierarchy-builtin-parse (&optional verbose)
+(defun verilog-ext-workspace-hierarchy-parse (&optional verbose)
   "Return flat hierarchy of modules and instances of current workspace files.
 
-Populates `verilog-ext-hierarchy-builtin-current-flat-hierarchy' for subsequent
+Populates `verilog-ext-hierarchy-current-flat-hierarchy' for subsequent
 hierarchy extraction and display.
 
 With current-prefix or VERBOSE, dump output log."
-  (interactive "p")
+  (interactive "P")
   (let* ((files (if verilog-ext-hierarchy-builtin-dirs
                     (verilog-ext-dirs-files verilog-ext-hierarchy-builtin-dirs :follow-symlinks)
                   (verilog-ext-workspace-files :follow-symlinks)))
@@ -196,50 +220,57 @@ With current-prefix or VERBOSE, dump output log."
       (when verbose
         (append-to-file (concat msg "\n") nil log-file))
       (message "%s" msg)
-      (setq data (verilog-ext-hierarchy-builtin-parse-file file))
+      (setq data (cond ((eq verilog-ext-hierarchy-backend 'tree-sitter)
+                        (verilog-ext-hierarchy-tree-sitter-parse-file file))
+                       ((eq verilog-ext-hierarchy-backend 'builtin)
+                        (verilog-ext-hierarchy-builtin-parse-file file))
+                       (t
+                        (error "Wrong backend selected!"))))
       (when data
-        (push data flat-hierarchy))
+        (dolist (entry data)
+          (push entry flat-hierarchy)))
       (setq num-files-processed (1+ num-files-processed)))
     ;; Update cache
-    (setq verilog-ext-workspace-cache-hierarchy verilog-ext-hierarchy-builtin-current-flat-hierarchy)
+    (setq verilog-ext-workspace-cache-hierarchy verilog-ext-hierarchy-current-flat-hierarchy)
     (verilog-ext-workspace-serialize-cache 'hierarchy)
     ;; Return value for async related function
-    (setq verilog-ext-hierarchy-builtin-current-flat-hierarchy flat-hierarchy)))
+    (setq verilog-ext-hierarchy-current-flat-hierarchy flat-hierarchy)))
 
-(defun verilog-ext-workspace-hierarchy-builtin-parse-async (&optional verbose)
+(defun verilog-ext-workspace-hierarchy-parse-async (&optional verbose)
   "Return flat hierarchy of modules and instances of workspace asynchronously.
 
-Populates `verilog-ext-hierarchy-builtin-current-flat-hierarchy' for subsequent
+Populates `verilog-ext-hierarchy-current-flat-hierarchy' for subsequent
 hierarchy extraction and display.
 
 With current-prefix or VERBOSE, dump output log."
-  (interactive "p")
+  (interactive "P")
   (message "Starting hierarchy parsing for %s" (verilog-ext-workspace-root))
   (async-start
    `(lambda ()
       ,(async-inject-variables verilog-ext-async-inject-variables-re)
       (require 'verilog-ext)
-      (verilog-ext-workspace-hierarchy-builtin-parse ,verbose))
+      (when (eq verilog-ext-hierarchy-backend 'tree-sitter)
+        (require 'verilog-ts-mode))
+      (verilog-ext-workspace-hierarchy-parse ,verbose))
    (lambda (result)
      (message "Finished analyzing hierarchy!")
-     (setq verilog-ext-hierarchy-builtin-current-flat-hierarchy result)
-     (setq verilog-ext-workspace-cache-hierarchy verilog-ext-hierarchy-builtin-current-flat-hierarchy)
+     (setq verilog-ext-hierarchy-current-flat-hierarchy result)
+     (setq verilog-ext-workspace-cache-hierarchy verilog-ext-hierarchy-current-flat-hierarchy)
      (verilog-ext-workspace-serialize-cache 'hierarchy))))
 
 
 ;;;; Tags
-(defvar verilog-ext-workspace-tags-defs-table (make-hash-table :test #'equal))
-(defvar verilog-ext-workspace-tags-refs-table (make-hash-table :test #'equal))
 (defvar verilog-ext-workspace-tags-current-file nil)
 
 (defun verilog-ext-workspace-get-tags (&optional verbose)
   "Get tags of current workspace.
 With current-prefix or VERBOSE, dump output log."
-  (interactive "p")
+  (interactive "P")
   (let* ((files (verilog-ext-workspace-files :follow-symlinks))
          (num-files (length files))
          (num-files-processed 0)
          (table (make-hash-table :test #'equal))
+         (inst-table (make-hash-table :test #'equal))
          (log-file (file-name-concat verilog-ext-workspace-cache-dir "tags.log"))
          msg progress)
     (when verbose
@@ -254,20 +285,31 @@ With current-prefix or VERBOSE, dump output log."
           (append-to-file (concat msg "\n") nil log-file))
         (message "%s" msg)
         (insert-file-contents file)
-        (verilog-mode)
-        (cond (;; Top-block based-file (module/interface/package/program)
-               (save-excursion (verilog-re-search-forward verilog-ext-top-re nil :no-error))
-               (verilog-ext-tags-table-push-definitions 'top-items table file))
-              ;; No top-blocks class-based file
-              ((save-excursion (verilog-ext-find-class-fwd))
-               (verilog-ext-tags-table-push-definitions 'classes table file))
-              ;; Default,
-              (t (dolist (defs '(declarations tf structs))
-                   (verilog-ext-tags-table-push-definitions defs table file))))
+        (cond (;; Tree-sitter
+               (eq verilog-ext-tags-backend 'tree-sitter)
+               (verilog-ts-mode)
+               (verilog-ext-tags-table-push-defs-ts :table table :inst-table inst-table :file file))
+              (;; Builtin
+               (eq verilog-ext-tags-backend 'builtin)
+               (verilog-mode)
+               (cond (;; Top-block based-file (module/interface/package/program)
+                      (save-excursion (verilog-re-search-forward verilog-ext-top-re nil :no-error))
+                      (verilog-ext-tags-table-push-defs :tag-type 'top-items :table table :file file :inst-table inst-table))
+                     ;; No top-blocks class-based file
+                     ((save-excursion (verilog-ext-find-class-fwd))
+                      (verilog-ext-tags-table-push-defs :tag-type 'classes :table table :file file))
+                     ;; Default,
+                     (t (dolist (defs '(declarations tf structs))
+                          (verilog-ext-tags-table-push-defs :tag-type defs :table table :file file)))))
+              (t ; Fallback error
+               (error "Wrong backend for `verilog-ext-tags-backend'")))
         (setq num-files-processed (1+ num-files-processed))))
     (setq verilog-ext-workspace-tags-defs-table table)
+    (setq verilog-ext-workspace-tags-inst-table inst-table)
     (setq verilog-ext-workspace-cache-tags-defs table) ; Update cache
+    (setq verilog-ext-workspace-cache-tags-inst inst-table)
     (verilog-ext-workspace-serialize-cache 'tags-defs)
+    (verilog-ext-workspace-serialize-cache 'tags-inst)
     ;; References
     (setq table (make-hash-table :test #'equal)) ; Clean table
     (setq num-files-processed 0)
@@ -280,125 +322,54 @@ With current-prefix or VERBOSE, dump output log."
           (append-to-file (concat msg "\n") nil log-file))
         (message "%s" msg)
         (insert-file-contents file)
-        (verilog-mode)
-        (verilog-ext-tags-table-push-references table verilog-ext-workspace-tags-defs-table file)
+        (cond (;; Tree-sitter
+               (eq verilog-ext-tags-backend 'tree-sitter)
+               (verilog-ts-mode)
+               (verilog-ext-tags-table-push-refs-ts :table table :defs-table verilog-ext-workspace-tags-defs-table :file file))
+              (;; Builtin
+               (eq verilog-ext-tags-backend 'builtin)
+               (verilog-mode)
+               (verilog-ext-tags-table-push-refs :table table :defs-table verilog-ext-workspace-tags-defs-table :file file))
+              (t
+               (error "Wrong backend for `verilog-ext-tags-backend'")))
         (setq verilog-ext-workspace-tags-refs-table table))
       (setq num-files-processed (1+ num-files-processed)))
     (setq verilog-ext-workspace-cache-tags-refs table) ; Update cache
     (verilog-ext-workspace-serialize-cache 'tags-refs)
     ;; Return value for async processing
-    (list verilog-ext-workspace-tags-defs-table verilog-ext-workspace-tags-refs-table)))
+    (list verilog-ext-workspace-tags-defs-table verilog-ext-workspace-tags-inst-table verilog-ext-workspace-tags-refs-table)))
 
 (defun verilog-ext-workspace-get-tags-async (&optional verbose)
   "Create tags table asynchronously.
 With current-prefix or VERBOSE, dump output log."
-  (interactive "p")
+  (interactive "P")
   (message "Starting tag collection for %s" (verilog-ext-workspace-root))
   (async-start
    `(lambda ()
       ,(async-inject-variables verilog-ext-async-inject-variables-re)
       (require 'verilog-ext)
+      (when (eq verilog-ext-tags-backend 'tree-sitter)
+        (require 'verilog-ts-mode))
       (verilog-ext-workspace-get-tags ,verbose))
    (lambda (result)
      (message "Finished collection tags!")
      ;; Tags definitions
      (setq verilog-ext-workspace-tags-defs-table (car result))
      (setq verilog-ext-workspace-cache-tags-defs (car result))
+     (setq verilog-ext-workspace-tags-inst-table (cadr result))
+     (setq verilog-ext-workspace-cache-tags-inst (cadr result))
      (verilog-ext-workspace-serialize-cache 'tags-defs)
+     (verilog-ext-workspace-serialize-cache 'tags-inst)
      ;; Tags references
-     (setq verilog-ext-workspace-tags-refs-table (cadr result))
-     (setq verilog-ext-workspace-cache-tags-refs (cadr result))
+     (setq verilog-ext-workspace-tags-refs-table (cddr result))
+     (setq verilog-ext-workspace-cache-tags-refs (cddr result))
      (verilog-ext-workspace-serialize-cache 'tags-refs))))
 
 ;;;; Typedefs
-(defvar verilog-ext-workspace-align-typedef-words nil)
-(defvar verilog-ext-workspace-align-typedef-words-re nil)
-
-(defun verilog-ext-workspace-typedef--var-find (regex &optional limit)
-  "Search for REGEX and bound to LIMIT.
-Match data is expected to fits that one of
-`verilog-ext-typedef-var-decl-single-re' or
-`verilog-ext-typedef-var-decl-multiple-re'."
-  (let (found pos type)
-    (save-excursion
-      (while (and (not found)
-                  (verilog-re-search-forward regex limit t))
-        (setq type (match-string-no-properties 1))
-        (unless (or (member type verilog-keywords)
-                    (save-excursion
-                      (goto-char (match-beginning 1))
-                      (verilog-in-parenthesis-p)))
-          (setq found t)
-          (setq pos (point)))))
-    (when found
-      (goto-char pos)
-      type)))
-
-(defun verilog-ext-workspace-typedef--var-buffer-update (regex)
-  "Scan REGEX on current buffer and update list of user typedefs.
-See `verilog-ext-workspace-align-typedef-words'.
-Used for fontification and alignment."
-  (let (type)
-    (save-excursion
-      (goto-char (point-min))
-      (while (setq type (verilog-ext-workspace-typedef--var-find regex))
-        (unless (member type verilog-ext-workspace-align-typedef-words)
-          (push type verilog-ext-workspace-align-typedef-words))))))
-
-(defun verilog-ext-workspace-typedef--tf-args-buffer-update ()
-  "Scan functions/tasks arguments on current buffer to update user typedefs list.
-See `verilog-ext-workspace-align-typedef-words'.
-Used for fontification and alignment."
-  (let (tf-args arg-proc) ; tf-args is expected to be a list of strings
-    (save-excursion
-      (goto-char (point-min))
-      ;; Iterate over file functions and tasks
-      (while (setq tf-args (alist-get 'args (verilog-ext-find-function-task-fwd)))
-        (unless (equal tf-args '(""))
-          (dolist (arg tf-args)
-            ;; Iterate over words of one argument and process them to obtain the typedef
-            (setq arg-proc arg)
-            ;; Skip verilog keywords
-            (while (string-match (concat "^" verilog-ext-keywords-re "\\s-*") arg-proc)
-              (setq arg-proc (substring arg-proc (match-end 0) (length arg-proc))))
-            ;; Typedef word will be the first one of the argument
-            (when (equal 0 (string-match (string-remove-suffix ";" verilog-ext-typedef-var-decl-single-re) arg-proc))
-              (setq arg-proc (car (split-string arg-proc " ")))
-              (unless (member arg-proc verilog-ext-workspace-align-typedef-words)
-                (push arg-proc verilog-ext-workspace-align-typedef-words)))))))))
-
-(defun verilog-ext-workspace-typedef--class-buffer-update ()
-  "Scan class declarations on current buffer to update user typedef list."
-  (let (word)
-    (save-excursion
-      (goto-char (point-min))
-      (while (setq word (alist-get 'name (verilog-ext-find-class-fwd)))
-        (unless (member word verilog-ext-workspace-align-typedef-words)
-          (push word verilog-ext-workspace-align-typedef-words))))))
-
-(defun verilog-ext-workspace-typedef--typedef-buffer-update (regex)
-  "Scan REGEX typedef declarations on current buffer to update user typedef list."
-  (let (word)
-    (save-excursion
-      (goto-char (point-min))
-      (while (verilog-re-search-forward regex nil t)
-        (setq word (match-string-no-properties 2))
-        (unless (member word verilog-ext-workspace-align-typedef-words)
-          (push word verilog-ext-workspace-align-typedef-words))))))
-
-(defun verilog-ext-workspace-typedef--var-decl-update ()
-  "Scan and update Verilog buffers and `verilog-ext-workspace-align-typedef-words'."
-  (verilog-ext-workspace-typedef--var-buffer-update verilog-ext-typedef-var-decl-single-re)
-  (verilog-ext-workspace-typedef--var-buffer-update verilog-ext-typedef-var-decl-multiple-re)
-  (verilog-ext-workspace-typedef--tf-args-buffer-update)
-  (verilog-ext-workspace-typedef--class-buffer-update)
-  (verilog-ext-workspace-typedef--typedef-buffer-update verilog-ext-typedef-class-re)
-  (verilog-ext-workspace-typedef--typedef-buffer-update verilog-ext-typedef-generic-re))
-
 (defun verilog-ext-workspace-typedef-batch-update (files &optional verbose)
   "Scan all (System)Verilog FILES and udpate typedef list.
 
-It will return the updated value of `verilog-ext-workspace-align-typedef-words',
+It will return the updated value of `verilog-ext-typedef-align-words',
 which can be used later along with `verilog-regexp-words' to update the variable
 `verilog-align-typedef-regexp'.  This enables the fontification and alignment of
 user typedefs.
@@ -409,7 +380,7 @@ in corresponding async function."
         (num-files-processed 0)
         (log-file (file-name-concat verilog-ext-workspace-cache-dir "typedefs.log"))
         msg progress)
-    (setq verilog-ext-workspace-align-typedef-words nil) ; Reset value
+    (setq verilog-ext-typedef-align-words nil) ; Reset value
     (when verbose
       (delete-file log-file))
     (dolist (file files)
@@ -421,37 +392,37 @@ in corresponding async function."
       (with-temp-buffer
         (insert-file-contents file)
         (verilog-mode)
-        (verilog-ext-workspace-typedef--var-decl-update))
+        (verilog-ext-typedef--var-decl-update))
       (setq num-files-processed (1+ num-files-processed)))
     ;; Postprocess obtained results (remove keywords and generic types that were uppercase)
     (mapc (lambda (elm)
             (when (member elm verilog-keywords)
-              (delete elm verilog-ext-workspace-align-typedef-words)))
-          verilog-ext-workspace-align-typedef-words)
+              (delete elm verilog-ext-typedef-align-words)))
+          verilog-ext-typedef-align-words)
     (let ((case-fold-search nil))
-      (setq verilog-ext-workspace-align-typedef-words (seq-remove (lambda (s)
-                                                                    (not (string-match-p "[[:lower:]]" s)))
-                                                                  verilog-ext-workspace-align-typedef-words)))
+      (setq verilog-ext-typedef-align-words (seq-remove (lambda (s)
+                                                          (not (string-match-p "[[:lower:]]" s)))
+                                                        verilog-ext-typedef-align-words)))
     ;; Store results
-    (when verilog-ext-workspace-align-typedef-words
-      (setq verilog-ext-workspace-align-typedef-words-re (verilog-regexp-words verilog-ext-workspace-align-typedef-words))
-      (setq verilog-align-typedef-regexp verilog-ext-workspace-align-typedef-words-re))
+    (when verilog-ext-typedef-align-words
+      (setq verilog-ext-typedef-align-words-re (verilog-regexp-words verilog-ext-typedef-align-words))
+      (setq verilog-align-typedef-regexp verilog-ext-typedef-align-words-re))
     ;; Update cache
-    (setq verilog-ext-workspace-cache-typedefs verilog-ext-workspace-align-typedef-words-re)
+    (setq verilog-ext-workspace-cache-typedefs verilog-ext-typedef-align-words-re)
     (verilog-ext-workspace-serialize-cache 'typedefs)
     ;; Return value for async processing
-    verilog-ext-workspace-align-typedef-words-re))
+    verilog-ext-typedef-align-words-re))
 
 (defun verilog-ext-workspace-typedef-update (&optional verbose)
   "Update typedef list of current workspace.
 With current-prefix or VERBOSE, dump output log."
-  (interactive "p")
+  (interactive "P")
   (verilog-ext-workspace-typedef-batch-update (verilog-ext-workspace-files :follow-symlinks) verbose))
 
 (defun verilog-ext-workspace-typedef-update-async (&optional verbose)
   "Update typedef list of current workspace asynchronously.
 With current-prefix or VERBOSE, dump output log."
-  (interactive "p")
+  (interactive "P")
   (message "Starting typedef collection for %s" (verilog-ext-workspace-root))
   (async-start
    `(lambda ()
@@ -460,85 +431,27 @@ With current-prefix or VERBOSE, dump output log."
       (verilog-ext-workspace-typedef-batch-update (verilog-ext-workspace-files :follow-symlinks) ,verbose))
    (lambda (result)
      (message "Finished collection of typedefs!")
-     (setq verilog-ext-workspace-align-typedef-words-re result)
-     (setq verilog-align-typedef-regexp verilog-ext-workspace-align-typedef-words-re)
-     (setq verilog-ext-workspace-cache-typedefs verilog-ext-workspace-align-typedef-words-re)
+     (setq verilog-ext-typedef-align-words-re result)
+     (setq verilog-align-typedef-regexp verilog-ext-typedef-align-words-re)
+     (setq verilog-ext-workspace-cache-typedefs verilog-ext-typedef-align-words-re)
      (verilog-ext-workspace-serialize-cache 'typedefs))))
 
 
 ;;;; Completion-at-point
 (defun verilog-ext-workspace-capf-annotation-function (cand)
-  "Completion annotation function for candidate CAND."
-  (let ((type (plist-get (car (plist-get (gethash cand verilog-ext-workspace-tags-defs-table) :locs)) :type))) (pcase type
-      ("function" "<f>")
-      ("task"     "<t>")
-      (_ type))))
+  "Workspace completion annotation function for candidate CAND."
+  (verilog-ext-capf-annotation-function cand
+                                        verilog-ext-workspace-tags-defs-table
+                                        verilog-ext-workspace-tags-inst-table))
 
 (defun verilog-ext-workspace-capf ()
   "Verilog-ext `completion-at-point' function.
 Complete with identifiers of current workspace."
   (interactive)
-  (let* ((table verilog-ext-workspace-tags-defs-table)
-         start end completions)
-    (cond (;; Dot completion for object methods/attributes and hierarchical references
-           (eq (preceding-char) ?.)
-           (setq start (point))
-           (setq end (point))
-           (let (table-entry-value block-type)
-             (save-excursion
-               (backward-char)
-               (while (eq (preceding-char) ?\])
-                 (verilog-ext-backward-sexp))
-               (setq table-entry-value (gethash (thing-at-point 'symbol :no-props) table))
-               (when table-entry-value
-                 (setq block-type (plist-get (car (plist-get table-entry-value :locs)) :type)) ; TODO: Only using type of first occurence
-                 (setq completions (plist-get (gethash block-type table) :items))))))
-          ((save-excursion
-             (backward-word)
-             (setq start (point))
-             (eq (preceding-char) ?.))
-           (setq end (point))
-           (let (table-entry-value block-type)
-             (save-excursion
-               (goto-char start)
-               (backward-char)
-               (while (eq (preceding-char) ?\])
-                 (verilog-ext-backward-sexp))
-               (setq table-entry-value (gethash (thing-at-point 'symbol :no-props) table))
-               (when table-entry-value
-                 (setq block-type (plist-get (car (plist-get table-entry-value :locs)) :type)) ; TODO: Only using type of first occurence?
-                 (setq completions (plist-get (gethash block-type table) :items))))))
-          ;; Class static methods/members and package items
-          ((looking-back "::" (- (point) 2))
-           (setq start (point))
-           (setq end (point))
-           (save-excursion
-             (backward-char 2)
-             (while (eq (preceding-char) ?\])
-               (verilog-ext-backward-sexp))
-             (setq completions (plist-get (gethash (thing-at-point 'symbol :no-props) table) :items))))
-          ;; Class static methods/members and package items if not at the beginning
-          ((save-excursion
-             (backward-word)
-             (setq start (point))
-             (looking-back "::" (- (point) 2)))
-           (setq end (point))
-           (save-excursion
-             (goto-char start)
-             (backward-char 2)
-             (while (eq (preceding-char) ?\])
-               (verilog-ext-backward-sexp))
-             (setq completions (plist-get (gethash (thing-at-point 'symbol :no-props) table) :items))))
-          ;; Fallback, all project completions
-          (t
-           (let ((bds (bounds-of-thing-at-point 'symbol)))
-             (setq start (car bds))
-             (setq end (cdr bds))
-             (setq completions table))))
-    ;; Completion
-    (list start end completions
-          :annotation-function #'verilog-ext-workspace-capf-annotation-function
-          :company-docsig #'identity)))
+  (verilog-ext-capf :defs-table verilog-ext-workspace-tags-defs-table
+                    :inst-table verilog-ext-workspace-tags-inst-table
+                    :refs-table verilog-ext-workspace-tags-refs-table
+                    :annotation-fn #'verilog-ext-workspace-capf-annotation-function))
 
 (defun verilog-ext-workspace-capf-set (&optional disable)
   "Enable or DISABLE builtin capf function.
@@ -592,7 +505,7 @@ The function will detect any of the supported compilation error parsers
 and will set the appropriate mode."
   (interactive)
   (unless verilog-ext-workspace-compile-cmd
-    (error "You first need to set `verilog-ext-workspace-compile-cmd'."))
+    (error "You first need to set `verilog-ext-workspace-compile-cmd'"))
   (let* ((cmd-list (split-string verilog-ext-workspace-compile-cmd))
          (cmd-args (cdr cmd-list))
          (cmd-bin (car cmd-list))
@@ -608,12 +521,12 @@ and will set the appropriate mode."
                                (string= cmd-bin "svlint")
                                (if (member "-1" cmd-args)
                                    verilog-ext-workspace-compile-cmd
-                                 (mapconcat #'identity (append `(,cmd-bin) '("-1") cmd-args) " ")))
+                                 (mapconcat #'identity `(,cmd-bin "-1" ,@cmd-args) " ")))
                               ;; For slang make sure that there is no colored output
                               ((string= cmd-bin "slang")
                                (if (member "--color-diagnostics=false" cmd-args)
                                    verilog-ext-workspace-compile-cmd
-                                 (mapconcat #'identity (append `(,cmd-bin) '("--color-diagnostics=false") cmd-args) " ")))
+                                 (mapconcat #'identity `(,cmd-bin "--color-diagnostics=false" ,@cmd-args) " ")))
                               ;; For the rest use the provided command
                               (t
                                verilog-ext-workspace-compile-cmd)))
@@ -631,13 +544,15 @@ and will set the appropriate mode."
 (defun verilog-ext-workspace-hierarchy-setup ()
   "Setup workspace builtin hierarchy analysis."
   (verilog-ext-workspace-unserialize-cache 'hierarchy)
-  (setq verilog-ext-hierarchy-builtin-current-flat-hierarchy verilog-ext-workspace-cache-hierarchy))
+  (setq verilog-ext-hierarchy-current-flat-hierarchy verilog-ext-workspace-cache-hierarchy))
 
 (defun verilog-ext-workspace-tags-table-setup ()
   "Setup workspace tags table feature for `xref' and `capf'."
   (verilog-ext-workspace-unserialize-cache 'tags-defs)
   (verilog-ext-workspace-unserialize-cache 'tags-refs)
+  (verilog-ext-workspace-unserialize-cache 'tags-inst)
   (setq verilog-ext-workspace-tags-defs-table verilog-ext-workspace-cache-tags-defs)
+  (setq verilog-ext-workspace-tags-inst-table verilog-ext-workspace-cache-tags-inst)
   (setq verilog-ext-workspace-tags-refs-table verilog-ext-workspace-cache-tags-refs))
 
 (defun verilog-ext-workspace-typedefs-setup ()
@@ -645,8 +560,9 @@ and will set the appropriate mode."
 INFO: Enabling this feature will override the value of
 `verilog-align-typedef-regexp'."
   (verilog-ext-workspace-unserialize-cache 'typedefs)
-  (setq verilog-ext-workspace-align-typedef-words-re verilog-ext-workspace-cache-typedefs)
+  (setq verilog-ext-typedef-align-words-re verilog-ext-workspace-cache-typedefs)
   (setq verilog-align-typedef-regexp verilog-ext-workspace-cache-typedefs))
+
 
 
 (provide 'verilog-ext-workspace)

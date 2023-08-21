@@ -37,8 +37,8 @@
     ;; `verilog-ext-tests-jump-parent-dir' and the instances.sv one
     (cl-letf (((symbol-function 'verilog-ext-find-project-files)
                (lambda (&optional follow-symlinks)
-                 (append (verilog-ext-find-dir-files verilog-ext-tests-jump-parent-dir follow-symlinks)
-                         `(,test-file))))
+                 `(,@(verilog-ext-find-dir-files verilog-ext-tests-jump-parent-dir follow-symlinks)
+                     ,test-file)))
               ((symbol-function 'verilog-ext-hierarchy-display-twidget)
                (lambda (hierarchy)
                  hierarchy))
@@ -67,12 +67,30 @@
                  (clone-indirect-buffer-other-window "*debug*" t))
                (insert-file-contents test-file)
                (verilog-mode)
-               (verilog-ext-workspace-hierarchy-builtin-parse)
+               (verilog-ext-workspace-hierarchy-parse)
                (verilog-ext-hierarchy-current-buffer)))
             ;; builtin-outshine
             ((and (eq verilog-ext-hierarchy-backend 'builtin)
                   (eq verilog-ext-hierarchy-frontend 'outshine))
-             (verilog-ext-workspace-hierarchy-builtin-parse)
+             (verilog-ext-workspace-hierarchy-parse)
+             (save-window-excursion
+               (find-file test-file)
+               (verilog-ext-hierarchy-current-buffer)
+               (buffer-substring-no-properties (point-min) (point-max))))
+            ;; tree-sitter-hierarchy
+            ((and (eq verilog-ext-hierarchy-backend 'tree-sitter)
+                  (eq verilog-ext-hierarchy-frontend 'hierarchy))
+             (with-temp-buffer
+               (when debug
+                 (clone-indirect-buffer-other-window "*debug*" t))
+               (insert-file-contents test-file)
+               (verilog-ts-mode)
+               (verilog-ext-workspace-hierarchy-parse)
+               (verilog-ext-hierarchy-current-buffer)))
+            ;; tree-sitter-outshine
+            ((and (eq verilog-ext-hierarchy-backend 'tree-sitter)
+                  (eq verilog-ext-hierarchy-frontend 'outshine))
+             (verilog-ext-workspace-hierarchy-parse)
              (save-window-excursion
                (find-file test-file)
                (verilog-ext-hierarchy-current-buffer)

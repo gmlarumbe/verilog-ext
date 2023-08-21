@@ -86,12 +86,11 @@
            (treesit-language-available-p 'verilog))
   (require 'treesit)
   (setq verilog-ext-tests-tree-sitter-available-p t)
+  (setq treesit-font-lock-level 4)
   (message "verilog-ext-tests-tree-sitter-available-p: %s" verilog-ext-tests-tree-sitter-available-p))
 
-;; TODO: Uncomment when integrated into MELPA
-;; (when verilog-ext-tests-tree-sitter-available-p
-;;   (package-install 'verilog-ts-mode)
-;;   (add-hook 'verilog-ts-mode-hook #'(lambda () (setq treesit-font-lock-level 4))))
+(when verilog-ext-tests-tree-sitter-available-p
+  (package-install 'verilog-ts-mode))
 
 
 (provide 'verilog-ext-tests-setup-package)

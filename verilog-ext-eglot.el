@@ -191,8 +191,8 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
       (dolist (mode '(verilog-mode verilog-ts-mode))
         (setq eglot-server-programs (assq-delete-all mode eglot-server-programs))
         (if (listp cmd)
-            (push (append (list mode) cmd) eglot-server-programs)
-          (push (list mode cmd) eglot-server-programs)))
+            (push `(,@mode ,cmd) eglot-server-programs)
+          (push `(,mode ,cmd) eglot-server-programs)))
       ;; Additional settings depending on chosen server-id
       (when (equal server-id 've-svlangserver)
         (dolist (hook '(verilog-mode-hook verilog-ts-mode-hook))

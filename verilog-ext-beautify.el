@@ -120,13 +120,13 @@
 - Beautify every instantiated module
 - Untabify and delete trailing whitespace"
   (interactive)
+  (verilog-ext-indent-region (point-min) (point-max))
   (save-excursion
-    (verilog-ext-indent-region (point-min) (point-max))
     (goto-char (point-min))
     (while (verilog-ext-find-module-instance-fwd)
-      (verilog-ext-beautify-module-at-point))
-    (untabify (point-min) (point-max))
-    (delete-trailing-whitespace (point-min) (point-max))))
+      (verilog-ext-beautify-module-at-point)))
+  (untabify (point-min) (point-max))
+  (delete-trailing-whitespace (point-min) (point-max)))
 
 (defun verilog-ext-beautify-files (files)
   "Beautify Verilog FILES.

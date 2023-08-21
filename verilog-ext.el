@@ -6,7 +6,7 @@
 ;; URL: https://github.com/gmlarumbe/verilog-ext
 ;; Version: 0.2.0
 ;; Keywords: Verilog, IDE, Tools
-;; Package-Requires: ((emacs "28.1") (verilog-mode "2023.6.6.141322628") (eglot "1.9") (lsp-mode "8.0.1") (ag "0.48") (ripgrep "0.4.0") (hydra "0.15.0") (apheleia "3.1") (yasnippet "0.14.0") (company "0.9.13") (flycheck "33-cvs") (outshine "3.1-pre") (async "1.9.7"))
+;; Package-Requires: ((emacs "28.1") (verilog-mode "2023.6.6.141322628") (verilog-ts-mode "0.0.0") (eglot "1.9") (lsp-mode "8.0.1") (ag "0.48") (ripgrep "0.4.0") (hydra "0.15.0") (apheleia "3.1") (yasnippet "0.14.0") (company "0.9.13") (flycheck "33-cvs") (outshine "3.1-pre") (async "1.9.7"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 
 ;; Extensions for Verilog Mode:
 ;;
+;;  - Tree-sitter powered `verilog-ts-mode` support
 ;;  - Improved syntax highlighting
 ;;  - Builtin xref backend
 ;;  - Builtin capf function with dot and scope completion
@@ -44,9 +45,6 @@
 ;;  - Convert block end comments to names
 ;;  - Automatically add SystemVerilog keywords to `company-keywords` backend
 ;;  - Port connections utilities
-;;
-;;  Experimental:
-;;  - Tree-sitter powered `verilog-ts-mode` support
 
 ;;; Code:
 
@@ -147,6 +145,8 @@ FEATURES can be a single feature or a list of features."
 (require 'verilog-ext-which-func)
 (require 'verilog-ext-ports)
 (require 'verilog-ext-tags)
+(require 'verilog-ext-typedef)
+(require 'verilog-ext-capf)
 (require 'verilog-ext-hierarchy)
 (require 'verilog-ext-beautify)
 (require 'verilog-ext-template)
@@ -229,6 +229,7 @@ FEATURES can be a single feature or a list of features."
     (verilog-ext-lsp-setup)
     (verilog-ext-lsp-set-server verilog-ext-lsp-mode-default-server))
   (verilog-ext-when-feature '(capf xref)
+    (verilog-ext-tags-setup)
     (verilog-ext-workspace-tags-table-setup))
   ;; Jump to parent module ag/ripgrep hooks
   (add-hook 'ag-search-finished-hook #'verilog-ext-navigation-ag-rg-hook)
@@ -264,6 +265,12 @@ FEATURES can be a single feature or a list of features."
           (verilog-ext-block-end-comments-to-names-mode))
         (verilog-ext-when-feature 'time-stamp
           (verilog-ext-time-stamp-mode))
+        ;; Capf
+        (verilog-ext-when-feature 'capf
+          (verilog-ext-workspace-capf-set))
+        ;; Xref
+        (verilog-ext-when-feature 'xref
+          (verilog-ext-xref-set))
         ;; `verilog-mode'-only customization (exclude `verilog-ts-mode')
         (when (eq major-mode 'verilog-mode)
           ;; Syntax table overriding:
@@ -272,12 +279,6 @@ FEATURES can be a single feature or a list of features."
           ;; and `verilog-ext-indent-region' to get back standard table to avoid
           ;; indentation issues with compiler directives.
           (modify-syntax-entry ?` ".")
-          ;; Capf
-          (verilog-ext-when-feature 'capf
-            (verilog-ext-workspace-capf-set))
-          ;; Xref
-          (verilog-ext-when-feature 'xref
-            (verilog-ext-xref-set))
           ;; Imenu
           (verilog-ext-when-feature 'imenu
             (setq-local imenu-create-index-function #'verilog-ext-imenu-index))

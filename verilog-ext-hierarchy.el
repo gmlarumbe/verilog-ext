@@ -31,6 +31,7 @@
 (require 'tree-widget)
 (require 'async)
 (require 'verilog-ext-nav)
+(require 'verilog-ts-mode)
 
 (defgroup verilog-ext-hierarchy nil
   "Verilog-ext hierarchy."
@@ -72,6 +73,15 @@ backend."
 
 
 ;;;; Utils
+;;;;; hierarchy.el
+(defvar verilog-ext-hierarchy-current-flat-hierarchy nil
+  "Current flat hierarchy.
+
+Used by `verilog-ext-hierarchy-extract--internal' and its subroutines.
+
+Needed since `verilog-ext-hierarchy-extract--childrenfn' can only have one
+argument (item).")
+
 (defun verilog-ext-hierarchy--get-node-leaf (node)
   "Return leaf name of hierarchical reference NODE.
 E.g: return \"leaf\" for \"top.block.subblock.leaf\"."
@@ -84,6 +94,50 @@ E.g: return \"top.block.subblock\" for \"top.block.subblock.leaf\"."
     (unless (string= prefix "")
       prefix)))
 
+(defun verilog-ext-hierarchy-extract--childrenfn (item)
+  "Childrenfn for `hierarchy'.
+Arg ITEM are hierarchy nodes."
+  (let* ((prefix (verilog-ext-hierarchy--get-node-prefix item))
+         (leaf (verilog-ext-hierarchy--get-node-leaf item))
+         (children (cdr (assoc (car (split-string leaf ":")) verilog-ext-hierarchy-current-flat-hierarchy))))
+    (mapcar (lambda (child) (concat (when prefix (concat prefix ".")) leaf "." child)) children)))
+
+(defun verilog-ext-hierarchy-extract--construct-node (node hierarchy)
+  "Recursively build HIERARCHY for NODE using childrenfn."
+  (let ((children (mapcar (lambda (child)
+                            (concat node "." child))
+                          (cdr (assoc (verilog-ext-hierarchy--get-node-leaf node) verilog-ext-hierarchy-current-flat-hierarchy)))))
+    (when children
+      (hierarchy-add-tree hierarchy node nil #'verilog-ext-hierarchy-extract--childrenfn)
+      (dolist (child children)
+        (verilog-ext-hierarchy-extract--construct-node child hierarchy)))
+    hierarchy))
+
+(defun verilog-ext-hierarchy-extract--internal (module)
+  "Construct hierarchy struct for MODULE.
+
+Modules and instances will be analyzed from the value of
+`verilog-ext-hierarchy-current-flat-hierarchy'.
+This alist must be populated before calling the function!
+
+`verilog-ext-hierarchy-current-flat-hierarchy' is an alist of the form:
+ ((moduleA instanceA1:NAME_A1 instanceA2:NAME_A2 ...)
+  (moduleB instanceB1:NAME_B1 instanceB2:NAME_B2 ...)
+  ..)
+
+Return populated `hierarchy' struct."
+  ;; Some checks
+  (unless verilog-ext-hierarchy-current-flat-hierarchy
+    (user-error "Empty hierarchy database, maybe run first `verilog-ext-workspace-hierarchy-parse'?"))
+  (unless (assoc module verilog-ext-hierarchy-current-flat-hierarchy)
+    (user-error "Could not find %s in the flat-hierarchy" module))
+  (if (not (cdr (assoc module verilog-ext-hierarchy-current-flat-hierarchy)))
+      (user-error "Current module has no instances")
+    ;; Construct node
+    (verilog-ext-hierarchy-extract--construct-node module (hierarchy-new))))
+
+
+;;;;; Frontend format conversion
 (defun verilog-ext-hierarchy--convert-struct-to-string (hierarchy-struct)
   "Convert HIERARCHY-STRUCT to a string.
 Used to convert hierarchy formats for displaying on different frontends."
@@ -162,6 +216,7 @@ Alist will be of the form (module instance1:NAME1 instance2:NAME2 ...)."
     ;; Return value
     hierarchy-alist))
 
+
 ;;;; Backends/extraction
 ;;;;; Vhier
 (defconst verilog-ext-hierarchy-vhier-buffer-name "*Verilog-Perl*"
@@ -173,10 +228,9 @@ Alist will be of the form (module instance1:NAME1 instance2:NAME2 ...)."
                                                  "--no-missing"
                                                  "--missing-modules"))
 
-(defun verilog-ext-hierarchy-extract-vhier (module)
+(defun verilog-ext-hierarchy-vhier-extract (module)
   "Extract hierarchy of MODULE using Verilog-Perl vhier as a backend.
 Return hierarchy as an indented string."
-  (interactive)
   (unless (executable-find "vhier")
     (error "Executable vhier not found"))
   (let* ((library-args (verilog-expand-command "__FLAGS__"))
@@ -199,74 +253,73 @@ Return hierarchy as an indented string."
       (verilog-ext-replace-regexp-whole-buffer (concat "\\(?1:" verilog-identifier-sym-re "\\) \\(?2:" verilog-identifier-sym-re "\\)") "\\2:\\1")
       (buffer-substring-no-properties (point-min) (point-max)))))
 
-;;;;; Builtin
-(defvar verilog-ext-hierarchy-builtin-current-flat-hierarchy nil
-  "Current flat hierarchy.
-Used by `verilog-ext-hierarchy-extract-builtin' and its subroutines.  Needed
-since `verilog-ext-hierarchy-extract-builtin--childrenfn' can only have one
-argument (item).")
 
-(defun verilog-ext-hierarchy-builtin-parse-file (file)
-  "Return list with modules and instances from FILE.
+;;;;; Tree-sitter
+(defun verilog-ext-hierarchy-tree-sitter-parse-file (file)
+  "Return alist with modules and instances from FILE.
 
-The returned list car is the first found module in the file.
-The returned list cdr is the list of that module's instances.
+Each alist element car is a found module in the file.
+These elements cdr are the list of that module's instances.
 
 Instances have module:INST format to make them unique for `hierarchy'
 displaying.  Modules have no instance name since they are parsed on its
 declaration."
-  (let (modules instances)
+  (let (modules inst-nodes inst-type inst-name instances module-instances-alist)
+    (with-temp-buffer
+      (insert-file-contents file)
+      (verilog-ts-mode)
+      (setq modules (verilog-ts-module-declarations))
+      (dolist (module modules)
+        (goto-char (cadr module))
+        (setq inst-nodes (cdr (treesit-induce-sparse-tree (verilog-ts--node-at-bol) "module_instantiation")))
+        (dolist (inst-node inst-nodes)
+          (setq inst-type (treesit-node-text (treesit-search-subtree (car inst-node) "simple_identifier") :no-props))
+          (setq inst-name (treesit-node-text (treesit-search-subtree (car inst-node) "name_of_instance")  :no-props))
+          (push (concat inst-type ":" inst-name) instances))
+        (push (cons (car module) (nreverse instances)) module-instances-alist))
+      module-instances-alist)))
+
+(defun verilog-ext-hierarchy-tree-sitter-extract (module)
+  "Extract hierarchy of MODULE using tree-sitter as a backend.
+
+Populate `verilog-ext-hierarchy-current-flat-hierarchy' with alist of modules
+and instances."
+  (unless (eq verilog-ext-hierarchy-backend 'tree-sitter)
+    (error "Wrong backend!"))
+  (verilog-ext-hierarchy-extract--internal module))
+
+
+;;;;; Builtin
+(defun verilog-ext-hierarchy-builtin-parse-file (file)
+  "Return alist with modules and instances from FILE.
+
+Each alist element car is a found module in the file.
+These elements cdr are the list of that module's instances.
+
+Instances have module:INST format to make them unique for `hierarchy'
+displaying.  Modules have no instance name since they are parsed on its
+declaration."
+  (let (modules instances module-instances-alist)
     (with-temp-buffer
       (insert-file-contents file)
       (verilog-mode)
       (setq modules (verilog-ext-scan-buffer-modules))
-      (when modules
+      (dolist (module modules)
+        (setq instances nil)
         (while (verilog-ext-find-module-instance-fwd)
           (push (concat (match-string-no-properties 1) ":" (match-string-no-properties 2)) instances))
-        (cons (car modules) (reverse instances))))))
+        (push (cons module (reverse instances)) module-instances-alist))
+      module-instances-alist)))
 
-(defun verilog-ext-hierarchy-extract-builtin--childrenfn (item)
-  "Childrenfn for `hierarchy'.
-Arg ITEM are hierarchy nodes."
-  (let* ((prefix (verilog-ext-hierarchy--get-node-prefix item))
-         (leaf (verilog-ext-hierarchy--get-node-leaf item))
-         (children (cdr (assoc (car (split-string leaf ":")) verilog-ext-hierarchy-builtin-current-flat-hierarchy))))
-    (mapcar (lambda (child) (concat (when prefix (concat prefix ".")) leaf "." child)) children)))
+(defun verilog-ext-hierarchy-builtin-extract (module)
+  "Extract hierarchy of MODULE using builtin Elisp backend.
 
-(defun verilog-ext-hierarchy-extract-builtin--construct-node (node hierarchy)
-  "Recursively build HIERARCHY for NODE using childrenfn."
-  (let ((children (mapcar (lambda (child)
-                            (concat node "." child))
-                          (cdr (assoc (verilog-ext-hierarchy--get-node-leaf node) verilog-ext-hierarchy-builtin-current-flat-hierarchy)))))
-    (when children
-      (hierarchy-add-tree hierarchy node nil #'verilog-ext-hierarchy-extract-builtin--childrenfn)
-      (dolist (child children)
-        (verilog-ext-hierarchy-extract-builtin--construct-node child hierarchy)))
-    hierarchy))
+Populate `verilog-ext-hierarchy-current-flat-hierarchy' with alist of modules
+and instances."
+  (unless (eq verilog-ext-hierarchy-backend 'builtin)
+    (error "Wrong backend!"))
+  (verilog-ext-hierarchy-extract--internal module))
 
-(defun verilog-ext-hierarchy-extract-builtin (module &optional flat-hierarchy)
-  "Construct hierarchy for MODULE using builtin backend.
-
-Modules and instances will be analyzed from FLAT-HIERARCHY input if provided.
-Otherwise, extract from `verilog-ext-hierarchy-builtin-current-flat-hierarchy':
- - This is a list of the form (module instance1:NAME1 instance2:NAME2 ...)
-
-This optional arg is intended to be used for conversion between vhier/builtin.
-
-Return populated `hierarchy' struct."
-  (let ((hierarchy-struct (hierarchy-new))
-        (hierarchy-alist (or flat-hierarchy
-                             verilog-ext-hierarchy-builtin-current-flat-hierarchy)))
-    (unless hierarchy-alist
-      (user-error "Empty hierarchy database, maybe run first `verilog-ext-workspace-hierarchy-builtin-parse'?"))
-    (unless (assoc module hierarchy-alist)
-      (user-error "Could not find %s in the flat-hierarchy" module))
-    (if (not (cdr (assoc module hierarchy-alist)))
-        (user-error "Current module has no instances")
-      ;; DANGER: Don't forget to update `verilog-ext-hierarchy-builtin-current-flat-hierarchy'
-      ;; before populating the`hierarchy-struct' if using flat-hierarchy as an input!
-      (setq verilog-ext-hierarchy-builtin-current-flat-hierarchy hierarchy-alist)
-      (verilog-ext-hierarchy-extract-builtin--construct-node module hierarchy-struct))))
 
 ;;;; Frontends/navigation
 ;;;;; hierarchy.el
@@ -462,10 +515,13 @@ If these have been set before, keep their values."
   "Construct hierarchy for MODULE depending on selected backend."
   (cond (;; Verilog-Perl vhier
          (eq verilog-ext-hierarchy-backend 'vhier)
-         (verilog-ext-hierarchy-extract-vhier module)) ; Returns indented string
-        ;; Built-in
-        ((eq verilog-ext-hierarchy-backend 'builtin)
-         (verilog-ext-hierarchy-extract-builtin module)) ; Returns populated hierarchy struct
+         (verilog-ext-hierarchy-vhier-extract module)) ; Returns indented string
+        (;; Tree-sitter
+         (eq verilog-ext-hierarchy-backend 'tree-sitter)
+         (verilog-ext-hierarchy-tree-sitter-extract module)) ; Returns populated hierarchy struct
+        (;; Built-in
+         (eq verilog-ext-hierarchy-backend 'builtin)
+         (verilog-ext-hierarchy-builtin-extract module)) ; Returns populated hierarchy struct
         ;; Fallback
         (t (error "Must set a proper extraction backend in `verilog-ext-hierarchy-backend'"))))
 
@@ -488,7 +544,8 @@ convert between an indented string and a populated hierarchy struct."
            (when (stringp hierarchy)
              (let ((top-module (string-trim-left (car (split-string (car (split-string hierarchy "\n")) ":")))) ; First line of the string, as parsed by vhier
                    (hierarchy-alist (verilog-ext-hierarchy--convert-string-to-alist hierarchy)))
-               (setq display-hierarchy (verilog-ext-hierarchy-extract-builtin top-module hierarchy-alist))))
+               (setq verilog-ext-hierarchy-current-flat-hierarchy hierarchy-alist)
+               (setq display-hierarchy (verilog-ext-hierarchy-extract--internal top-module))))
            (verilog-ext-hierarchy-display-twidget display-hierarchy))
           ;; Fallback
           (t (error "Must set a proper display frontend in `verilog-ext-hierarchy-frontend'")))))

@@ -30,9 +30,11 @@ test_run_pkg_el:
 gen_beautify: recompile
 	$(ERT_TESTS) gen_beautify_dir
 
+gen_beautify_ts: recompile
+	$(ERT_TESTS) gen_beautify_dir treesit
+
 gen_indent: recompile
 	$(ERT_TESTS) gen_indent_dir
-	$(ERT_TESTS) gen_indent_dir treesit
 
 gen_indent_ts: recompile
 	$(ERT_TESTS) gen_indent_dir treesit
@@ -42,6 +44,15 @@ gen_font_lock: recompile
 
 gen_font_lock_ts: recompile
 	$(ERT_TESTS) gen_font_lock treesit
+
+gen_tags: recompile
+	$(ERT_TESTS) gen_tags
+
+gen_tags_ts: recompile
+	$(ERT_TESTS) gen_tags treesit
+
+gen_pretty_ts: recompile
+	$(ERT_TESTS) gen_pretty_ts
 
 
 # Specific subset of tests
