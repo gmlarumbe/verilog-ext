@@ -27,7 +27,8 @@
 ;;; Code:
 
 (require 'verilog-ext-nav)
-(require 'verilog-ts-mode)
+(when (>= emacs-major-version 29)
+  (require 'verilog-ts-mode))
 
 (defgroup verilog-ext-tags nil
   "Verilog-ext tags."
