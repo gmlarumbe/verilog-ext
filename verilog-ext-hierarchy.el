@@ -383,7 +383,7 @@ INFO: Assumes it's initially collapsed, which is the case by default."
   :lighter " vH"
   (message "Navigating hierarchy..."))
 
-(defun verilog-ext-hierarchy-display-twidget (hierarchy)
+(defun verilog-ext-hierarchy-twidget-display (hierarchy)
   "Display HIERARCHY using builtin `hierarchy' and `tree-widget' packages.
 
 Show only module name, discard instance name after colon (mod:INST)."
@@ -392,7 +392,8 @@ Show only module name, discard instance name after colon (mod:INST)."
   (pop-to-buffer
    (hierarchy-tree-display
     hierarchy
-    (lambda (item _) (insert (car (split-string (verilog-ext-hierarchy--get-node-leaf item) ":"))))))
+    (lambda (item _) (insert (car (split-string (verilog-ext-hierarchy--get-node-leaf item) ":"))))
+    ))
   ;; Navigation mode and initial expansion
   (verilog-ext-hierarchy-twidget-nav-mode)
   (when verilog-ext-hierarchy-twidget-init-expand
@@ -461,7 +462,7 @@ Makes use of processed output under `outline-minor-mode' and `outshine'."
   (setq buffer-read-only t)
   (view-mode -1))
 
-(defun verilog-ext-hierarchy-display-outshine (hierarchy)
+(defun verilog-ext-hierarchy-outshine-display (hierarchy)
   "Display HIERARCHY using `outshine'.
 Expects HIERARCHY to be a indented string."
   (let ((buf "*Verilog-outshine*"))
@@ -541,7 +542,7 @@ convert between an indented string and a populated hierarchy struct."
            (eq verilog-ext-hierarchy-frontend 'outshine)
            (when (hierarchy-p hierarchy)
              (setq display-hierarchy (verilog-ext-hierarchy--convert-struct-to-string hierarchy)))
-           (verilog-ext-hierarchy-display-outshine display-hierarchy))
+           (verilog-ext-hierarchy-outshine-display display-hierarchy))
           ;; Hierarchy
           ((eq verilog-ext-hierarchy-frontend 'hierarchy)
            (when (stringp hierarchy)
@@ -549,7 +550,7 @@ convert between an indented string and a populated hierarchy struct."
                    (hierarchy-alist (verilog-ext-hierarchy--convert-string-to-alist hierarchy)))
                (setq verilog-ext-hierarchy-current-flat-hierarchy hierarchy-alist)
                (setq display-hierarchy (verilog-ext-hierarchy-extract--internal top-module))))
-           (verilog-ext-hierarchy-display-twidget display-hierarchy))
+           (verilog-ext-hierarchy-twidget-display display-hierarchy))
           ;; Fallback
           (t (error "Must set a proper display frontend in `verilog-ext-hierarchy-frontend'")))))
 

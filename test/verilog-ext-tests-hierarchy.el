@@ -39,7 +39,7 @@
                (lambda (&optional follow-symlinks)
                  `(,@(verilog-ext-find-dir-files verilog-ext-tests-jump-parent-dir follow-symlinks)
                      ,test-file)))
-              ((symbol-function 'verilog-ext-hierarchy-display-twidget)
+              ((symbol-function 'verilog-ext-hierarchy-twidget-display)
                (lambda (hierarchy)
                  hierarchy))
               ((symbol-function 'verilog-ext-select-file-module)
