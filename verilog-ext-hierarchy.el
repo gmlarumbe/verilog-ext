@@ -383,17 +383,19 @@ INFO: Assumes it's initially collapsed, which is the case by default."
   :lighter " vH"
   (message "Navigating hierarchy..."))
 
-(defun verilog-ext-hierarchy-twidget-display (hierarchy)
+(defun verilog-ext-hierarchy-twidget-display (hierarchy &optional module)
   "Display HIERARCHY using builtin `hierarchy' and `tree-widget' packages.
 
-Show only module name, discard instance name after colon (mod:INST)."
+Show only module name, discard instance name after colon (mod:INST).
+
+Optional arg MODULE will set the name of the display buffer, if provided."
   (unless (hierarchy-p hierarchy)
     (error "Hierarchy must be of hierarchy struct type"))
   (pop-to-buffer
    (hierarchy-tree-display
     hierarchy
     (lambda (item _) (insert (car (split-string (verilog-ext-hierarchy--get-node-leaf item) ":"))))
-    ))
+    (get-buffer-create (concat "*" module "*"))))
   ;; Navigation mode and initial expansion
   (verilog-ext-hierarchy-twidget-nav-mode)
   (when verilog-ext-hierarchy-twidget-init-expand
@@ -462,10 +464,12 @@ Makes use of processed output under `outline-minor-mode' and `outshine'."
   (setq buffer-read-only t)
   (view-mode -1))
 
-(defun verilog-ext-hierarchy-outshine-display (hierarchy)
+(defun verilog-ext-hierarchy-outshine-display (hierarchy &optional module)
   "Display HIERARCHY using `outshine'.
-Expects HIERARCHY to be a indented string."
-  (let ((buf "*Verilog-outshine*"))
+Expects HIERARCHY to be a indented string.
+Optional arg MODULE will set the name of the display buffer, if provided."
+  (let ((buf (or (concat "*" module "*")
+                 "*Verilog-outshine*")))
     (with-current-buffer (get-buffer-create buf)
       (setq buffer-read-only nil)
       (erase-buffer)
@@ -529,20 +533,22 @@ If these have been set before, keep their values."
         ;; Fallback
         (t (error "Must set a proper extraction backend in `verilog-ext-hierarchy-backend'"))))
 
-(defun verilog-ext-hierarchy-display (hierarchy)
+(defun verilog-ext-hierarchy-display (hierarchy &optional module)
   "Display HIERARCHY depending on selected frontend.
 
 Handle conversion (if needed) of input extracted data depending on output
 frontend.
 
 E.g.: If extracted with vhier and displayed with hierarchy it is needed to
-convert between an indented string and a populated hierarchy struct."
+convert between an indented string and a populated hierarchy struct.
+
+Optional arg MODULE will set the name of the display buffer, if provided."
   (let ((display-hierarchy hierarchy))
     (cond (;; Outshine
            (eq verilog-ext-hierarchy-frontend 'outshine)
            (when (hierarchy-p hierarchy)
              (setq display-hierarchy (verilog-ext-hierarchy--convert-struct-to-string hierarchy)))
-           (verilog-ext-hierarchy-outshine-display display-hierarchy))
+           (verilog-ext-hierarchy-outshine-display display-hierarchy module))
           ;; Hierarchy
           ((eq verilog-ext-hierarchy-frontend 'hierarchy)
            (when (stringp hierarchy)
@@ -550,7 +556,7 @@ convert between an indented string and a populated hierarchy struct."
                    (hierarchy-alist (verilog-ext-hierarchy--convert-string-to-alist hierarchy)))
                (setq verilog-ext-hierarchy-current-flat-hierarchy hierarchy-alist)
                (setq display-hierarchy (verilog-ext-hierarchy-extract--internal top-module))))
-           (verilog-ext-hierarchy-twidget-display display-hierarchy))
+           (verilog-ext-hierarchy-twidget-display display-hierarchy module))
           ;; Fallback
           (t (error "Must set a proper display frontend in `verilog-ext-hierarchy-frontend'")))))
 
@@ -560,7 +566,7 @@ convert between an indented string and a populated hierarchy struct."
   (interactive)
   (let* ((module (verilog-ext-select-file-module))
          (hierarchy (verilog-ext-hierarchy-extract module)))
-    (verilog-ext-hierarchy-display hierarchy)))
+    (verilog-ext-hierarchy-display hierarchy module)))
 
 
 
