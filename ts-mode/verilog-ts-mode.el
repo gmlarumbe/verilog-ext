@@ -6,7 +6,7 @@
 ;; URL: https://github.com/gmlarumbe/verilog-ext
 ;; Version: 0.0.0
 ;; Keywords: Verilog, IDE, Tools
-;; Package-Requires: ((emacs "29.1"))
+;; Package-Requires: ((emacs "28.1") (compat "29.1.4.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
