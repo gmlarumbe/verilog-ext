@@ -207,19 +207,19 @@
 (ert-deftest utils::scan-buffer-modules ()
   (should (equal (verilog-ext-test-utils-file "tb_program.sv"
                    (verilog-ext-scan-buffer-modules))
-                 '("tb_program")))
+                 '(("tb_program" 856 4645))))
   (should (equal (verilog-ext-test-utils-file "ucontroller.sv"
                    (verilog-ext-scan-buffer-modules))
-                 '("ucontroller")))
+                 '(("ucontroller" 834 4874))))
   (should (equal (verilog-ext-test-utils-file "axi_test.sv"
                    (verilog-ext-scan-buffer-modules))
-                 '("axi_chan_logger")))
+                 '(("axi_chan_logger" 78095 86893))))
   (should (equal (verilog-ext-test-utils-file "axi_demux.sv"
                    (verilog-ext-scan-buffer-modules))
-                 '("axi_demux_intf" "axi_demux_id_counters" "axi_demux")))
+                 '(("axi_demux" 1869 28708) ("axi_demux_id_counters" 28710 32829) ("axi_demux_intf" 32905 36664))))
   (should (equal (verilog-ext-test-utils-file "instances.sv"
                    (verilog-ext-scan-buffer-modules))
-                 '("instances")))
+                 '(("instances" 820 2820))))
   (should (equal (verilog-ext-test-utils-file "uvm_component.svh"
                    (verilog-ext-scan-buffer-modules))
                  nil)))

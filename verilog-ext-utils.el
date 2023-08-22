@@ -254,18 +254,26 @@ search."
 ;;;; File modules
 (defun verilog-ext-scan-buffer-modules ()
   "Find modules in current buffer.
-Return list with found modules or nil if not found.
-Update the value of buffer-local variable `verilog-ext-file-allows-instances'
-to be used in optimization of font-lock and imenu."
+
+Return list with found modules and their start and end positions, or nil if no
+module was found.
+
+Update the value of buffer-local variable `verilog-ext-file-allows-instances' to
+be used in optimization of font-lock and imenu."
   (let (modules)
     (save-excursion
       (goto-char (point-min))
       (while (verilog-re-search-forward verilog-ext-top-instantiable-re nil t)
-        (push (match-string-no-properties 3) modules)))
+        (push `(,(match-string-no-properties 3) ; Name
+                ,(match-beginning 1)            ; Start pos
+                ,(save-excursion                ; End pos
+                   (goto-char (match-beginning 1))
+                   (verilog-ext-pos-at-forward-sexp)))
+              modules)))
     (if modules
         (setq verilog-ext-file-allows-instances t)
       (setq verilog-ext-file-allows-instances nil))
-    (delete-dups modules)))
+    (reverse (delete-dups modules))))
 
 (defun verilog-ext-read-file-modules (&optional file)
   "Find modules in current buffer.
@@ -291,7 +299,7 @@ Return list with found modules or nil if not found."
 If only one module was found return it as a string.
 If more than one module was found, select between available ones.
 Return nil if no module was found."
-  (let ((modules (verilog-ext-read-file-modules file)))
+  (let ((modules (mapcar #'car (verilog-ext-read-file-modules file))))
     (if (cdr modules)
         (completing-read "Select module: " modules)
       (car modules))))

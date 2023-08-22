@@ -410,7 +410,8 @@ Continue search backward if BWD is non-nil."
          (if bwd
              (verilog-backward-syntactic-ws)
            (forward-line)
-           (verilog-forward-syntactic-ws)))))
+           (unless (eobp) ; Avoid errors if last buffer word is a potential identifier for an instance
+             (verilog-forward-syntactic-ws))))))
 
 (defun verilog-ext-find-module-instance-fwd (&optional limit)
   "Search forwards for a Verilog module/instance.
