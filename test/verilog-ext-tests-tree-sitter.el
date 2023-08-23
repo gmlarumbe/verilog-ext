@@ -59,7 +59,7 @@
   instances.block_gen:I_BLOCK_GEN
   instances.test_if:I_TEST_IF
   instances.test_if_params:ITEST_IF_PARAMS
-  instances.test_if_params_array:ITEST_IF_PARAMS_ARRAY[5:0]
+  instances.test_if_params_array:ITEST_IF_PARAMS_ARRAY
   instances.test_if_params_empty:I_TEST_IF_PARAMS_EMPTY
   instances.block_ws_0:I_BLOCK_WS_0
   instances.block_ws_1:I_BLOCK_WS_1
@@ -103,7 +103,7 @@
 // ** block_gen
 // ** test_if
 // ** test_if_params
-// ** test_if_params_array[5:0]
+// ** test_if_params_array
 // ** test_if_params_empty
 // ** block_ws_0
 // ** block_ws_1

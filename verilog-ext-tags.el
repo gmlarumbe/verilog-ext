@@ -365,9 +365,8 @@ already been parsed as definitions.
 
 FILE can be provided for the case when references are fetched from a
 temp-buffer."
-  (let ((nodes (verilog-ts-nodes-current-buffer "simple_identifier"))
-        tag pos)
-    (dolist (node nodes)
+  (let (tag pos)
+    (dolist (node (verilog-ts-nodes "simple_identifier"))
       (setq tag (treesit-node-text node :no-prop))
       (setq pos (treesit-node-start node))
       (unless (and defs-table

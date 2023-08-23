@@ -265,20 +265,16 @@ These elements cdr are the list of that module's instances.
 Instances have module:INST format to make them unique for `hierarchy'
 displaying.  Modules have no instance name since they are parsed on its
 declaration."
-  (let (modules inst-nodes inst-type inst-name instances module-instances-alist)
+  (let (module-nodes instances module-instances-alist)
     (with-temp-buffer
       (insert-file-contents file)
       (verilog-ts-mode)
-      (setq modules (verilog-ts-module-declarations))
-      (dolist (module modules)
+      (setq module-nodes (verilog-ts-module-declarations-nodes-current-buffer))
+      (dolist (module-node module-nodes)
         (setq instances nil)
-        (goto-char (cadr module))
-        (setq inst-nodes (cdr (treesit-induce-sparse-tree (verilog-ts--node-at-bol) "\\(module\\|interface\\)_instantiation")))
-        (dolist (inst-node (mapcar #'car inst-nodes))
-          (setq inst-type (treesit-node-text (treesit-search-subtree inst-node "simple_identifier") :no-props))
-          (setq inst-name (treesit-node-text (treesit-search-subtree inst-node "name_of_instance")  :no-props))
-          (push (concat inst-type ":" inst-name) instances))
-        (push `(,(car module) ,@(reverse instances)) module-instances-alist))
+        (dolist (inst-node (verilog-ts-module-instances-nodes module-node))
+          (push (concat (verilog-ts--node-identifier-name inst-node) ":" (verilog-ts--node-instance-name inst-node)) instances))
+        (push `(,(verilog-ts--node-identifier-name module-node) ,@(reverse instances)) module-instances-alist))
       module-instances-alist)))
 
 (defun verilog-ext-hierarchy-tree-sitter-extract (module)

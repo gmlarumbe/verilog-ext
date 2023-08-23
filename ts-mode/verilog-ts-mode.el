@@ -83,6 +83,8 @@ Defaults to .v, .vh, .sv and .svh."
 
 ;;; Utils
 ;;;; Core
+(defconst verilog-ts-instance-re "\\(module\\|interface\\)_instantiation")
+
 (defun verilog-ts--node-at-point ()
   "Return tree-sitter node at point."
   (treesit-node-at (point) 'verilog))
@@ -95,7 +97,8 @@ Defaults to .v, .vh, .sv and .svh."
      (string-match node-type (treesit-node-type node)))))
 
 (defun verilog-ts--node-has-child-recursive (node node-type)
-  "Return non-nil if NODE contains NODE-TYPE in the parsed tree."
+  "Return first node of type NODE-TYPE that is a child of NODE in the parsed tree.
+If none is found, return nil."
   (treesit-search-subtree node node-type))
 
 (defun verilog-ts--node-identifier-name (node)
@@ -112,13 +115,15 @@ Defaults to .v, .vh, .sv and .svh."
            (treesit-node-text (treesit-search-subtree node "simple_identifier") :no-prop)))))
 
 (defun verilog-ts--node-instance-name (node)
-  "Return identifier name of NODE."
-  (when (and node
-             (string-match "\\(module\\|interface\\)_instantiation" (treesit-node-type node)))
-    (treesit-node-text (treesit-search-subtree node "instance_identifier") :no-prop)))
+  "Return identifier name of NODE.
+
+Node must be of type `verilog-ts-instance-re' Otherwise return nil."
+  (unless (and node (string-match verilog-ts-instance-re (treesit-node-type node)))
+    (error "Wrong node type: %s" (treesit-node-type node)))
+  (treesit-node-text (treesit-search-subtree node "instance_identifier") :no-prop))
 
 (defun verilog-ts--highest-node-at-pos (pos)
-  "Return highest node in the hierarchy that starts at POS.
+  "Return highest node starting at POS in the parsed tree.
 
 Only might work as expected if point is at the beginning of a symbol.
 
@@ -155,6 +160,28 @@ Snippet fetched from `treesit--indent-1'."
                   (eq bol (treesit-node-start node))))))
     node))
 
+(defun verilog-ts-nodes (pred &optional start)
+  "Return current buffer NODES that match PRED.
+
+If optional arg START is non-nil, use it as the initial node to search in the
+tree."
+  (let ((root-node (or start (treesit-buffer-root-node))))
+    (mapcar #'car (cdr (treesit-induce-sparse-tree root-node pred)))))
+
+(defun verilog-ts-nodes-props (pred &optional start)
+  "Return nodes and properties that satisfy PRED in current buffer.
+
+If optional arg START is non-nil, use it as the initial node to search in the
+tree.
+
+Returned properties are a property list that include node name, start position
+and end position."
+  (mapcar (lambda (node)
+            `(,node :name ,(verilog-ts--node-identifier-name node)
+                    :start-pos ,(treesit-node-start node)
+                    :end-pos ,(treesit-node-end node)))
+          (verilog-ts-nodes pred start)))
+
 (defun verilog-ts--inside-module-or-interface-p ()
   "Return non-nil if point is inside a module or interface construct."
   (verilog-ts--node-has-parent-recursive (verilog-ts--node-at-point) "\\(module\\|interface\\)_declaration"))
@@ -180,84 +207,92 @@ Snippet fetched from `treesit--indent-1'."
        "seq_block")
      'symbols)))
 
+
 (defun verilog-ts-module-at-point ()
   "Return node of module at point."
-  (let* ((node-at-point (verilog-ts--node-at-point))
-         (module-node (verilog-ts--node-has-parent-recursive node-at-point "module_instantiation")))
-    module-node))
+  (verilog-ts--node-has-parent-recursive (verilog-ts--node-at-point) "module_declaration"))
+
+(defun verilog-ts-instance-at-point ()
+  "Return node of instance at point."
+  (verilog-ts--node-has-parent-recursive (verilog-ts--node-at-point) verilog-ts-instance-re))
 
 (defun verilog-ts-block-at-point ()
   "Return node of block at point."
-  (let* ((block-re verilog-ts-block-at-point-re)
-         (node-at-point (verilog-ts--node-at-point))
-         (block-node (verilog-ts--node-has-parent-recursive node-at-point block-re)))
-    block-node))
-
-(defun verilog-ts-nodes-current-buffer (pred)
-  "Return current buffer NODES that match PRED."
-  (let ((root-node (treesit-buffer-root-node)))
-    (mapcar #'car (cdr (treesit-induce-sparse-tree root-node pred)))))
+  (verilog-ts--node-has-parent-recursive (verilog-ts--node-at-point) verilog-ts-block-at-point-re))
 
 (defun verilog-ts-nodes-block-at-point (pred)
   "Return block at point NODES that match PRED."
-  (let ((block-node (verilog-ts-block-at-point)))
-    (mapcar #'car (cdr (treesit-induce-sparse-tree block-node pred)))))
+  (mapcar #'car (cdr (treesit-induce-sparse-tree (verilog-ts-block-at-point) pred))))
 
 (defun verilog-ts-search-node-block-at-point (pred &optional backward all)
   "Search forward for node matching PRED inside block at point.
 
 By default, only search for named nodes, but if ALL is non-nil, search
 for all nodes.  If BACKWARD is non-nil, search backwards."
-  (let ((block-node (verilog-ts-block-at-point)))
-    (treesit-search-forward (verilog-ts--node-at-point)
-                            (lambda (node)
-                              (and (string-match pred (treesit-node-type node))
-                                   (< (treesit-node-end node) (treesit-node-end block-node))))
-                            backward
-                            all)))
+  (treesit-search-forward (verilog-ts--node-at-point)
+                          (lambda (node)
+                            (and (string-match pred (treesit-node-type node))
+                                 (< (treesit-node-end node) (treesit-node-end (verilog-ts-block-at-point)))))
+                          backward
+                          all))
 
-(defun verilog-ts-nodes-current-buffer-1 (pred &optional start)
-  "Return node names and positions that satisfy PRED in current buffer.
+;; Some examples using previous API
+(defun verilog-ts-module-declarations-nodes-current-buffer ()
+  "Return module declaration nodes of current file."
+  (verilog-ts-nodes "module_declaration"))
 
-Use optional START node as the root node to build the subtree."
-  (interactive)
-  (let* ((root-node (or start (treesit-buffer-root-node)))
-         (pred-nodes (cdr (treesit-induce-sparse-tree root-node pred)))
-         name pos-beg pos-end nodes-alist)
-    (dolist (node pred-nodes)
-      (setq name (verilog-ts--node-identifier-name (car node)))
-      (setq pos-beg (treesit-node-start (car node)))
-      (setq pos-end (treesit-node-end (car node)))
-      (push `(,name ,pos-beg ,pos-end) nodes-alist))
-    (seq-reverse nodes-alist)))
+(defun verilog-ts-module-declarations-current-buffer ()
+  "Return module declaration names of current file."
+  (mapcar (lambda (node-and-props)
+            (plist-get (cdr node-and-props) :name))
+          (verilog-ts-nodes-props "module_declaration")))
 
-(defun verilog-ts-class-attributes ()
-  "Return class attributes of current file."
-  (verilog-ts-nodes-current-buffer-1 "class_property"))
+(defun verilog-ts-module-instances-nodes (module-node)
+  "Return instance nodes of MODULE-NODE."
+  (unless (and module-node (string= "module_declaration" (treesit-node-type module-node)))
+    (error "Wrong module-node: %s" module-node))
+  (verilog-ts-nodes verilog-ts-instance-re module-node))
 
-(defun verilog-ts-class-methods ()
-  "Return class methods of current file."
-  (delete-dups (verilog-ts-nodes-current-buffer-1 "class_\\(constructor\\|method\\)")))
+(defun verilog-ts-module-instances (module-node)
+  "Return instances of MODULE-NODE."
+  (unless (and module-node (string= "module_declaration" (treesit-node-type module-node)))
+    (error "Wrong module-node: %s" module-node))
+  (mapcar (lambda (node-and-props)
+            (plist-get (cdr node-and-props) :name))
+          (verilog-ts-nodes-props verilog-ts-instance-re module-node)))
 
-(defun verilog-ts-class-constraints ()
-  "Return class constraints of current file."
-  (verilog-ts-nodes-current-buffer-1 "constraint_declaration"))
+(defun verilog-ts-module-always-blocks (module-node)
+  "Return always blocks of MODULE-NODE."
+  (unless (and module-node (string= "module_declaration" (treesit-node-type module-node)))
+    (error "Wrong module-node: %s" module-node))
+  (mapcar (lambda (node-and-props)
+            (plist-get (cdr node-and-props) :name))
+          (verilog-ts-nodes-props "always_keyword" module-node)))
 
-(defun verilog-ts-module-instances ()
-  "Return module instances of current file."
-  (verilog-ts-nodes-current-buffer-1 "module_instantiation"))
+(defun verilog-ts-class-properties (class-node)
+  "Return properties of CLASS-NODE."
+  (unless (and class-node (string= "class_declaration" (treesit-node-type class-node)))
+    (error "Wrong class-node: %s" class-node))
+  (mapcar (lambda (node-and-props)
+            (plist-get (cdr node-and-props) :name))
+          (verilog-ts-nodes-props "class_property" class-node)))
 
-(defun verilog-ts-module-declarations ()
-  "Return module declarations of current file."
-  (verilog-ts-nodes-current-buffer-1 "module_declaration"))
+(defun verilog-ts-class-methods (class-node)
+  "Return methods of CLASS-NODE."
+  (unless (and class-node (string= "class_declaration" (treesit-node-type class-node)))
+    (error "Wrong class-node: %s" class-node))
+  (mapcar (lambda (node-and-props)
+            (plist-get (cdr node-and-props) :name))
+          (verilog-ts-nodes-props "class_\\(constructor\\|method\\)" class-node)))
 
-(defun verilog-ts-always-blocks ()
-  "Return always blocks of current file."
-  (verilog-ts-nodes-current-buffer-1 "always_keyword"))
+(defun verilog-ts-class-constraints (class-node)
+  "Return constraints of CLASS-NODE."
+  (unless (and class-node (string= "class_declaration" (treesit-node-type class-node)))
+    (error "Wrong class-node: %s" class-node))
+  (mapcar (lambda (node-and-props)
+            (plist-get (cdr node-and-props) :name))
+          (verilog-ts-nodes-props "constraint_declaration" class-node)))
 
-(defun verilog-ts-instance-nodes ()
-  "Return instance nodes of current buffer."
-  (verilog-ts-nodes-current-buffer "module_instantiation"))
 
 
 ;;;; Navigation
@@ -1384,7 +1419,7 @@ If optional arg BWD is non-nil, search backwards."
   "Search for a Verilog module/instance.
 
 If optional arg BWD is non-nil, search backwards."
-  (treesit-search-forward-goto (verilog-ts--node-at-point) "\\(module\\|interface\\)_instantiation" t bwd))
+  (treesit-search-forward-goto (verilog-ts--node-at-point) verilog-ts-instance-re t bwd))
 
 (defun verilog-ts-find-module-instance-fwd ()
   "Search forwards for a Verilog module/instance."
@@ -1556,7 +1591,7 @@ If block is an instance, also align parameters and ports."
     (setq name (verilog-ts--node-identifier-name node))
     (indent-region start end)
     ;; Instance: also align ports and params
-    (when (string-match "\\(module\\|interface\\)_instantiation" type)
+    (when (string-match verilog-ts-instance-re type)
       (let ((re "\\(\\s-*\\)(")
             params-node ports-node)
         (setq node (verilog-ts-block-at-point)) ; Refresh outdated node after `indent-region'
@@ -1576,10 +1611,10 @@ If block is an instance, also align parameters and ports."
     (indent-region (point-min) (point-max))
     (save-excursion
       (goto-char (point-min))
-      (while (setq node (treesit-search-forward (verilog-ts--node-at-point) "\\(module\\|interface\\)_instantiation"))
+      (while (setq node (treesit-search-forward (verilog-ts--node-at-point) verilog-ts-instance-re))
         (goto-char (treesit-node-start node))
         (verilog-ts-beautify-block-at-point)
-        (setq node (treesit-search-forward (verilog-ts--node-at-point) "\\(module\\|interface\\)_instantiation"))
+        (setq node (treesit-search-forward (verilog-ts--node-at-point) verilog-ts-instance-re))
         (goto-char (treesit-node-end node))
         (when (not (eobp))
           (forward-char))))
@@ -1624,7 +1659,9 @@ Complete with keywords and current buffer identifiers."
          (end (cdr bds))
          candidates)
     (setq candidates (remove (thing-at-point 'symbol :no-props)
-                             (append (mapcar #'car (verilog-ts-nodes-current-buffer-1 "simple_identifier"))
+                             (append (mapcar (lambda (node-and-props)
+                                               (plist-get (cdr node-and-props) :name))
+                                             (verilog-ts-nodes-props "simple_identifier"))
                                      verilog-keywords)))
     (list start end candidates . nil)))
 
