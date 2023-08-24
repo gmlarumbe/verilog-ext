@@ -18,7 +18,6 @@ run_elisp_cmd() {
           -L $PWD/test \
           -l ert \
           -l $SETUP_FILE \
-          -l verilog-ext-tests-setup-faces \
           -l verilog-ext-tests \
           --eval "$1"
 }

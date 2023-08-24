@@ -78,18 +78,12 @@
 
 
 ;;;; Tree-sitter
-(defvar verilog-ext-tests-tree-sitter-available-p nil)
-
 (message "Emacs version: %s" emacs-version)
 (when (and (>= emacs-major-version 29)
            (treesit-available-p)
            (treesit-language-available-p 'verilog))
   (require 'treesit)
-  (setq verilog-ext-tests-tree-sitter-available-p t)
   (setq treesit-font-lock-level 4)
-  (message "verilog-ext-tests-tree-sitter-available-p: %s" verilog-ext-tests-tree-sitter-available-p))
-
-(when verilog-ext-tests-tree-sitter-available-p
   (package-install 'verilog-ts-mode))
 
 

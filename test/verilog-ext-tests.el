@@ -83,7 +83,9 @@ Otherwise, byte-compile."
 (require 'verilog-ext-tests-hierarchy)
 (require 'verilog-ext-tests-tags)
 (require 'verilog-ext-tests-workspace)
-(if (not verilog-ext-tests-tree-sitter-available-p)
+(if (not (and (>= emacs-major-version 29)
+              (treesit-available-p)
+              (treesit-language-available-p 'verilog)))
     (message "Skipping verilog-ext-tests-tree-sitter...")
   (defvar verilog-ext-tests-tree-sitter-dir (file-name-concat verilog-ext-tests-files-dir "tree-sitter"))
   (require 'verilog-ext-tests-tree-sitter))
@@ -96,12 +98,13 @@ Otherwise, byte-compile."
 
 
 ;;;; Report loaded file
-;; TODO: Not sure if this one really reports if functions have been loaded from .eln files
-(message "verilog-ext is: %s" (locate-library "verilog-ext"))
-;; TODO: `describe-function' is not intended to be used programatically
-;; (describe-function 'verilog-ext-hs-setup)
-
-;; INFO: However, if files are compiled successfully, subsequent invocations of Emacs should
+(when noninteractive ; Only report in batch-mode
+  ;; Not sure if this one really reports if functions have been loaded from .eln files
+  (message "verilog-ext is: %s" (locate-library "verilog-ext"))
+  ;; `describe-function' is not intended to be used programatically, but seems it can do the trick
+  (message "%s" (car (split-string (describe-function 'verilog-ext-mode) "\n")))
+  (message "%s" (car (split-string (describe-function 'verilog-ext-find-module-instance-fwd) "\n"))))
+;; If files are compiled successfully, subsequent invocations of Emacs should
 ;; try to load files from native compiled instead of byte-compiled or interactive ones.
 
 

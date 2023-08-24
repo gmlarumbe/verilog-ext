@@ -363,6 +363,16 @@ DANGER: Still very inefficient, removed funcall in
 
 * Tree-sitter dev
 ** Pending
+*** TODO Check treesit-language-source-alist an treesit-install-language-grammar:
+- For automatic install of the forked Verilog grammar
+- Check also the deno-ts-mode documentation for an example
+- Try to apply the same to to VHDL mode
+
+*** TODO verilog-ts-forward-sexp and backward-sexp
+- [ ] Fail if point is not over a symbol
+- [ ] Fail or do something weird if point is at a comment
+- [ ] Also happens for vhdl equivalent
+
 *** TODO Remove verilog-company-keywords and company dependency
 - Move to capf
 
