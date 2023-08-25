@@ -363,6 +363,9 @@ DANGER: Still very inefficient, removed funcall in
 
 * Tree-sitter dev
 ** Pending
+*** TODO Tests refactoring
+- [ ] Refactor/reorganize and prepare to split into separate repo for verilog-ts-mode
+
 *** TODO Check treesit-language-source-alist an treesit-install-language-grammar:
 - For automatic install of the forked Verilog grammar
 - Check also the deno-ts-mode documentation for an example
@@ -376,18 +379,14 @@ DANGER: Still very inefficient, removed funcall in
 *** TODO Remove verilog-company-keywords and company dependency
 - Move to capf
 
-*** TODO Check TODOs in the whole project
-*** TODO Check verilog-ts-mode
-*** TODO Grab the hashes files thing from laptop
 *** TODO Check if a after-save hook can spawn a update-async of this type thing
 - Tooslow some times?...
+- Snippet in temp file in $HOME in personal desktop computer
+
 *** TODO Move to notes the thing of doing a per project/dir cache (same as vhdl-ext or projectile)
 
 *** Hashes for cache/updating only modified files
 - Create function that removes entries associated to :file in defs/inst/refs tables
-*** Tests
-- [ ] Refactor/reorganize and prepare to split into separate repo for verilog-ts-mode
-
 ** Implemented
 *** xref
 - [X] Implement tags/refs gathering in workspace
@@ -534,7 +533,7 @@ DANGER: Still very inefficient, removed funcall in
 ;; seem to work. It adds text properties to text, but not sure about how to refresh it.
 
 *** hierarchy
-- Implemented, still to be merged into main
+- Implemented
 
 *** hideshow
 - It's regexp based, so leave it in verilog-ext
