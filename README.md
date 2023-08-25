@@ -459,3 +459,5 @@ $ make subset TESTS=navigation
   * Analog package to edit VHDL sources
 * [fpga](https://github.com/gmlarumbe/fpga): FPGA & ASIC Utilities for Emacs
   * Utilities for tools of major vendors of FPGA & ASIC
+* [wavedrom-mode](https://github.com/gmlarumbe/wavedrom-mode): Wavedrom integration for Emacs
+  * Edit and render WaveJSON files to create timing diagrams
