@@ -461,3 +461,5 @@ $ make subset TESTS=navigation
   * Utilities for tools of major vendors of FPGA & ASIC
 * [wavedrom-mode](https://github.com/gmlarumbe/wavedrom-mode): Wavedrom integration for Emacs
   * Edit and render WaveJSON files to create timing diagrams
+* [vunit-mode](https://github.com/embed-me/vunit-mode.git): VUnit Mode for Emacs
+  * Integration of [VUnit](https://github.com/VUnit/vunit) workflow.
