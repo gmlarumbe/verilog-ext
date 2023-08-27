@@ -74,7 +74,7 @@
   :group 'verilog-ts
   :type 'integer)
 
-(defcustom verilog-ts-file-extension-re "\\.s?vh?$"
+(defcustom verilog-ts-file-extension-re "\\.s?vh?\\'"
   "(SystemVerilog) file extensions.
 Defaults to .v, .vh, .sv and .svh."
   :group 'verilog-ts

@@ -33,7 +33,7 @@
 (require 'company-keywords)
 
 ;;;; Custom
-(defcustom verilog-ext-file-extension-re "\\.s?vh?$"
+(defcustom verilog-ext-file-extension-re "\\.s?vh?\\'"
   "(SystemVerilog) file extensions.
 Defaults to .v, .vh, .sv and .svh."
   :type 'string
