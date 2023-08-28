@@ -1667,6 +1667,20 @@ Complete with keywords and current buffer identifiers."
 
 
 ;;; Major-mode
+;;;; Setup
+;;;###autoload
+(defun verilog-ts-install-grammar ()
+  "Install Verilog tree-sitter grammar.
+
+This command requires Git, a C compiler and (sometimes) a C++ compiler,
+and the linker to be installed and on PATH."
+  (interactive)
+  (let ((url "https://github.com/gmlarumbe/tree-sitter-verilog"))
+    (add-to-list 'treesit-language-source-alist `(verilog ,url))
+    (treesit-install-language-grammar 'verilog)))
+
+
+;;;; Features
 (defvar-keymap verilog-ts-mode-map
   :doc "Keymap for SystemVerilog language with tree-sitter"
   :parent verilog-mode-map
