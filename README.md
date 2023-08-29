@@ -34,11 +34,7 @@ This package provides some extensions on top of the great Emacs [verilog-mode](h
 
 ### MELPA ###
 
-`verilog-ext` is available on MELPA. It includes `verilog-ts-mode` as a dependency.
-
-If you only want to experiment with tree-sitter, `verilog-ts-mode` is also available on MELPA as a separate package.
-See the [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Tree-sitter) for more info.
-
+`verilog-ext` and `verilog-ts-mode` are available on MELPA. `verilog-ext` includes `verilog-ts-mode` as a dependency.
 
 ### straight.el ###
 
