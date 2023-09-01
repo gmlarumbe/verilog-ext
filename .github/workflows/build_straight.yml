@@ -26,16 +26,15 @@ jobs:
 
       # Checks-out repository under $GITHUB_WORKSPACE
       - name: Clone verilog-ext
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Install binaries
         run: |
-          cd $GITHUB_WORKSPACE
-          test/scripts/setup-env.sh
-          test/scripts/install-ts-grammar.sh
+          test-hdl/verilog/scripts/setup-env.sh
+          test-hdl/verilog/scripts/install-ts-grammar.sh
 
       - name: Run ERT tests
         run: |
-          cd $GITHUB_WORKSPACE
-          make test
-
+          make
