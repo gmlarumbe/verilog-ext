@@ -706,6 +706,8 @@ Used in ag/rg end of search hooks to conditionally set the xref marker stack.")
   "Variable to run the post ag/rg command hook.
 Runs only when the ag/rg search was triggered by
 `verilog-ext-jump-to-parent-module' command.")
+(defvar verilog-ext-jump-to-parent-module-starting-windows nil
+  "Variable to register how many windows are open when trying to jump-to-parent.")
 
 (defun verilog-ext-jump-to-parent-module (&optional dir)
   "Find current module/interface instantiations via `ag'/`rg'.
@@ -736,6 +738,7 @@ after the search has been done."
     ;; Update variables used by the ag/rg search finished hooks
     (setq verilog-ext-jump-to-parent-module-name module-name)
     (setq verilog-ext-jump-to-parent-module-dir proj-dir)
+    (setq verilog-ext-jump-to-parent-module-starting-windows (length (window-list)))
     ;; Perform project based search
     (cond
      ;; Try ripgrep
@@ -759,6 +762,13 @@ after the search has been done."
      (t
       (error "Did not find `rg' nor `ag' in $PATH")))))
 
+(defun verilog-ext-navigation-ag-rg-hook-cleanup ()
+  "Handle buffer killing depending on the number of active windows."
+  (if (> verilog-ext-jump-to-parent-module-starting-windows 1)
+      (kill-buffer (current-buffer))
+    (other-window 1)
+    (delete-window)))
+
 (defun verilog-ext-navigation-ag-rg-hook ()
   "Jump to the first result and push xref marker if there were any matches.
 Kill the buffer if there is only one match."
@@ -773,14 +783,14 @@ Kill the buffer if there is only one match."
       (cond ((eq num-matches 1)
              (xref-push-marker-stack verilog-ext-jump-to-parent-module-point-marker)
              (next-error)
-             (kill-buffer (current-buffer))
+             (verilog-ext-navigation-ag-rg-hook-cleanup)
              (message "Jump to only match for [%s] @ %s" module-name dir))
             ((> num-matches 1)
              (xref-push-marker-stack verilog-ext-jump-to-parent-module-point-marker)
              (next-error)
              (message "Showing matches for [%s] @ %s" module-name dir))
             (t
-             (kill-buffer (current-buffer))
+             (verilog-ext-navigation-ag-rg-hook-cleanup)
              (message "No matches found")))
       (setq verilog-ext-jump-to-parent-trigger nil))))
 
