@@ -20,7 +20,8 @@ jobs:
           - snapshot
     steps:
       - name: Set up Emacs
-        uses: purcell/setup-emacs@master
+        # uses: purcell/setup-emacs@master
+        uses: purcell/setup-emacs@v5.0
         with:
           version: ${{ matrix.emacs_version }}
 
