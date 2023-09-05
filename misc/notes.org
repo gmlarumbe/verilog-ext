@@ -547,3 +547,79 @@ DANGER: Still very inefficient, removed funcall in
      ((or (node-is "{")
           (node-is "("))
       parent-bol 0)
+
+
+
+* Tests
+** Failed attempts
+#+begin_src elisp
+;;;; Work locally, fail in GitHub actions
+(defmacro verilog-ext-test-with-gtags (file &rest body)
+  (declare (indent 1) (debug t))
+  `(cl-letf (((symbol-function 'message)
+              (lambda (FORMAT-STRING &rest ARGS)
+                nil))) ; Mock `message' to silence all the indentation reporting
+     (let ((default-directory verilog-ext-tests-examples-dir)
+           (process-environment process-environment))
+       ;; Setup environment lexically only for current process
+       (push "GTAGSLABEL=ctags" process-environment)
+       ;; Remove/recreate gtags.file
+       (dolist (file '("gtags.files" "GTAGS" "GPATH" "GRTAGS"))
+         (when (file-exists-p file)
+           (delete-file file)))
+       (with-temp-file "gtags.files"
+         (insert (mapconcat #'identity (directory-files-recursively default-directory "\.s?vh?$" nil nil t) "\n")))
+       (ggtags-create-tags default-directory)
+       ;; Enable ggtags and run body
+       (find-file (file-name-concat verilog-ext-tests-examples-dir ,file))
+       (ggtags-mode 1)
+       (goto-char (point-min))
+       ,@body)))
+
+(defmacro verilog-ext-test-with-gtags-verbose (file &rest body)
+  "Similar as `verilog-ext-test-with-gtags' but without mocking `message'
+for verbosity purposes."
+  (declare (indent 1) (debug t))
+  `(let ((default-directory verilog-ext-tests-examples-dir)
+         (process-environment process-environment))
+     ;; Setup environment lexically only for current process
+     (push "GTAGSLABEL=ctags" process-environment)
+     ;; Remove/recreate gtags.file
+     (dolist (file '("gtags.files" "GTAGS" "GPATH" "GRTAGS"))
+       (when (file-exists-p file)
+         (delete-file file)))
+     (with-temp-file "gtags.files"
+       (insert (mapconcat #'identity (directory-files-recursively default-directory "\.s?vh?$" nil nil t) "\n")))
+     (message "%s" default-directory)
+     (ggtags-create-tags default-directory)
+     (message (shell-command-to-string "ls -al"))
+     ;; Enable ggtags and run body
+     (find-file (file-name-concat verilog-ext-tests-examples-dir ,file))
+     (ggtags-mode 1)
+     (goto-char (point-min))
+     ,@body))
+
+(ert-deftest navigation::xref-definition ()
+  (verilog-ext-test-with-gtags "instances.sv"
+    (verilog-ext-find-module-instance-fwd)
+    (goto-char (match-beginning 0))
+    ;; DANGER: At some point, for some unknown reason, ERT got frozen if ran interactive while executing `xref-find-definitions'.
+    ;; Tested many things and changed many others but it seemed to be random and related to xref more than to any other thing
+    ;; It works fine though if run in a subshell
+    (xref-find-definitions (thing-at-point 'symbol :no-props)) ; `xref-find-definitions' could hang the ERT interactive test
+    (should (string= buffer-file-name (file-name-concat verilog-ext-tests-examples-dir "jump-parent/block0.sv")))
+    (should (equal (point) 15))))
+
+(ert-deftest navigation::jump-to-module-at-point ()
+  (verilog-ext-test-with-gtags "instances.sv"
+    (verilog-ext-find-module-instance-fwd)
+    (goto-char (match-beginning 0))
+    (forward-line)
+    ;; DANGER: At some point, for some unknown reason, ERT got frozen if ran interactive while executing `xref-find-definitions'.
+    ;; Tested many things and changed many others but it seemed to be random and related to xref more than to any other thing
+    ;; It works fine though if run in a subshell
+    (verilog-ext-jump-to-module-at-point)
+    (should (string= buffer-file-name (file-name-concat verilog-ext-tests-examples-dir "jump-parent/block0.sv")))
+    (should (equal (point) 15))))
+#+end_src
+
