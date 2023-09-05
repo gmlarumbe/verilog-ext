@@ -1,11 +1,9 @@
 name: ERT-package-el
 
 on:
-  push:
-  pull_request:
   workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
   schedule:
-    - cron: '0 0 * * 0' # weekly
+    - cron: '0 0 * * *' # daily
 
 jobs:
   build:
@@ -14,28 +12,25 @@ jobs:
       fail-fast: false
       matrix:
         emacs_version:
-          - 28.2
           - 29.1
-          - release-snapshot
-          # - snapshot
     steps:
       - name: Set up Emacs
-        uses: purcell/setup-emacs@master
+        # uses: purcell/setup-emacs@master
+        uses: purcell/setup-emacs@v5.0
         with:
           version: ${{ matrix.emacs_version }}
 
       # Checks-out repository under $GITHUB_WORKSPACE
       - name: Clone verilog-ext
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Install binaries
         run: |
-          cd $GITHUB_WORKSPACE
-          test/scripts/setup-env.sh
-          test/scripts/install-ts-grammar.sh
+          test-hdl/verilog/scripts/setup-env.sh
+          test-hdl/verilog/scripts/install-ts-grammar.sh
 
       - name: Run ERT tests
         run: |
-          cd $GITHUB_WORKSPACE
-          make test_package_el
-
+          make PKG_MANAGER=package
