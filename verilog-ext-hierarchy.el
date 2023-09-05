@@ -51,6 +51,22 @@
                  (const :tag "Hierarchy" hierarchy))
   :group 'verilog-ext-hierarchy)
 
+(defcustom verilog-ext-hierarchy-vhier-use-open-buffers t
+  "Set to non-nil to use list of open Verilog files/dirs with vhier backend."
+  :type 'boolean
+  :group 'verilog-ext-hierarchy)
+
+(defcustom verilog-ext-hierarchy-vhier-dirs nil
+  "List of library directories to search for with vhier backend."
+  :type '(repeat directory)
+  :group 'verilog-ext-hierarchy)
+
+(defcustom verilog-ext-hierarchy-vhier-files nil
+  "List of additional files to parse before `current-buffer' with vhier backend.
+They will be parsed in the order they are included in the list."
+  :type '(repeat file)
+  :group 'verilog-ext-hierarchy)
+
 (defcustom verilog-ext-hierarchy-vhier-command-file nil
   "Verilog-ext vhier command file."
   :type 'string
@@ -228,25 +244,39 @@ Alist will be of the form (module instance1:NAME1 instance2:NAME2 ...)."
                                                  "--instance"
                                                  "--no-missing"
                                                  "--missing-modules"))
+(defvar verilog-ext-hierarchy-vhier-open-dirs nil "List of open dirs for `verilog-ext-hierarchy-vhier-extract'.")
+(defvar verilog-ext-hierarchy-vhier-open-files nil "List of open files for `verilog-ext-hierarchy-vhier-extract'.")
 
 (defun verilog-ext-hierarchy-vhier-extract (module)
   "Extract hierarchy of MODULE using Verilog-Perl vhier as a backend.
 Return hierarchy as an indented string."
   (unless (executable-find "vhier")
     (error "Executable vhier not found"))
-  (let* ((library-args (verilog-expand-command "__FLAGS__"))
-         (vhier-args (mapconcat #'identity verilog-ext-hierarchy-vhier-bin-args " "))
+  (let* ((vhier-args (mapconcat #'identity verilog-ext-hierarchy-vhier-bin-args " "))
+         (library-args (concat "+libext+" (mapconcat #'concat verilog-library-extensions "+") " "
+                               (mapconcat (lambda (dir)
+                                            (concat "-y " dir))
+                                          `(,@verilog-ext-hierarchy-vhier-dirs ,@verilog-ext-hierarchy-vhier-open-dirs)
+                                          " ")))
+         (input-files (mapconcat #'identity
+                                 `(,@verilog-ext-hierarchy-vhier-files ,@verilog-ext-hierarchy-vhier-open-files)
+                                 " "))
          (buf verilog-ext-hierarchy-vhier-buffer-name)
          (buf-err verilog-ext-hierarchy-vhier-shell-cmds-buffer-name)
          (err-msg (format "vhier returned with errors\nCheck %s buffer" buf-err))
-         (cmd (concat "vhier "
-                      library-args " "
-                      vhier-args " "
-                      "--top-module " module " "
-                      (when verilog-ext-hierarchy-vhier-command-file
-                        (concat "-f " verilog-ext-hierarchy-vhier-command-file " "))
-                      buffer-file-name)))
+         (cmd (mapconcat #'identity
+                         `("vhier" ,vhier-args ,library-args
+                           ,(when verilog-ext-hierarchy-vhier-command-file
+                              (mapconcat #'identity `("-f " ,verilog-ext-hierarchy-vhier-command-file)))
+                           ,input-files ,buffer-file-name "--top-module" ,module)
+                         " ")))
     (unless (= 0 (shell-command cmd buf buf-err))
+      ;; TODO: Debug
+      (message "Cmd: %s" cmd)
+      (with-temp-buffer
+        (insert-buffer buf-err)
+        (message "%s" (buffer-substring-no-properties (point-min) (point-max))))
+      ;; ENd of TODO
       (pop-to-buffer buf-err)
       (error err-msg))
     (with-current-buffer buf
@@ -487,7 +517,7 @@ Optional arg MODULE will set the name of the display buffer, if provided."
       ;; Insert local variables at the end of the file
       (goto-char (point-max))
       (newline 1)
-      (insert "\n// * Buffer local variables\n// Local Variables:\n// eval: (verilog-mode 1)\n// eval: (verilog-ext-hierarchy-outshine-nav-mode 1)\n// End:\n")
+      (insert "\n// * Buffer local variables\n// Local Variables:\n// eval: (verilog-ext-hierarchy-outshine-nav-mode)\n// End:\n")
       ;; Insert header to get some info of the file
       (goto-char (point-min))
       (open-line 1)

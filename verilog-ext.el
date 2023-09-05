@@ -251,8 +251,13 @@ FEATURES can be a single feature or a list of features."
         (verilog-ext-scan-buffer-modules)
         (verilog-ext-update-buffer-file-and-dir-list)
         (add-hook 'kill-buffer-hook #'verilog-ext-kill-buffer-hook nil :local)
-        (setq verilog-library-directories verilog-ext-dir-list)
         ;; Features
+        (verilog-ext-when-feature 'hierarchy
+          (if verilog-ext-hierarchy-vhier-use-open-buffers
+              (progn (setq verilog-ext-hierarchy-vhier-open-dirs verilog-ext-dir-list)
+                     (setq verilog-ext-hierarchy-vhier-open-files verilog-ext-file-list))
+            (setq verilog-ext-hierarchy-vhier-open-dirs nil)
+            (setq verilog-ext-hierarchy-vhier-open-files nil)))
         (verilog-ext-when-feature 'flycheck
           (if verilog-ext-flycheck-use-open-buffers
               (progn (setq verilog-ext-flycheck-dirs verilog-ext-dir-list)
