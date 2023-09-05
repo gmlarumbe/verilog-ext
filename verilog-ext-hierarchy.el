@@ -271,12 +271,6 @@ Return hierarchy as an indented string."
                            ,input-files ,buffer-file-name "--top-module" ,module)
                          " ")))
     (unless (= 0 (shell-command cmd buf buf-err))
-      ;; TODO: Debug
-      (message "Cmd: %s" cmd)
-      (with-temp-buffer
-        (insert-buffer buf-err)
-        (message "%s" (buffer-substring-no-properties (point-min) (point-max))))
-      ;; ENd of TODO
       (pop-to-buffer buf-err)
       (error err-msg))
     (with-current-buffer buf
