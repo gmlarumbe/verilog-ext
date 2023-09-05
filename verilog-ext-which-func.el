@@ -5,8 +5,6 @@
 ;; Author: Gonzalo Larumbe <gonzalomlarumbe@gmail.com>
 ;; URL: https://github.com/gmlarumbe/verilog-ext
 ;; Version: 0.2.0
-;; Package-Requires: ((emacs "28.1") (verilog-mode "2023.6.6.141322628"))
-
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation, either version 3 of the License, or

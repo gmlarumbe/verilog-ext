@@ -4,8 +4,6 @@
 
 ;; Author: Gonzalo Larumbe <gonzalomlarumbe@gmail.com>
 ;; URL: https://github.com/gmlarumbe/verilog-ext
-;; Version: 0.2.0
-;; Package-Requires: ((emacs "28.1") (verilog-mode "2023.6.6.141322628"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -278,8 +276,9 @@ slpp_all outputs will be stored at this directory.."
     dir))
 
 (flycheck-define-checker verilog-surelog
-  "SystemVerilog 2017 Pre-processor, Parser, Elaborator, UHDM Compiler. Provides
-  IEEE Design/TB C/C++ VPI and Python AST API.
+  "SystemVerilog 2017 Pre-processor, Parser, Elaborator, UHDM Compiler.
+
+Provides IEEE Design/TB C/C++ VPI and Python AST API.
 
 See URL `https://github.com/chipsalliance/Surelog'"
   :command ("surelog"

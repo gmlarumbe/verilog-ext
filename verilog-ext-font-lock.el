@@ -4,8 +4,6 @@
 
 ;; Author: Gonzalo Larumbe <gonzalomlarumbe@gmail.com>
 ;; URL: https://github.com/gmlarumbe/verilog-ext
-;; Version: 0.2.0
-;; Package-Requires: ((emacs "28.1") (verilog-mode "2023.6.6.141322628"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -525,7 +523,7 @@ Bound search by LIMIT."
       (while (and (not found)
                   (verilog-re-search-forward decl-typedef-re limit t))
         (when (save-excursion
-                (goto-char (line-beginning-position))
+                (beginning-of-line)
                 (looking-at decl-typedef-re))
           (setq found t)))
       (when found

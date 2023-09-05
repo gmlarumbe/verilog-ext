@@ -4,8 +4,6 @@
 
 ;; Author: Gonzalo Larumbe <gonzalomlarumbe@gmail.com>
 ;; URL: https://github.com/gmlarumbe/verilog-ext
-;; Version: 0.2.0
-;; Package-Requires: ((emacs "28.1") (verilog-mode "2023.6.6.141322628"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -250,7 +248,7 @@ variable."
       ("vppreproc" (setq verilog-preprocessor "vppreproc __FLAGS__ __FILE__"))
       ;; Icarus Verilog:  `iverilog' command syntax requires writing to an output file (defaults to a.out).
       ("iverilog" (let* ((filename-sans-ext (file-name-sans-extension (file-name-nondirectory (buffer-file-name))))
-                         (iver-out-file (concat "/tmp/" filename-sans-ext "_pp_iver.sv")))
+                         (iver-out-file (concat (temporary-file-directory) filename-sans-ext "_pp_iver.sv")))
                     (setq verilog-preprocessor (concat "iverilog -E -o" iver-out-file " __FILE__ && "
                                                        "echo \"\" && " ; Add blank line between run command and first preprocessed line
                                                        "cat " iver-out-file)))))

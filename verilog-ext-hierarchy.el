@@ -4,8 +4,6 @@
 
 ;; Author: Gonzalo Larumbe <gonzalomlarumbe@gmail.com>
 ;; URL: https://github.com/gmlarumbe/verilog-ext
-;; Version: 0.2.0
-;; Package-Requires: ((emacs "28.1") (verilog-mode "2023.6.6.141322628"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -429,7 +427,7 @@ Move through headings and point at the beginning of the tag."
   (declare (indent 0) (debug t))
   `(defun ,verilog-ext-func ()
      (interactive)
-     (goto-char (line-beginning-position)) ; Required for `outline-hide-sublevels'
+     (beginning-of-line) ; Required for `outline-hide-sublevels'
      (call-interactively ,outshine-func)
      (skip-chars-forward (car (car outshine-promotion-headings)))))
 
@@ -503,7 +501,7 @@ Optional arg MODULE will set the name of the display buffer, if provided."
       (goto-char (point-min))
       (re-search-forward "// \\* ")
       (when (re-search-forward "// \\* " nil t)
-        (goto-char (line-beginning-position))
+        (beginning-of-line)
         (open-line 3)
         (forward-line 2)
         (insert "// * Not found module references")

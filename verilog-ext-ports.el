@@ -4,8 +4,6 @@
 
 ;; Author: Gonzalo Larumbe <gonzalomlarumbe@gmail.com>
 ;; URL: https://github.com/gmlarumbe/verilog-ext
-;; Version: 0.2.0
-;; Package-Requires: ((emacs "28.1") (verilog-mode "2023.6.6.141322628"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -58,7 +56,7 @@ of current port instead of toggling."
          (re (concat "\\(?1:^\\s-*\\)\\.\\(?2:" verilog-identifier-re "\\)\\(?3:\\s-*\\)\\(?4:(\\s-*\\(?5:" verilog-identifier-re "\\)*\\s-*)\\)?"))
          port-found port conn sig)
     (save-excursion
-      (goto-char (line-beginning-position))
+      (beginning-of-line)
       (if (looking-at re)
           (progn
             (setq port-found t)

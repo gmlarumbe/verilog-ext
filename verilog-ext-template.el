@@ -4,8 +4,6 @@
 
 ;; Author: Gonzalo Larumbe <gonzalomlarumbe@gmail.com>
 ;; URL: https://github.com/gmlarumbe/verilog-ext
-;; Version: 0.2.0
-;; Package-Requires: ((emacs "28.1") (verilog-mode "2023.6.6.141322628"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -461,7 +459,7 @@ Syntactic sugar for `verilog-ext-template-inst-auto-from-file'."
       (verilog-ext-replace-string "/*AUTOINSTPARAM*/" "" beg end)
       ;; Remove ' // Parameters ' string
       (forward-line 1)
-      (goto-char (line-beginning-position))
+      (beginning-of-line)
       (kill-line 1))))
 
 (defun verilog-ext-template-inst-auto-from-file (file &optional template inst-template)
@@ -657,15 +655,15 @@ endmodule // tb_<module_name>
                                   (point) (verilog-pos-at-end-of-statement)))
     (save-excursion
       (while (re-search-forward "/\\*AUTO.*\*\/" nil t)
-        (goto-char (line-beginning-position))
+        (beginning-of-line)
         (kill-line 1)))
     (save-excursion
       (while (search-forward "// Beginning of automatic" nil t)
-        (goto-char (line-beginning-position))
+        (beginning-of-line)
         (kill-line 1)))
     (save-excursion
       (while (search-forward "// End of automatics" nil t)
-        (goto-char (line-beginning-position))
+        (beginning-of-line)
         (kill-line 1)))
     (search-forward "// TODO")
     (write-file outfile)))
