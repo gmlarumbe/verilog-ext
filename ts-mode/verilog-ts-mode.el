@@ -222,7 +222,9 @@ and end position."
 
 (defun verilog-ts-nodes-block-at-point (pred)
   "Return block at point NODES that match PRED."
-  (mapcar #'car (cdr (treesit-induce-sparse-tree (verilog-ts-block-at-point) pred))))
+  (let ((block (verilog-ts-block-at-point)))
+    (when block
+      (mapcar #'car (cdr (treesit-induce-sparse-tree block pred))))))
 
 (defun verilog-ts-search-node-block-at-point (pred &optional backward all)
   "Search forward for node matching PRED inside block at point.
@@ -1525,10 +1527,13 @@ Otherwise look for functions, tasks and classes."
 
 
 ;;; Prettify
+(defconst verilog-ts-pretty-declarations-node-re "list_of_\\(net\\|variable\\)_decl_assignments")
+(defconst verilog-ts-pretty-expr-node-re "\\(non\\)?blocking_assignment")
+
 (defun verilog-ts-pretty-declarations ()
   "Line up declarations around point."
   (interactive)
-  (let* ((decl-node-re "list_of_\\(net\\|variable\\)_decl_assignments")
+  (let* ((decl-node-re verilog-ts-pretty-declarations-node-re)
          (nodes (verilog-ts-nodes-block-at-point decl-node-re))
          (indent-levels (mapcar (lambda (node)
                                   (save-excursion
@@ -1553,7 +1558,7 @@ Otherwise look for functions, tasks and classes."
 (defun verilog-ts-pretty-expr ()
   "Line up expressions around point."
   (interactive)
-  (let* ((decl-node-re "\\(non\\)?blocking_assignment")
+  (let* ((decl-node-re verilog-ts-pretty-expr-node-re)
          (align-node-re "variable_lvalue")
          (nodes (verilog-ts-nodes-block-at-point decl-node-re))
          (indent-levels (mapcar (lambda (node)
