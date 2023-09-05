@@ -4,13 +4,13 @@
 # to .github/workflows/melpazoid.yml and modifying RECIPE and EXIST_OK below.
 
 name: melpazoid
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python 3.9
       uses: actions/setup-python@v1
       with: { python-version: 3.9 }
@@ -24,7 +24,7 @@ jobs:
       env:
         LOCAL_REPO: ${{ github.workspace }}
         # RECIPE is your recipe as written for MELPA:
-        RECIPE: (verilog-ext :repo "gmlarumbe/verilog-ext" :fetcher github :files ("verilog-ext.el" "snippets"))
+        RECIPE: (verilog-ext :repo "gmlarumbe/verilog-ext" :fetcher github :files (:defaults "snippets"))
         # set this to false (or remove it) if the package isn't on MELPA:
         EXIST_OK: true
       run: echo $GITHUB_REF && make -C ~/melpazoid
