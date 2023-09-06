@@ -4,7 +4,10 @@
 # to .github/workflows/melpazoid.yml and modifying RECIPE and EXIST_OK below.
 
 name: melpazoid
-on: [push, pull_request, workflow_dispatch]
+on:
+  workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
+  schedule:
+    - cron: '0 0 * * 0' # weekly
 
 jobs:
   build:
