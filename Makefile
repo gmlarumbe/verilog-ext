@@ -1,6 +1,11 @@
 ERT_TESTS=test/scripts/ert-tests.sh
 
-all: test
+
+# DANGER: Workaround for v0.2.1 MELPA Stable Fix
+package-el-melpa-stable: test_package_el
+# End of DANGER
+
+all: test_run
 
 test: test_setup test_run
 

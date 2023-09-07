@@ -59,9 +59,7 @@ Otherwise, byte-compile."
 ;;;; Tests
 (require 'verilog-ext)
 
-(defvar verilog-ext-tests-test-dir (if (bound-and-true-p straight-base-dir)
-                                       (file-name-concat (expand-file-name straight-base-dir) "straight/repos/verilog-ext/test")
-                                     (file-name-directory (or load-file-name (buffer-file-name)))))
+(defvar verilog-ext-tests-test-dir (file-name-directory (or load-file-name (buffer-file-name))))
 (defvar verilog-ext-tests-files-dir (file-name-concat verilog-ext-tests-test-dir "files"))
 (defvar verilog-ext-tests-beautify-dir (file-name-concat verilog-ext-tests-files-dir "beautify"))
 (defvar verilog-ext-tests-common-dir (file-name-concat verilog-ext-tests-files-dir "common"))

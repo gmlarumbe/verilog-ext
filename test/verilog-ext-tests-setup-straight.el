@@ -43,6 +43,8 @@
 
 (message "Bootstraped straight")
 
+(setq straight-base-dir temporary-file-directory)
+
 
 ;;;; Integration of use-package
 (message "Installing use-package")
@@ -94,7 +96,7 @@
 ;;;; Setup package
 (message "Installing and setting up verilog-ext")
 (use-package verilog-ext
-  :straight (:host github :repo "gmlarumbe/verilog-ext"
+  :straight (:host github :repo "gmlarumbe/verilog-ext" :branch "melpa-stable-fix"
              :files (:defaults "snippets" "ts-mode/*.el"))
   :after verilog-mode
   :hook ((verilog-mode . verilog-ext-mode))
@@ -104,6 +106,26 @@
   (verilog-ext-mode-setup)
   (add-hook 'verilog-ts-mode-hook #'(lambda () ; Applies also to verilog-ts-mode since it's derived
                                       (setq treesit-font-lock-level 4))))
+
+
+;; Freeze versions
+(straight-freeze-versions)
+;; INFO: Seems that straight.el cloned the repos of the packages in the
+;; Package-Requires header, but did not automatically set the desired revisions.
+;; They were all pointing to the latest revision of the cloned repo (origin/master).
+;;
+;; According to: https://github.com/radian-software/straight.el#the-recipe-format
+;; it is necessary to use lockfiles:
+;;   - To lock a package to a specific commit, use a lockfile. See also #246 for
+;;     discussion of extensions to the recipe to support package pinning, which is a
+;;     planned feature.
+;;
+;; INFO: It is therefore necessary to go to the repos and checkout the revisions
+;; manually. Before running `straight-freeze-versions' it is also necessary that
+;; these repos are in the master branch. The simples way of achieven it is to hard
+;; reset the master to the desired tag/ref. After that, running `straight-freeze-versions'
+;; will create a lockfile in `straight-base-dir' (set to `temporary-file-directory'
+;; for debugging), which will point to the proper versions of these repos.
 
 
 (provide 'verilog-ext-tests-setup-straight)
