@@ -33,4 +33,4 @@ jobs:
 
       - name: Run ERT tests
         run: |
-          make PKG_MANAGER=package
+          make pkg_el
