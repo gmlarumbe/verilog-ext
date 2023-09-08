@@ -1,0 +1,36 @@
+name: package-el-basic
+
+on:
+  workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
+  schedule:
+    - cron: '0 0 * * *' # daily
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        emacs_version:
+          - 29.1
+    steps:
+      - name: Set up Emacs
+        # uses: purcell/setup-emacs@master
+        uses: purcell/setup-emacs@v5.0
+        with:
+          version: ${{ matrix.emacs_version }}
+
+      # Checks-out repository under $GITHUB_WORKSPACE
+      - name: Clone verilog-ext
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install binaries
+        run: |
+          test-hdl/verilog/scripts/setup-env.sh
+          test-hdl/verilog/scripts/install-ts-grammar.sh
+
+      - name: Run ERT tests
+        run: |
+          make package-el-melpa-test-basic

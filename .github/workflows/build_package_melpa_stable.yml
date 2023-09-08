@@ -1,4 +1,4 @@
-name: ERT-package-el
+name: ERT-MELPA-Stable
 
 on:
   workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
@@ -33,4 +33,11 @@ jobs:
 
       - name: Run ERT tests
         run: |
-          make pkg_el
+          # Get new tags from remote
+          git fetch --tags
+          # Get latest tag name
+          latestTag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          # Point to latest tag
+          git reset --hard $latestTag
+          # Run tests
+          make package-el-melpa-stable
