@@ -6,7 +6,7 @@
 ;; URL: https://github.com/gmlarumbe/verilog-ext
 ;; Version: 0.2.0
 ;; Keywords: Verilog, IDE, Tools
-;; Package-Requires: ((emacs "29.1") (verilog-mode "2023.6.6.141322628") (verilog-ts-mode "0.0.0") (eglot "1.9") (lsp-mode "8.0.0") (ag "0.48") (ripgrep "0.4.0") (hydra "0.15.0") (apheleia "3.1") (yasnippet "0.14.0") (company "0.9.13") (flycheck "32") (outshine "3.0.1") (async "1.9.7"))
+;; Package-Requires: ((emacs "29.1") (verilog-mode "2023.6.6.141322628") (verilog-ts-mode "0.0.0") (eglot "1.9") (lsp-mode "8.0.0") (ag "0.48") (ripgrep "0.4.0") (hydra "0.15.0") (apheleia "3.1") (yasnippet "0.14.0") (flycheck "32") (outshine "3.0.1") (async "1.9.7"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -43,7 +43,6 @@
 ;;  - Workspace tags, typedef analysis and caching
 ;;  - Time-stamp auto-configuration
 ;;  - Convert block end comments to names
-;;  - Automatically add SystemVerilog keywords to `company-keywords` backend
 ;;  - Port connections utilities
 
 ;;; Code:
@@ -72,7 +71,6 @@
                                       typedefs
                                       time-stamp
                                       block-end-comments
-                                      company-keywords
                                       ports)
   "Which Verilog-ext features to enable."
   :type '(set (const :tag "Improved syntax highlighting via `font-lock'."
@@ -111,8 +109,6 @@
                 time-stamp)
               (const :tag "Convert block end comments to names (endmodule // top → endmodule : top)"
                 block-end-comments)
-              (const :tag "Add `verilog-keywords' to `company-keywords' backend."
-                company-keywords)
               (const :tag "Port connections utilities."
                 ports))
   :group 'verilog-ext)
@@ -210,8 +206,6 @@ FEATURES can be a single feature or a list of features."
     (verilog-ext-font-lock-setup))
   (verilog-ext-when-feature 'hideshow
     (verilog-ext-hs-setup))
-  (verilog-ext-when-feature 'company-keywords
-    (verilog-ext-company-keywords-add))
   (verilog-ext-when-feature 'template
     (verilog-ext-template-add-snippets))
   (verilog-ext-when-feature 'typedefs

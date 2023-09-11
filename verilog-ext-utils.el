@@ -28,7 +28,6 @@
 (require 'xref)
 (require 'ag)
 (require 'ripgrep)
-(require 'company-keywords)
 
 ;;;; Custom
 (defcustom verilog-ext-file-extension-re "\\.s?vh?\\'"
@@ -664,11 +663,6 @@ If on a `verilog-ts-mode' buffer, run `indent-for-tab-command' with ARG."
         (t
          (error "Wrong major-mode to run `verilog-ext-tab'"))))
 
-;;;; Misc
-(defun verilog-ext-company-keywords-add ()
-  "Add `verilog-keywords' to `company-keywords' backend."
-  (dolist (mode '(verilog-mode verilog-ts-mode))
-    (add-to-list 'company-keywords-alist `(,mode ,@verilog-keywords))))
 
 (provide 'verilog-ext-utils)
 
