@@ -26,6 +26,16 @@
 
 (require 'verilog-ext-workspace)
 
+(defgroup verilog-ext-xref nil
+  "Verilog-ext xref customization."
+  :group 'verilog-ext)
+
+(defcustom verilog-ext-xref-match-face 'font-lock-warning-face
+  "Verilog-ext face used to highlight matches in xref."
+  :type '(repeat string)
+  :group 'verilog-ext-xref)
+
+
 (defun verilog-ext-xref--find-symbol (symbol type)
   "Return list of TYPE xref objects for SYMBOL."
   (let* ((table (cond ((eq type 'def)
@@ -51,7 +61,7 @@
         (setq line (plist-get loc :line))
         (setq column nil)
         (setq desc (replace-regexp-in-string (concat "\\_<" symbol "\\_>")
-                                             (propertize symbol 'face '(:foreground "goldenrod" :weight bold))
+                                             (propertize symbol 'face verilog-ext-xref-match-face)
                                              (plist-get loc :desc)
                                              :fixedcase))
         (push (xref-make desc (xref-make-file-location file line column)) xref-entries)))
