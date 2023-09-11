@@ -299,7 +299,7 @@ Show annotations using function ANNOTATION-FN.
 Verilog-ext `completion-at-point' function to be called by a wrapper function in
 the workspace."
   (interactive)
-  (let* (bounds start end completions)
+  (let (bounds start end completions)
     (cond (;; Dot completion for object methods/attributes and hierarchical references
            (setq bounds (verilog-ext-capf--dot-completion-bounds))
            (let (table-entry-value block-type)

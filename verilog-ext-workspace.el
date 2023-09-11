@@ -258,8 +258,6 @@ With current-prefix or VERBOSE, dump output log."
 
 
 ;;;; Tags
-(defvar verilog-ext-workspace-tags-current-file nil)
-
 (defun verilog-ext-workspace-get-tags (&optional verbose)
   "Get tags of current workspace.
 With current-prefix or VERBOSE, dump output log."
@@ -275,7 +273,6 @@ With current-prefix or VERBOSE, dump output log."
       (delete-file log-file))
     ;; Definitions
     (dolist (file files)
-      (setq verilog-ext-workspace-tags-current-file file)
       (with-temp-buffer
         (setq progress (/ (* num-files-processed 100) num-files))
         (setq msg (format "(%0d%%) [Tags collection] Processing %s" progress file))
@@ -312,7 +309,6 @@ With current-prefix or VERBOSE, dump output log."
     (setq table (make-hash-table :test #'equal)) ; Clean table
     (setq num-files-processed 0)
     (dolist (file files)
-      (setq verilog-ext-workspace-tags-current-file file)
       (with-temp-buffer
         (setq progress (/ (* num-files-processed 100) num-files))
         (setq msg (format "(%0d%%) [References collection] Processing %s" progress file))
@@ -329,13 +325,13 @@ With current-prefix or VERBOSE, dump output log."
                (verilog-mode)
                (verilog-ext-tags-table-push-refs :table table :defs-table verilog-ext-workspace-tags-defs-table :file file))
               (t
-               (error "Wrong backend for `verilog-ext-tags-backend'")))
-        (setq verilog-ext-workspace-tags-refs-table table))
+               (error "Wrong backend for `verilog-ext-tags-backend'"))))
       (setq num-files-processed (1+ num-files-processed)))
+    (setq verilog-ext-workspace-tags-refs-table table) ; TODO: Make sure changing order of this didn't break anything
     (setq verilog-ext-workspace-cache-tags-refs table) ; Update cache
     (verilog-ext-workspace-serialize-cache 'tags-refs)
     ;; Return value for async processing
-    (list verilog-ext-workspace-tags-defs-table verilog-ext-workspace-tags-inst-table verilog-ext-workspace-tags-refs-table)))
+    `(,verilog-ext-workspace-tags-defs-table ,verilog-ext-workspace-tags-inst-table ,verilog-ext-workspace-tags-refs-table)))
 
 (defun verilog-ext-workspace-get-tags-async (&optional verbose)
   "Create tags table asynchronously.

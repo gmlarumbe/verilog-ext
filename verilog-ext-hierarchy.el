@@ -29,8 +29,7 @@
 (require 'tree-widget)
 (require 'async)
 (require 'verilog-ext-nav)
-(when (>= emacs-major-version 29)
-  (require 'verilog-ts-mode))
+(require 'verilog-ts-mode)
 
 (defgroup verilog-ext-hierarchy nil
   "Verilog-ext hierarchy."
@@ -525,10 +524,8 @@ If these have been set before, keep their values."
   (let ((backend (or verilog-ext-hierarchy-backend
                      (cond ((executable-find "vhier")
                             'vhier)
-                           ((and (>= emacs-major-version 29)
-                                 (treesit-available-p)
-                                 (treesit-language-available-p 'verilog)
-                                 (functionp 'verilog-ts-mode))
+                           ((and (treesit-available-p)
+                                 (treesit-language-available-p 'verilog))
                             'tree-sitter)
                            (t
                             'builtin))))

@@ -209,7 +209,7 @@ the replacement text (see `replace-match' for more info)."
       (while (search-forward string endpos t)
         (replace-match to-string fixedcase)))))
 
-;;;; Dirs
+;;;; Dirs/files
 (defun verilog-ext-dir-files (dir &optional follow-symlinks ignore-dirs)
   "Find SystemVerilog files recursively on DIR.
 
@@ -247,6 +247,17 @@ search."
       (push (verilog-ext-dir-files dir follow-symlinks ignore-dirs) files))
     (when files
       (flatten-tree files))))
+
+(defun verilog-ext-filelist-from-file (file)
+  "Return filelist from FILE as a list of strings."
+  (with-temp-buffer
+    (insert-file-contents file)
+    (delete "" (split-string (buffer-substring-no-properties (point-min) (point-max)) "\n"))))
+
+(defun verilog-ext-file-from-filefile (filelist out-file)
+  "Write FILELIST to FILE as one line per file."
+  (with-temp-file out-file
+    (insert (mapconcat #'identity filelist "\n"))))
 
 
 ;;;; File modules

@@ -25,8 +25,8 @@
 ;;; Code:
 
 (require 'verilog-ext-nav)
-(when (>= emacs-major-version 29)
-  (require 'verilog-ts-mode))
+(require 'verilog-ts-mode)
+
 
 (defgroup verilog-ext-tags nil
   "Verilog-ext tags."
@@ -380,10 +380,8 @@ temp-buffer."
   "Setup tags backend depending on tree-sitter availability.
 If it has been set before, keep its value."
   (let ((backend (or verilog-ext-tags-backend
-                     (if (and (>= emacs-major-version 29)
-                              (treesit-available-p)
-                              (treesit-language-available-p 'verilog)
-                              (functionp 'verilog-ts-mode))
+                     (if (and (treesit-available-p)
+                              (treesit-language-available-p 'verilog))
                          'tree-sitter
                        'builtin))))
     (setq verilog-ext-tags-backend backend)))
