@@ -27,7 +27,6 @@ This package provides some extensions on top of the great Emacs [verilog-mode](h
 * [Highlight and align typedefs](#typedefs)
 * [Auto-configure `time-stamp`](#time-stamp)
 * [Auto-convert block end comments to names](#block-end-comments)
-* [Auto-configure `company-keywords`](#company-keywords)
 * [Port connection utilities](#port-connections)
 
 ## Installation ##
@@ -74,7 +73,6 @@ By default all features are enabled:
         typedefs
         time-stamp
         block-end-comments
-        company-keywords
         ports))
 (verilog-ext-mode-setup)
 (add-hook 'verilog-mode-hook #'verilog-ext-mode)
@@ -112,7 +110,6 @@ If installed and loaded via `use-package`:
           typedefs
           time-stamp
           block-end-comments
-          company-keywords
           ports))
   :config
   (verilog-ext-mode-setup))
@@ -396,11 +393,6 @@ For configuration see [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Time-
 Auto convert block comments to names after file saving.
 
    - `verilog-ext-block-end-comments-to-names-mode`
-
-## Company keywords ##
-
-
-Setup `company` to complete with SystemVerilog keywords.
 
 
 ## Port connections ##
