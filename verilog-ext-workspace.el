@@ -491,7 +491,6 @@ Compiles them with various verilog regexps."
 
 
 ;;;; Compilation
-;;;###autoload
 (defun verilog-ext-workspace-compile ()
   "Compile using command of `verilog-ext-workspace-compile-cmd'.
 Depending on the command, different syntax highlight will be applied.

@@ -517,7 +517,7 @@ Optional arg MODULE will set the name of the display buffer, if provided."
       (verilog-ext-hierarchy-outshine-nav-mode))
     (pop-to-buffer buf)))
 
-;;;; Common/autoloads
+;;;; Common
 (defun verilog-ext-hierarchy-setup ()
   "Setup hierarchy backend/frontend depending on available binaries/packages.
 If these have been set before, keep their values."
@@ -575,7 +575,6 @@ Optional arg MODULE will set the name of the display buffer, if provided."
           ;; Fallback
           (t (error "Must set a proper display frontend in `verilog-ext-hierarchy-frontend'")))))
 
-;;;###autoload
 (defun verilog-ext-hierarchy-current-buffer ()
   "Extract and display hierarchy for module of `current-buffer'."
   (interactive)

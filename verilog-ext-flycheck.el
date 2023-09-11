@@ -420,7 +420,6 @@ be undefined when defining the checker."
     (add-to-list 'flycheck-checkers checker))
   (verilog-ext-flycheck-set-linter verilog-ext-flycheck-linter))
 
-;;;###autoload
 (defun verilog-ext-flycheck-mode (&optional uarg)
   "`flycheck-mode' Verilog wrapper function.
 If called with UARG select among available linters and enable flycheck."
