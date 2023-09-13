@@ -15,8 +15,7 @@ jobs:
           - 29.1
     steps:
       - name: Set up Emacs
-        # uses: purcell/setup-emacs@master
-        uses: purcell/setup-emacs@v5.0
+        uses: purcell/setup-emacs@master
         with:
           version: ${{ matrix.emacs_version }}
 
