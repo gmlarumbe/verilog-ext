@@ -361,193 +361,58 @@ DANGER: Still very inefficient, removed funcall in
 
 
 
-* Tree-sitter dev
-** Pending
-*** TODO Tests refactoring
-- [ ] Refactor/reorganize and prepare to split into separate repo for verilog-ts-mode
-
-*** TODO Check treesit-language-source-alist an treesit-install-language-grammar:
-- For automatic install of the forked Verilog grammar
-- Check also the deno-ts-mode documentation for an example
-- Try to apply the same to to VHDL mode
-
-*** TODO verilog-ts-forward-sexp and backward-sexp
-- [ ] Fail if point is not over a symbol
-- [ ] Fail or do something weird if point is at a comment
-- [ ] Also happens for vhdl equivalent
-
-*** TODO Remove verilog-company-keywords and company dependency
-- Move to capf
-
+* Dev
+** TODO Tags/workspace and caches
 *** TODO Check if a after-save hook can spawn a update-async of this type thing
 - Tooslow some times?...
 - Snippet in temp file in $HOME in personal desktop computer
 
-*** TODO Move to notes the thing of doing a per project/dir cache (same as vhdl-ext or projectile)
-
-*** Hashes for cache/updating only modified files
+*** TODO Hashes for cache/updating only modified files
+- Check branch: file-hashes, or something like that
 - Create function that removes entries associated to :file in defs/inst/refs tables
-** Implemented
-*** xref
-- [X] Implement tags/refs gathering in workspace
-  - `verilog-ext-workspace-get-tags points' to `verilog-ext-workspace-get-tags'
-  - [X] Implement equivalent of verilog-ext-tags-get-definitions for tree-sitter
-  - [X] Implement equivalent of verilog-ext-tags-get-references for tree-sitter
-  - Beware the macros
-*** capf
-- [X] Implement verilog-ext-workspace-capf in workspace for tree-sitter
-  - Requires implementation of verilog-ext-tags-get-definitions/verilog-ext-tags-get-references
-  - [X] Should be possible to have more information about what is being auto-completed from the context
-    - e.g.: for dot completion, if it's a hierarchical reference, or a class attribute/method
-- [ ] Include verilog-keywords?
-  - (no need to include in company-keywords)
 
-#+begin_src elisp
-;;; Tags
-;; TODO: WIP. Might have already been implemented in verilog-ext?
-(defconst verilog-ts-declaration-re
-  (regexp-opt
-   '("module_declaration"
-     "interface_declaration"
-     "program_declaration"
-     "package_declaration"
-     "function_declaration"
-     "task_declaration"
-     "ansi_port_declaration"
-     "local_parameter_declaration"
-     "data_declaration"
-     )))
+- [ ] Idea:
+  1. Create hash table whose entries keys are files and whose values are property lists
+  2. These values prop lists have one prop that is the file hash-md5 or sha, and another that is an intermediate version of the tags table for that file
+  3. These intermediate file-associated tags tables versions are prop lists with the entries for that file
+  4. These prop lists have the properties, :tag :type :desc :line :col? Two entries will always be unique
+  5. That prop list is what will be used to construct the final hash table via `vhdl-ext-tags-table-push'
 
-;; TODO:
-;; Steps:
-;;  1- Prune tree, if needed, with the treesit-induce-sparse-tree
-;;  2- Get nodes from `verilog-ts-declaration-re'
-;;  3- For each of these nodes, with mapcar, add something similar to `verilog-ext-tags-table-add-entry'
-;;  4- Think how to implement the :parents thing, if with mapcan similar to imenu or non-recursively, with more queries
-;;  5- Iterate over all the files
-(defun verilog-ts-tags-get-definitions ()
-  ""
-  ()
-  )
-#+end_src
+- [ ] How to merge prop lists of all files into final hash table:
+  1. Check new filelist and remove entries of files that do not belong to the project anymore
+     - There should be some function in seq that allows knowing which elements are in A and not in B (similar to the opposite of intersect?)
+  2. First check which files have changed with the md5 prop
+  3. If it didn't change, use its current list.
+  4. If it changed or file is new recompute that list
 
-*** navigation
-- [ ] Finish implementing, test, check ideas, refactor code
-- [ ] verilog-ts-find-function-task-class-fwd does not work as expected:
-  - Run here: /home/gonz/.emacs.d/straight/repos/verilog-ext/test/files/common/uvm_component.svh:45
-  - It ignores the class
-- [ ] verilog-ts-goto-begin-up
      #+begin_src elisp
-   ;; TODO: Do something for when point is in "begin", like (string=
-   ;; (verilog-ts--node-at-point) "begin"), then move back point if its not
-   ;; beginning of buffer to search for new node!
-   ;; Basically Avoid getting stuck!!
+       ;; In `vhdl-ext-tags-table-push-defs-ts--recurse', since it is per file, add something like
+       (vhdl-ext-tags-intermediate-list-add :tag (vhdl-ts--node-identifier-name ts-node)
+                                            :type type
+                                            :desc (vhdl-ext-tags-desc)
+                                            :parent (vhdl-ts--node-identifier-name parent))
+
+       ;; This could be the result (e.g. for axi_if_converter)
+       '(("axi_if_converter") . (("file1.sv"
+                                  :hash "fe81ad0"
+                                  :tags ((:tag "clk" :type "signal_declaration" :desc "input clk;" :parent "ucontroller")
+                                         (...)
+                                         (...)))
+                                 ("file2.sv" ...)
+                                 ...
+                                 ))
+       ;; And later, do something like
+       ;; TODO: Consider the is-instance case
+       (dolist (tag-and-props file-tag-list)
+         (vhdl-ext-tags-table-push :table table
+                                   :tag (plist-get :tag tag-and-props)
+                                   :type (plist-get :type tag-and-props)
+                                   :desc (plist-get :desc tag-and-props)
+                                   :file file
+                                   :parent (plist-get :parent tag-and-props)))
      #+end_src
-- [ ] verilog-ts-goto-begin-down
-    #+begin_src elisp
-      ;; TODO: Doesn't work. Don't know how to make it work.
-      ;; `verilog-ts--node-has-child-recursive' doesn't find anything on current node
-      ;; Also tried with: (treesit-search-subtree (verilog-ts--node-at-point) "seq_block") but no results
-      ;; @ /home/gonz/.emacs.d/straight/repos/verilog-ext/test/files/common/uvm_component.svh:1503
-    #+end_src
-- [ ] verilog-ts-defun-level-down
-  - Not sure how to implement it
-- [ ] next and prev dwim
-  #+begin_src elisp
-    ;; TODO: Reformulate these. See if something better can be done, something more useful
-    (defun verilog-ts-nav-next-dwim ()
-      "Context based search next.
-    If in a parenthesis, go to closing parenthesis (Elisp like).
-    Otherwise move to next paragraph."
-      (interactive)
-      )
 
-    (defun verilog-ts-nav-prev-dwim ()
-      "Context based search previous.
-    If in a parenthesis, go to opening parenthesis (Elisp like).
-    Otherwise move to previous paragraph."
-      (interactive)
-      )
-  #+end_src
-
-*** beautify
-- [ ] What about the equivalents of verilog-pretty-declarations and verilog-pretty-expressions?
-  - [ ] Finish implementation so that all tests are passing
-  - [ ] Add new tests with new options
-- [ ] Prettify:
-  - verilog-ts-pretty-declarations:
-    #+begin_src elisp
-  ;; TODO: Implement for port declarations, localparams?
-  ;; TODO: Implement if region is active
-  ;; TODO: Implement tests!
-    #+end_src
-  - verilog-ts-pretty-expr
-  #+begin_src elisp
-    ;; TODO: Beware that nonblocking_assignment has no node that points to the operator (only re "<=")
-    ;; unlike blocking_assignments, that have "assignment_operator", which is "=" and can be queried!
-    ;; TODO: Implement if region is active
-    ;; TODO: Implement tests!
-  #+end_src
-- [ ] Beautify:
-  - Check the TODO in `verilog-ts-beautify-current-buffer'
-  #+begin_src elisp
-(defun verilog-ts-beautify-current-buffer ()
-  "Beautify current buffer:
-- Indent whole buffer
-- Beautify every instantiated module
-- Untabify and delete trailing whitespace"
-  (interactive)
-  (let (node)
-    (indent-region (point-min) (point-max))
-    (save-excursion
-      (goto-char (point-min))
-      (while (setq node (treesit-search-forward (verilog-ts--node-at-point) "\\(module\\|interface\\)_instantiation"))
-        (goto-char (treesit-node-start node))
-        (verilog-ts-beautify-block-at-point)
-        ;; TODO: Seems a bit redundant/inefficient. Probably there's a better way to do it
-        ;; However, it's needed to avoid and outdated node error after beautifying
-        (setq node (treesit-search-forward (verilog-ts--node-at-point) "\\(module\\|interface\\)_instantiation"))
-        (goto-char (treesit-node-end node))
-        (when (not (eobp))
-          (forward-char))))
-    (untabify (point-min) (point-max))
-    (delete-trailing-whitespace (point-min) (point-max))))
-  #+end_src
-
-*** imenu
-- Work in progress, inside verilog-ts-mode
-- [ ] /home/gonz/.emacs.d/straight/repos/verilog-ext/test/files/common/uvm_component.svh:1416
-  - Doesnt detect well typedefs
-
-*** which-func
-- Work in progress, inside verilog-ts-mode
-
-*** font-lock
-- Long work in progress
-**** TODO How to implement translate off in italic?
-;; Fontifying in blocks is bound to start/end of the block in tree-sitter parsed tree.
-;; That means that two (comment) blocks would need to be found, parsed, and one of them
-;; should contain "synthesis_translate off" and the other "synthesis_translate on".
-;; Since this seems very complex for tree-sitter, the other option could be just analyzing
-;; the whole buffer and run something like `treesit-fontify-with-override', but this doesn't
-;; seem to work. It adds text properties to text, but not sure about how to refresh it.
-
-*** hierarchy
-- Implemented
-
-*** hideshow
-- It's regexp based, so leave it in verilog-ext
-
-*** Utils
-- [ ] verilog-ts--node-identifier-name
-  - TODO: Might not work for some cases: e.g: @ test/files/common/uvm_component.svh:1498
-
-*** Indentation
-     ;; Opening. TODO: I think these are never hit?
-     ((or (node-is "{")
-          (node-is "("))
-      parent-bol 0)
-
+*** TODO Move to notes the thing of doing a per project/dir cache (same as vhdl-ext or projectile)
 
 
 * Tests
@@ -623,3 +488,44 @@ for verbosity purposes."
     (should (equal (point) 15))))
 #+end_src
 
+
+* CI
+** Comparison of melpazoid and elisp-check in all the repos
+- Melpazoid handles properly that there is only one Package-Requires in the main file
+  - elisp-checks does a per-file static linting/loading (so not valid for verilog-ext/vhdl-ext that are multifile)
+- Melpazoid runs on old Emacs versions (28.1)
+  - elisp-checks supports Emacs 29
+
+--------------------------------------------------------------------------------
+
+- verilog-ext:
+  - Cannot use elisp-check since it is a multifile package
+  - melpazoid scheduled since it fails because it only runs on 28.1
+  - In particular, for verilog-ext, both melpazoid and elisp-check fail finding the verilog-identifier-re
+    - This is because they use the builtin verilog-mode.el.gz that has not updated it, and not the GNU ELPA version
+
+- vhdl-ext:
+  - Cannot use elisp-check since it is a multifile package
+  - melpazoid scheduled since it fails because it only runs on 28.1
+
+- verilog-ts-mode:
+  - Using elisp-check as it is a single-file package
+  - melpazoid scheduled since it fails because it only runs on 28.1
+
+- vhdl-ts-mode:
+  - Using elisp-check as it is a single-file package
+  - melpazoid scheduled since it fails because it only runs on 28.1
+
+- fpga:
+  - Using elisp-check as it is a single-file package
+  - melpazoid scheduled since it fails because it only runs on 28.1
+
+- wavedrom-mode:
+  - Using elisp-check as it is a single-file package
+  - melpazoid scheduled since it fails because it only runs on 28.1
+
+--------------------------------------------------------------------------------
+
+SUMMARY:
+- melpazoid: Run scheduled to catch some linting warnings until it fails because it runs on Emacs 28.1
+- elisp-check: use for verilog-ts-mode, vhdl-ts-mode, fpga and wavedrom-mode (single files)
