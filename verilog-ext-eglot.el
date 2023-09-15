@@ -104,35 +104,6 @@
   :type 'boolean
   :safe (lambda (x) (booleanp x)))
 
-(defcustom verilog-ext-eglot-svlangserver-workspace-additional-dirs nil
-  "Additional directories to be managed by this instance of svlangserver."
-  :group 'verilog-ext-eglot-svlangserver
-  :type '(lsp-repeatable-vector string)
-  :safe (lambda (x) (seq-every-p #'stringp x)))
-
-(defcustom verilog-ext-eglot-svlangserver-bin-path "svlangserver"
-  "Svlangserver binary path."
-  :group 'verilog-ext-eglot-svlangserver
-  :type 'string
-  :safe (lambda (x) (stringp x)))
-
-(defcustom verilog-ext-eglot-svlangserver-bin-args nil
-  "Command line arguments for svlangserver binary."
-  :group 'verilog-ext-eglot-svlangserver
-  :type '(lsp-repeatable-vector string)
-  :safe (lambda (x) (seq-every-p #'stringp x)))
-
-(defcustom verilog-ext-eglot-svlangserver-node-command "node"
-  "Node binary path."
-  :group 'verilog-ext-eglot-svlangserver
-  :type 'string
-  :safe (lambda (x) (stringp x)))
-
-(defcustom verilog-ext-eglot-svlangserver-module-path "svlangserver.js"
-  "Svlangserver module path."
-  :group 'verilog-ext-eglot-svlangserver
-  :type 'string
-  :safe (lambda (x) (stringp x)))
 
 (defun verilog-ext-eglot-svlangserver-configuration ()
   "Configure settings for svlangserver with `eglot'.
