@@ -264,10 +264,8 @@ FEATURES can be a single feature or a list of features."
           (verilog-ext-block-end-comments-to-names-mode))
         (verilog-ext-when-feature 'time-stamp
           (verilog-ext-time-stamp-mode))
-        ;; Capf
         (verilog-ext-when-feature 'capf
           (verilog-ext-workspace-capf-set))
-        ;; Xref
         (verilog-ext-when-feature 'xref
           (verilog-ext-xref-set))
         ;; `verilog-mode'-only customization (exclude `verilog-ts-mode')
