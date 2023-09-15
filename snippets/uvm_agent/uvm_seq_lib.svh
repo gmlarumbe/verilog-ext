@@ -13,20 +13,15 @@ class <uvm_name>_seq_base extends uvm_sequence #(<uvm_name>_seq_item);
     endfunction
 
     task body();
-        <uvm_name>_seq_item req;
-
-        begin
-            req = <uvm_name>_seq_item::type_id::create("req");
-            // UVM sequence_item operation
-            start_item(req);
-            if (do_randomize == TRUE) begin
-                if(!req.my_randomize()) begin
-                    `uvm_error("body", "req randomization failure")
-                end
+        req = <uvm_name>_seq_item::type_id::create("req");
+        // UVM sequence_item operation
+        start_item(req);
+        if (do_randomize == TRUE) begin
+            if(!req.my_randomize()) begin
+                `uvm_error("body", "req randomization failure")
             end
-            finish_item(req);
         end
-
+        finish_item(req);
     endtask : body
 
 endclass : <uvm_name>_seq_base
