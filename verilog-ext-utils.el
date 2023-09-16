@@ -472,22 +472,25 @@ Return alist with block type, name and boundaries."
             (end-point . ,block-end-point)))))))
 
 (defconst verilog-ext-block-at-point-all-re
-  (regexp-opt
-   '("function" "endfunction" "task" "endtask" "class" "endclass"
-     "generate" "endgenerate" "module" "endmodule" "interface"
-     "endinterface" "program" "endprogram" "package" "endpackage"
-     "always" "initial" "final")
-   'symbols))
+  (eval-when-compile
+    (regexp-opt
+     '("function" "endfunction" "task" "endtask" "class" "endclass"
+       "generate" "endgenerate" "module" "endmodule" "interface"
+       "endinterface" "program" "endprogram" "package" "endpackage"
+       "always" "initial" "final")
+     'symbols)))
 
 (defconst verilog-ext-block-at-point-top-and-class-re
-  (regexp-opt
-   '("class" "package" "module" "interface" "program")
-   'symbols))
+  (eval-when-compile
+    (regexp-opt
+     '("class" "package" "module" "interface" "program")
+     'symbols)))
 
 (defconst verilog-ext-block-at-point-top-re
-  (regexp-opt
-   '("package" "module" "interface" "program")
-   'symbols))
+  (eval-when-compile
+    (regexp-opt
+     '("package" "module" "interface" "program")
+     'symbols)))
 
 (defun verilog-ext-block-at-point (&optional return-pos)
   "Return current block type and name at point.

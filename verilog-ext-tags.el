@@ -265,23 +265,24 @@ buffer."
 
 ;;;; Tree-sitter
 (defconst verilog-ext-tags-definitions-ts-re
-  (regexp-opt
-   '("module_declaration"
-     "interface_declaration"
-     "program_declaration"
-     "package_declaration"
-     "class_declaration"
-     "function_declaration"
-     "task_declaration"
-     "class_constructor_declaration"
-     "local_parameter_declaration"
-     "ansi_port_declaration"
-     "variable_decl_assignment"
-     "net_decl_assignment"
-     "class_property"
-     "module_instantiation"
-     "interface_instantiation")
-   'symbols)
+  (eval-when-compile
+    (regexp-opt
+     '("module_declaration"
+       "interface_declaration"
+       "program_declaration"
+       "package_declaration"
+       "class_declaration"
+       "function_declaration"
+       "task_declaration"
+       "class_constructor_declaration"
+       "local_parameter_declaration"
+       "ansi_port_declaration"
+       "variable_decl_assignment"
+       "net_decl_assignment"
+       "class_property"
+       "module_instantiation"
+       "interface_instantiation")
+     'symbols))
   "Regexp of tree-sitter node types to be used for tags definitions.
 
 Need to be quoted as symbols to avoid bugs: E.g:
