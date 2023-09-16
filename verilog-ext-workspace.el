@@ -158,7 +158,7 @@ Populates `verilog-ext-hierarchy-current-flat-hierarchy' for subsequent
 hierarchy extraction and display.
 
 With current-prefix or VERBOSE, dump output log."
-  (interactive "p")
+  (interactive "P")
   (let* ((files (if verilog-ext-hierarchy-builtin-dirs
                     (verilog-ext-dirs-files verilog-ext-hierarchy-builtin-dirs :follow-symlinks)
                   (verilog-ext-workspace-files :follow-symlinks)))
@@ -196,13 +196,13 @@ Populates `verilog-ext-hierarchy-current-flat-hierarchy' for subsequent
 hierarchy extraction and display.
 
 With current-prefix or VERBOSE, dump output log."
-  (interactive "p")
+  (interactive "P")
   (message "Starting hierarchy parsing for %s" (verilog-ext-workspace-root))
   (async-start
    `(lambda ()
       ,(async-inject-variables verilog-ext-async-inject-variables-re)
       (require 'verilog-ext)
-      (verilog-ext-workspace-hierarchy-parse ,verbose))
+      (verilog-ext-workspace-hierarchy-parse ,@verbose))
    (lambda (result)
      (message "Finished analyzing hierarchy!")
      (setq verilog-ext-hierarchy-current-flat-hierarchy result))))
@@ -212,7 +212,7 @@ With current-prefix or VERBOSE, dump output log."
 (defun verilog-ext-workspace-get-tags (&optional verbose)
   "Get tags of current workspace.
 With current-prefix or VERBOSE, dump output log."
-  (interactive "p")
+  (interactive "P")
   (let* ((files (verilog-ext-workspace-files :follow-symlinks))
          (num-files (length files))
          (num-files-processed 0)
@@ -278,19 +278,20 @@ With current-prefix or VERBOSE, dump output log."
       (setq num-files-processed (1+ num-files-processed)))
     (setq verilog-ext-workspace-tags-refs-table table)
     (verilog-ext-workspace-serialize verilog-ext-workspace-tags-refs-table verilog-ext-workspace-tags-refs-cache-file)
+    (message "Finished collection tags!")
     ;; Return value for async processing
     `(,verilog-ext-workspace-tags-defs-table ,verilog-ext-workspace-tags-inst-table ,verilog-ext-workspace-tags-refs-table)))
 
 (defun verilog-ext-workspace-get-tags-async (&optional verbose)
   "Create tags table asynchronously.
 With current-prefix or VERBOSE, dump output log."
-  (interactive "p")
+  (interactive "P")
   (message "Starting tag collection for %s" (verilog-ext-workspace-root))
   (async-start
    `(lambda ()
       ,(async-inject-variables verilog-ext-async-inject-variables-re)
       (require 'verilog-ext)
-      (verilog-ext-workspace-get-tags ,verbose))
+      (verilog-ext-workspace-get-tags ,@verbose))
    (lambda (result)
      (message "Finished collection tags!")
      (setq verilog-ext-workspace-tags-defs-table (car result))
@@ -346,19 +347,19 @@ in corresponding async function."
 (defun verilog-ext-workspace-typedef-update (&optional verbose)
   "Update typedef list of current workspace.
 With current-prefix or VERBOSE, dump output log."
-  (interactive "p")
+  (interactive "P")
   (verilog-ext-workspace-typedef-batch-update (verilog-ext-workspace-files :follow-symlinks) verbose))
 
 (defun verilog-ext-workspace-typedef-update-async (&optional verbose)
   "Update typedef list of current workspace asynchronously.
 With current-prefix or VERBOSE, dump output log."
-  (interactive "p")
+  (interactive "P")
   (message "Starting typedef collection for %s" (verilog-ext-workspace-root))
   (async-start
    `(lambda ()
       ,(async-inject-variables verilog-ext-async-inject-variables-re)
       (require 'verilog-ext)
-      (verilog-ext-workspace-typedef-batch-update (verilog-ext-workspace-files :follow-symlinks) ,verbose))
+      (verilog-ext-workspace-typedef-batch-update (verilog-ext-workspace-files :follow-symlinks) ,@verbose))
    (lambda (result)
      (message "Finished collection of typedefs!")
      (setq verilog-ext-typedef-align-words-re result)
