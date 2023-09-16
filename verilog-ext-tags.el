@@ -267,19 +267,34 @@ buffer."
 (defconst verilog-ext-tags-definitions-ts-re
   (eval-when-compile
     (regexp-opt
-     '("module_declaration"
+     '(;; Top blocks
+       "module_declaration"
        "interface_declaration"
        "program_declaration"
        "package_declaration"
+       ;; Classes
        "class_declaration"
+       ;; Tasks/functions
        "function_declaration"
        "task_declaration"
        "class_constructor_declaration"
-       "local_parameter_declaration"
+       ;; Method prototypes
+       "function_prototype"
+       "task_prototype"
+       "class_constructor_prototype"
+       ;; Coverage
+       "covergroup_declaration"
+       ;; Constraints
+       "constraint_declaration"
+       ;; Ports/arguments
        "ansi_port_declaration"
+       "tf_port_item1"
+       ;; Variable/net/parameter/type declarations
        "variable_decl_assignment"
        "net_decl_assignment"
-       "class_property"
+       "local_parameter_declaration"
+       "type_declaration"
+       ;; Instances
        "module_instantiation"
        "interface_instantiation")
      'symbols))
@@ -291,11 +306,21 @@ Need to be quoted as symbols to avoid bugs: E.g:
 
 Even though \"data_declaration\" would match all declarations it cannot be
 reliably used since it is too generic.  For example, it would not allow parsing
-of multiple variables declarations in one-line.
+of multiple variables declarations in one-line.  The same happens with
+\"class_property\" which is already handled by \"variable_decl_assignment\" and
+\"net_decl_assignment\".
 
 Even though \"module_instantiation\" and \"interface_instantiation\" are not
 declarations, these are only included to add items to the defs table for
 completion.")
+
+(defconst verilog-ext-tags-method-declaration-ts-re
+  (eval-when-compile
+    (regexp-opt '("task_declaration" "function_declaration" "class_constructor_declaration") 'symbols)))
+
+(defconst verilog-ext-tags-port-header-ts-re
+  (eval-when-compile
+    (regexp-opt '("variable_port_header" "net_port_header1" "interface_port_header") 'symbols)))
 
 (cl-defun verilog-ext-tags-table-push-defs-ts (&key table inst-table file)
   "Push definitions inside hash table TABLE using tree-sitter.
@@ -316,6 +341,39 @@ completion and navigation."
                                                   :node tree
                                                   :file file)))
 
+(defun verilog-ext-tags-table-push-defs-ts--type (ts-type ts-node)
+  "Return type of current TS-NODE depending on tree-sitter TS-TYPE."
+  (cond (;; Variables
+         (string-match "\\<variable_decl_assignment\\>" ts-type)
+         (treesit-node-text (verilog-ts--node-has-child-recursive (verilog-ts--node-has-parent-recursive ts-node "\\<data_declaration\\>") "\\<data_type\\>") :no-prop))
+        ;; TODO: Still not taking (random_qualifier) sibling of (data_type )into account for rand/randc attributes
+        ;; TODO: Still not taking unpacked/queue/array dimensions into account
+        (;; Nets
+         (string-match "\\<net_decl_assignment\\>" ts-type)
+         (verilog-ts--node-identifier-name (verilog-ts--node-has-parent-recursive ts-node "\\<net_declaration\\>")))
+        (;; Module/interface/program ports
+         (string-match "\\<ansi_port_declaration\\>" ts-type)
+         (treesit-node-text (treesit-search-subtree ts-node verilog-ext-tags-port-header-ts-re) :no-prop))
+        (;; Task/function arguments
+         (string-match "\\<tf_port_item1\\>" ts-type)
+         (let ((port-direction (treesit-node-text (treesit-search-subtree ts-node "\\<tf_port_direction\\>") :no-prop)))
+           (concat (when port-direction (concat port-direction " "))
+                   (treesit-node-text (treesit-search-subtree ts-node "\\<data_type_or_implicit1\\>") :no-prop))))
+        (;; Typedefs
+         (string-match "\\<type_declaration\\>" ts-type)
+         (treesit-node-text (verilog-ts--node-has-child-recursive (verilog-ts--node-has-parent-recursive ts-node "\\<data_declaration\\>") "\\<data_type\\>") :no-prop))
+        (t ;; Default
+         ts-type)))
+
+(defun verilog-ext-tags-table-push-defs-ts--parent (parent ts-type ts-node)
+  "Return parent of current TS-NODE depending on tree-sitter TS-TYPE and PARENT."
+  (cond (;; Externally defined methods
+         (and (string-match verilog-ext-tags-method-declaration-ts-re ts-type)
+              (verilog-ts--node-has-child-recursive ts-node "class_type"))
+         (verilog-ts--node-identifier-name (verilog-ts--node-has-child-recursive ts-node "class_identifier")))
+        (t ;; Default
+         (verilog-ts--node-identifier-name parent))))
+
 (cl-defun verilog-ext-tags-table-push-defs-ts--recurse (&key table inst-table node parent file)
   "Push definitions recursively inside hash table TABLE using tree-sitter.
 
@@ -330,8 +388,8 @@ INST-TABLE is the instances table, needed to separate between tags for
 completion and navigation."
   (let* ((ts-node (car node))
          (children (cdr node))
-         (type (treesit-node-type ts-node))
-         (is-instance (and type (string-match "\\(module\\|interface\\)_instantiation" type))))
+         (ts-type (treesit-node-type ts-node))
+         (is-instance (and ts-type (string-match "\\(module\\|interface\\)_instantiation" ts-type))))
     ;; Iterate over all the nodes of the tree
     (mapc (lambda (child-node)
             (verilog-ext-tags-table-push-defs-ts--recurse :table table
@@ -351,10 +409,10 @@ completion and navigation."
                                        :parent (verilog-ts--node-identifier-name parent))
         (verilog-ext-tags-table-push :table table
                                      :tag (verilog-ts--node-identifier-name ts-node)
-                                     :type type
+                                     :type (verilog-ext-tags-table-push-defs-ts--type ts-type ts-node)
                                      :desc (verilog-ext-tags-desc)
                                      :file file
-                                     :parent (verilog-ts--node-identifier-name parent))))))
+                                     :parent (verilog-ext-tags-table-push-defs-ts--parent parent ts-type ts-node))))))
 
 (cl-defun verilog-ext-tags-table-push-refs-ts (&key table defs-table file)
   "Push references inside hash table TABLE using tree-sitter.

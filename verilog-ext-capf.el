@@ -285,11 +285,30 @@ Get candidate type from DEFS-TABLE, or if not found, from INST-TABLE."
   (let* ((entry (or (and defs-table (gethash cand defs-table))
                     (and inst-table (gethash cand inst-table))))
          (locs (plist-get entry :locs))
-         (type (plist-get (car locs) :type)))
-    (pcase type
-      ("function" "<f>")
-      ("task"     "<t>")
-      (_ type))))
+         (type (plist-get (car locs) :type))) ; TODO: Getting the type of the first appearance
+    (cond (;; Type
+           type
+           (pcase type
+             ;; Builtin
+             ("function" "<f>")
+             ("task"     "<t>")
+             ;; Tree-sitter
+             ("module_declaration"            "<mod>")
+             ("interface_declaration"         "<itf>")
+             ("program_declaration"           "<pgm>")
+             ("package_declaration"           "<pkg>")
+             ("class_declaration"             "<cls>")
+             ("function_declaration"          "<f>")
+             ("task_declaration"              "<t>")
+             ("class_constructor_declaration" "<f>")
+             ("constraint_declaration"        "<constraint>")
+             ("covergroup_declaration"        "<covergroup>")
+             (_ type)))
+          (;; Keywords
+           (member cand verilog-keywords)
+           "<kwd>")
+          (t ;; Default
+           nil))))
 
 (cl-defun verilog-ext-capf (&key defs-table inst-table refs-table annotation-fn)
   "Complete with identifiers present in DEFS-TABLE, INST-TABLE and REFS-TABLE.
