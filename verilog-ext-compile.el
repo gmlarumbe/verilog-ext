@@ -229,11 +229,9 @@ ARGS is a property list."
 Choose among different available programs and update `verilog-preprocessor'
 variable."
   (interactive)
-  (let (tools-available)
-    (dolist (tool '("verilator" "vppreproc" "iverilog"))
-      (when (executable-find tool)
-        (push tool tools-available)))
-    (setq tools-available (reverse tools-available))
+  (let ((tools-available (seq-filter (lambda (bin)
+                                       (executable-find bin))
+                                     '("verilator" "iverilog" "vppreproc"))))
     (pcase (completing-read "Select tool: " tools-available)
       ;; Verilator
       ("verilator" (setq verilog-preprocessor "verilator -E __FLAGS__ __FILE__"))

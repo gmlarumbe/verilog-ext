@@ -174,7 +174,7 @@ Return a list of the enum labels."
         (if typedef
             (insert (read-string "Type Name: ") ";")
           (insert (read-string "Enum Name: ") ";"))))
-    (reverse enum-labels)))
+    (nreverse enum-labels)))
 
 (defun verilog-ext-template-struct-typedef (&optional typedef union)
   "Insert struct template.

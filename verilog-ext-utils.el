@@ -281,7 +281,7 @@ be used in optimization of font-lock and imenu."
     (if modules
         (setq verilog-ext-file-allows-instances t)
       (setq verilog-ext-file-allows-instances nil))
-    (reverse (delete-dups modules))))
+    (nreverse (delete-dups modules))))
 
 (defun verilog-ext-read-file-modules (&optional file)
   "Find modules in current buffer.

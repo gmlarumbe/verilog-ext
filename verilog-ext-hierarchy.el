@@ -291,12 +291,12 @@ declaration."
       (insert-file-contents file)
       (verilog-ts-mode)
       (setq module-nodes (verilog-ts-module-declarations-nodes-current-buffer))
-      (dolist (module-node module-nodes)
+      (dolist (module-node module-nodes module-instances-alist)
         (setq instances nil)
-        (dolist (inst-node (verilog-ts-module-instances-nodes module-node))
-          (push (concat (verilog-ts--node-identifier-name inst-node) ":" (verilog-ts--node-instance-name inst-node)) instances))
-        (push `(,(verilog-ts--node-identifier-name module-node) ,@(reverse instances)) module-instances-alist))
-      module-instances-alist)))
+        (push `(,(verilog-ts--node-identifier-name module-node)
+                ,@(dolist (inst-node (verilog-ts-module-instances-nodes module-node) (nreverse instances))
+                    (push (concat (verilog-ts--node-identifier-name inst-node) ":" (verilog-ts--node-instance-name inst-node)) instances)))
+              module-instances-alist)))))
 
 (defun verilog-ext-hierarchy-tree-sitter-extract (module)
   "Extract hierarchy of MODULE using tree-sitter as a backend.
@@ -323,13 +323,12 @@ declaration."
       (insert-file-contents file)
       (verilog-mode)
       (setq modules (verilog-ext-scan-buffer-modules))
-      (dolist (module modules)
+      (dolist (module modules module-instances-alist)
         (setq instances nil)
         (goto-char (cadr module))
         (while (verilog-ext-find-module-instance-fwd (caddr module))
           (push (concat (match-string-no-properties 1) ":" (match-string-no-properties 2)) instances))
-        (push `(,(car module) ,@(reverse instances)) module-instances-alist))
-      module-instances-alist)))
+        (push `(,(car module) ,@(nreverse instances)) module-instances-alist)))))
 
 (defun verilog-ext-hierarchy-builtin-extract (module)
   "Extract hierarchy of MODULE using builtin Elisp backend.
