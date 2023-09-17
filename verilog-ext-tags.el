@@ -318,10 +318,6 @@ completion.")
   (eval-when-compile
     (regexp-opt '("task_declaration" "function_declaration" "class_constructor_declaration") 'symbols)))
 
-(defconst verilog-ext-tags-port-header-ts-re
-  (eval-when-compile
-    (regexp-opt '("variable_port_header" "net_port_header1" "interface_port_header") 'symbols)))
-
 (cl-defun verilog-ext-tags-table-push-defs-ts (&key table inst-table file)
   "Push definitions inside hash table TABLE using tree-sitter.
 
@@ -341,38 +337,20 @@ completion and navigation."
                                                   :node tree
                                                   :file file)))
 
-(defun verilog-ext-tags-table-push-defs-ts--type (ts-type ts-node)
-  "Return type of current TS-NODE depending on tree-sitter TS-TYPE."
-  (cond (;; Variables
-         (string-match "\\<variable_decl_assignment\\>" ts-type)
-         (treesit-node-text (verilog-ts--node-has-child-recursive (verilog-ts--node-has-parent-recursive ts-node "\\<data_declaration\\>") "\\<data_type\\>") :no-prop))
-        ;; TODO: Still not taking (random_qualifier) sibling of (data_type )into account for rand/randc attributes
-        ;; TODO: Still not taking unpacked/queue/array dimensions into account
-        (;; Nets
-         (string-match "\\<net_decl_assignment\\>" ts-type)
-         (verilog-ts--node-identifier-name (verilog-ts--node-has-parent-recursive ts-node "\\<net_declaration\\>")))
-        (;; Module/interface/program ports
-         (string-match "\\<ansi_port_declaration\\>" ts-type)
-         (treesit-node-text (treesit-search-subtree ts-node verilog-ext-tags-port-header-ts-re) :no-prop))
-        (;; Task/function arguments
-         (string-match "\\<tf_port_item1\\>" ts-type)
-         (let ((port-direction (treesit-node-text (treesit-search-subtree ts-node "\\<tf_port_direction\\>") :no-prop)))
-           (concat (when port-direction (concat port-direction " "))
-                   (treesit-node-text (treesit-search-subtree ts-node "\\<data_type_or_implicit1\\>") :no-prop))))
-        (;; Typedefs
-         (string-match "\\<type_declaration\\>" ts-type)
-         (treesit-node-text (verilog-ts--node-has-child-recursive (verilog-ts--node-has-parent-recursive ts-node "\\<data_declaration\\>") "\\<data_type\\>") :no-prop))
-        (t ;; Default
-         ts-type)))
+(defun verilog-ext-tags-table-push-defs-ts--parent (ts-node ts-type parent-node)
+  "Return parent identifier of TS-NODE.
 
-(defun verilog-ext-tags-table-push-defs-ts--parent (parent ts-type ts-node)
-  "Return parent of current TS-NODE depending on tree-sitter TS-TYPE and PARENT."
+PARENT-NODE is the default parent for TS-NODE.
+
+TS-TYPE is provided to avoid an additional call to `treesit-node-type' since
+this function is synctactic sugar for
+`verilog-ext-tags-table-push-defs-ts--recurse'."
   (cond (;; Externally defined methods
          (and (string-match verilog-ext-tags-method-declaration-ts-re ts-type)
               (verilog-ts--node-has-child-recursive ts-node "class_type"))
          (verilog-ts--node-identifier-name (verilog-ts--node-has-child-recursive ts-node "class_identifier")))
         (t ;; Default
-         (verilog-ts--node-identifier-name parent))))
+         (verilog-ts--node-identifier-name parent-node))))
 
 (cl-defun verilog-ext-tags-table-push-defs-ts--recurse (&key table inst-table node parent file)
   "Push definitions recursively inside hash table TABLE using tree-sitter.
@@ -409,10 +387,10 @@ completion and navigation."
                                        :parent (verilog-ts--node-identifier-name parent))
         (verilog-ext-tags-table-push :table table
                                      :tag (verilog-ts--node-identifier-name ts-node)
-                                     :type (verilog-ext-tags-table-push-defs-ts--type ts-type ts-node)
+                                     :type (verilog-ts--node-identifier-type ts-node)
                                      :desc (verilog-ext-tags-desc)
                                      :file file
-                                     :parent (verilog-ext-tags-table-push-defs-ts--parent parent ts-type ts-node))))))
+                                     :parent (verilog-ext-tags-table-push-defs-ts--parent ts-node ts-type parent))))))
 
 (cl-defun verilog-ext-tags-table-push-refs-ts (&key table defs-table file)
   "Push references inside hash table TABLE using tree-sitter.
