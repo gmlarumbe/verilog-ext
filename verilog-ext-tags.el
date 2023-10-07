@@ -40,7 +40,7 @@
 
 
 ;;;; Common
-(cl-defun verilog-ext-tags-table-push (&key table tag type desc file parent)
+(cl-defun verilog-ext-tags-table-push (&key table tag type desc file line col parent)
   "Add entry for TAG in hash-table TABLE.
 
 It is needed to provide TYPE, description DESC and FILE properties to add the
@@ -63,22 +63,23 @@ existing one with current location properties."
         (puthash parent parent-value table)))
     ;; Next add the tag if it was not present in the table or update existing tag properties if it was present.
     (if (not tag-value)
-        (puthash tag `(:items nil :locs (,(verilog-ext-tags-locs-props type desc file))) table)
+        (puthash tag `(:items nil :locs (,(verilog-ext-tags-locs-props type desc file (line-number-at-pos) (current-column)))) table)
       (setq locs-plist (plist-get tag-value :locs))
-      (setq loc-new (verilog-ext-tags-locs-props type desc file))
+      (setq loc-new (verilog-ext-tags-locs-props type desc file (line-number-at-pos) (current-column)))
       (unless (member loc-new locs-plist)
         (push loc-new locs-plist)
         (plist-put tag-value :locs locs-plist)
         (puthash tag `(:items ,(plist-get tag-value :items) :locs ,locs-plist) table)))))
 
-(defun verilog-ext-tags-locs-props (type desc &optional file)
+(defun verilog-ext-tags-locs-props (type desc file line col)
   "Return :locs properties for current tag.
 
-These include tag TYPE, description DESC, the FILE and current line."
+These include tag TYPE, description DESC, the FILE, current LINE and COL."
   `(:type ,type
     :desc ,desc
-    :file ,(or file buffer-file-name)
-    :line ,(line-number-at-pos)))
+    :file ,file
+    :line ,line
+    :col ,col))
 
 (defun verilog-ext-tags-desc ()
   "Return string description for tag at point.
@@ -293,7 +294,12 @@ buffer."
        "variable_decl_assignment"
        "net_decl_assignment"
        "local_parameter_declaration"
+       "parameter_declaration"
        "type_declaration"
+       ;; Defines
+       "text_macro_definition"
+       ;; Enum labels
+       "enum_name_declaration"
        ;; Instances
        "module_instantiation"
        "interface_instantiation")
@@ -367,7 +373,10 @@ completion and navigation."
   (let* ((ts-node (car node))
          (children (cdr node))
          (ts-type (treesit-node-type ts-node))
-         (is-instance (and ts-type (string-match "\\(module\\|interface\\)_instantiation" ts-type))))
+         (is-instance (and ts-type (string-match "\\(module\\|interface\\)_instantiation" ts-type)))
+         (is-typedef-class (and ts-type
+                                (string-match "\\<type_declaration\\>" ts-type)
+                                (string-match (concat "typedef\\s-+class\\s-+" verilog-identifier-re "\\s-*;") (treesit-node-text ts-node :no-prop)))))
     ;; Iterate over all the nodes of the tree
     (mapc (lambda (child-node)
             (verilog-ext-tags-table-push-defs-ts--recurse :table table
@@ -377,7 +386,7 @@ completion and navigation."
                                                           :file file))
           children)
     ;; Push definitions of current node
-    (when ts-node ; root ts-node will be nil
+    (when (and ts-node (not is-typedef-class)) ; root ts-node will be nil
       (goto-char (treesit-node-start ts-node))
       (if is-instance
           (verilog-ext-tags-table-push :table inst-table
