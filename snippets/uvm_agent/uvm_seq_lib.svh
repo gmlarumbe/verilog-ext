@@ -18,7 +18,7 @@ class <uvm_name>_seq_base extends uvm_sequence #(<uvm_name>_seq_item);
         start_item(req);
         if (do_randomize == TRUE) begin
             if(!req.my_randomize()) begin
-                `uvm_error("body", "req randomization failure")
+                `uvm_fatal("body", "req randomization failure")
             end
         end
         finish_item(req);

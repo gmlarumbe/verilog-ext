@@ -8,6 +8,7 @@ class <uvm_name>_monitor extends uvm_component;
     // Methods
     extern function new(string name = "<uvm_name>_monitor", uvm_component parent = null);
     extern function void build_phase(uvm_phase phase);
+    extern function void connect_phase(uvm_phase phase);
     extern task run_phase(uvm_phase phase);
     extern function void notify_transaction(<uvm_name>_seq_item item);
 
@@ -23,13 +24,14 @@ endfunction
 
 
 function void <uvm_name>_monitor::build_phase(uvm_phase phase);
-    if (!uvm_config_db #(<uvm_name>_agent_config)::get(this, "", "<uvm_name>_agent_config", m_cfg)) begin
-        `uvm_fatal("CONFIG_LOAD", $sformatf("Cannot get <uvm_name>_agent_config from uvm_config_db."))
-    end
-    m_bfm = m_cfg.mon_bfm;
-    m_bfm.proxy = this;
     ap = new("ap", this);
 endfunction : build_phase
+
+
+function void axi_lite_monitor::connect_phase(uvm_phase phase);
+    m_bfm = m_cfg.mon_bfm;
+    m_bfm.proxy = this;
+endfunction: connect_phase
 
 
 task <uvm_name>_monitor::run_phase(uvm_phase phase);

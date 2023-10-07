@@ -1,4 +1,4 @@
-class <uvm_name>_driver extends uvm_driver #(<uvm_name>_seq_item, <uvm_name>_seq_item);
+class <uvm_name>_driver extends uvm_driver #(<uvm_name>_seq_item);
     `uvm_component_utils(<uvm_name>_driver)
 
     // Data Members
@@ -8,6 +8,7 @@ class <uvm_name>_driver extends uvm_driver #(<uvm_name>_seq_item, <uvm_name>_seq
     // Methods
     extern function new(string name = "<uvm_name>_driver", uvm_component parent = null);
     extern function void build_phase(uvm_phase phase);
+    extern function void connect_phase(uvm_phase phase);
     extern task run_phase(uvm_phase phase);
 
 endclass : <uvm_name>_driver
@@ -22,17 +23,16 @@ endfunction
 
 
 function void <uvm_name>_driver::build_phase(uvm_phase phase);
-    super.build_phase(phase);
-    if (!uvm_config_db #(<uvm_name>_agent_config)::get(this, "", "<uvm_name>_agent_config", m_cfg)) begin
-        `uvm_fatal("CONFIG_LOAD", $sformatf("Cannot get <uvm_name>_agent_config from uvm_config_db."))
-    end
-    m_bfm = m_cfg.drv_bfm;
 endfunction : build_phase
+
+
+function void axi_lite_driver::connect_phase(uvm_phase phase);
+    m_bfm = m_cfg.drv_bfm;
+endfunction: connect_phase
 
 
 task <uvm_name>_driver::run_phase(uvm_phase phase);
     <uvm_name>_seq_item req;
-    <uvm_name>_seq_item rsp;
 
     m_bfm.init_values();
 
