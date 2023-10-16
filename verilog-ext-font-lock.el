@@ -271,7 +271,7 @@ obj.method();"
      '("begin" "end" "this"))))
 
 ;; Once UVM dir has been set, obtained through:
-;;   (verilog-ext-workspace-typedef-batch-update (verilog-ext-dir-files "/home/user/UVM/src/"))
+;;   (verilog-ext-typedef-batch-update (verilog-ext-dir-files "/home/user/UVM/src/"))
 ;;   And check value of: `verilog-ext-typedef-align-words'
 (defconst verilog-ext-font-lock-uvm-classes
   (eval-when-compile

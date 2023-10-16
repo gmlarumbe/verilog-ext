@@ -24,6 +24,8 @@
 
 ;;; Code:
 
+(require 'async)
+(require 'map)
 (require 'verilog-ext-nav)
 (require 'verilog-ts-mode)
 
@@ -38,13 +40,80 @@
                  (const :tag "Built-in"    builtin))
   :group 'verilog-ext-tags)
 
+(defcustom verilog-ext-tags-fontify-matches t
+  "Set to non-nil to fontify matches for xref.
+
+This setting slightly increases processing time of `verilog-ext-tags-get'."
+  :type 'boolean
+  :group 'verilog-ext)
+
+
+(defvar verilog-ext-tags-file-hashes nil)
+
+(defvar verilog-ext-tags-defs-table nil)
+(defvar verilog-ext-tags-refs-table nil)
+(defvar verilog-ext-tags-inst-table nil)
+
+(defvar verilog-ext-tags-defs-file-tables nil)
+(defvar verilog-ext-tags-inst-file-tables nil)
+(defvar verilog-ext-tags-refs-file-tables nil)
+
+(defvar verilog-ext-tags-defs-current-file nil)
+(defvar verilog-ext-tags-inst-current-file nil)
+(defvar verilog-ext-tags-refs-current-file nil)
+
+(defconst verilog-ext-tags-defs-file-tables-cache-file (file-name-concat verilog-ext-cache-dir "defs-file-tables")
+  "The file where `verilog-ext' defs-file-tables will be written to.")
+(defconst verilog-ext-tags-refs-file-tables-cache-file (file-name-concat verilog-ext-cache-dir "refs-file-tables")
+  "The file where `verilog-ext' refs-file-tables will be written to.")
+(defconst verilog-ext-tags-inst-file-tables-cache-file (file-name-concat verilog-ext-cache-dir "inst-file-tables")
+  "The file where `verilog-ext' inst-file-tables will be written to.")
+
+(defconst verilog-ext-tags-defs-table-cache-file (file-name-concat verilog-ext-cache-dir "defs-table")
+  "The file where `verilog-ext' defs-table will be written to.")
+(defconst verilog-ext-tags-refs-table-cache-file (file-name-concat verilog-ext-cache-dir "refs-table")
+  "The file where `verilog-ext' refs-table will be written to.")
+(defconst verilog-ext-tags-inst-table-cache-file (file-name-concat verilog-ext-cache-dir "inst-table")
+  "The file where `verilog-ext' inst-table will be written to.")
+
+(defconst verilog-ext-tags-file-hashes-cache-file (file-name-concat verilog-ext-cache-dir "file-hashes")
+  "The file where `verilog-ext' file-hashes will be written to.")
+
+(defconst verilog-ext-tags-cache-log-file (file-name-concat verilog-ext-cache-dir "tags.log"))
+
+(defconst verilog-ext-tags-async-inject-variables-re
+  (eval-when-compile
+    (regexp-opt '("load-path"
+                  "buffer-file-name"
+                  "default-directory"
+                  "verilog-ext-feature-list"
+                  "verilog-ext-project-alist"
+                  "verilog-ext-tags-backend")
+                'symbols)))
+
 
 ;;;; Common
-(cl-defun verilog-ext-tags-table-push (&key table tag type desc file line col parent)
+(defsubst verilog-ext-tags-locs-props (type desc file line col)
+  "Return :locs properties for current tag.
+
+These include tag TYPE, description DESC, the FILE, current LINE and COL."
+  `(:type ,type
+    :desc ,desc
+    :file ,file
+    :line ,line
+    :col ,col))
+
+(defsubst verilog-ext-tags-desc ()
+  "Return string description for tag at point.
+
+The description determines what `xref' will show when a match is found."
+  (buffer-substring (line-beginning-position) (line-end-position)))
+
+(cl-defsubst verilog-ext-tags-table-push (&key table tag type desc file line col parent)
   "Add entry for TAG in hash-table TABLE.
 
-It is needed to provide TYPE, description DESC and FILE properties to add the
-entry in the table.
+It is needed to provide TYPE, description DESC, FILE, LINE and COL properties to
+add the entry in the table.
 
 Optional arg PARENT is the module where TAG is defined/instantiated for dot
 completion.
@@ -63,51 +132,58 @@ existing one with current location properties."
         (puthash parent parent-value table)))
     ;; Next add the tag if it was not present in the table or update existing tag properties if it was present.
     (if (not tag-value)
-        (puthash tag `(:items nil :locs (,(verilog-ext-tags-locs-props type desc file (line-number-at-pos) (current-column)))) table)
+        (puthash tag `(:items nil :locs (,(verilog-ext-tags-locs-props type desc file line col))) table)
       (setq locs-plist (plist-get tag-value :locs))
-      (setq loc-new (verilog-ext-tags-locs-props type desc file (line-number-at-pos) (current-column)))
+      (setq loc-new (verilog-ext-tags-locs-props type desc file line col))
       (unless (member loc-new locs-plist)
         (push loc-new locs-plist)
         (plist-put tag-value :locs locs-plist)
         (puthash tag `(:items ,(plist-get tag-value :items) :locs ,locs-plist) table)))))
 
-(defun verilog-ext-tags-locs-props (type desc file line col)
-  "Return :locs properties for current tag.
+(defun verilog-ext-tags-table-remove-file-locs (file file-tables table)
+  "Remove FILE tag locations in TABLE.
 
-These include tag TYPE, description DESC, the FILE, current LINE and COL."
-  `(:type ,type
-    :desc ,desc
-    :file ,file
-    :line ,line
-    :col ,col))
+FILE-TABLES is the intermediate variable with a per-file hash table for current
+project."
+  (when (and file-tables
+             (gethash file file-tables)
+             table)
+    (let ((file-tag-locs-table (gethash file file-tables))
+          items-and-locs locs tag-loc)
+      (maphash (lambda (key value)
+                 (setq items-and-locs (gethash (car key) table))
+                 (setq locs (plist-get items-and-locs :locs))
+                 (setq tag-loc (verilog-ext-tags-locs-props (plist-get value :type)
+                                                            (plist-get value :desc)
+                                                            (plist-get (cdr key) :file)
+                                                            (plist-get (cdr key) :line)
+                                                            (plist-get value :col)))
+                 (when (member tag-loc locs)
+                   (setf (cl-getf items-and-locs :locs) (remove tag-loc locs)))
+                 (when (not (plist-get items-and-locs :locs))
+                   (remhash (car key) table)))
+               file-tag-locs-table))))
 
-(defun verilog-ext-tags-desc ()
-  "Return string description for tag at point.
+(defun verilog-ext-tags-add-file-locs (file file-tables table)
+  "Add FILE tag locations in TABLE.
 
-The descriptin determines what `xref' will show when a match is found."
-  (string-trim (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
-
-(defun verilog-ext-tags-is-def-p (tag defs-table file pos)
-  "Return non-nil if TAG is a definition in DEFS-TABLE.
-
-TAG is a definition if:
- 1) It is present in DEFS-TABLE
- 2) Its entry property list in DEFS-TABLE has the same :file and :line values
-
-Use FILE and POS arguments for comparison."
-  (let (existing-def existing-def-props)
-    (and defs-table
-         (setq existing-def (gethash tag defs-table))
-         (setq existing-def-props (plist-get existing-def :locs))
-         (progn (catch 'exit
-                  (dolist (prop-list existing-def-props)
-                    (when (and (eq (plist-get prop-list :file) file)
-                               (eq (plist-get prop-list :line) (line-number-at-pos pos)))
-                      (throw 'exit t))))))))
+FILE-TABLES is the intermediate variable with a per-file hash table for current
+project."
+  (let ((file-table (gethash file file-tables)))
+    (maphash (lambda (key value)
+               (verilog-ext-tags-table-push :table table
+                                            :tag (car key)
+                                            :type (plist-get value :type)
+                                            :desc (plist-get value :desc)
+                                            :file (plist-get (cdr key) :file)
+                                            :line (plist-get (cdr key) :line)
+                                            :col (plist-get value :col)
+                                            :parent (plist-get value :parent)))
+             file-table)))
 
 
 ;;;; Builtin
-(cl-defun verilog-ext-tags-table-push-defs (&key tag-type table file start limit parent inst-table)
+(cl-defun verilog-ext-tags-table-push-defs (&key tag-type file start limit parent)
   "Push definitions of TAG-TYPE inside hash table TABLE.
 
 FILE might be specified for the cases when a temp-buffer without an associated
@@ -116,12 +192,8 @@ file is being parsed.
 Limit search between START and LIMIT if provided, otherwise search the whole
 buffer.
 
-PARENT is the module where TAG is defined/instantiated for dot completion.
-
-INST-TABLE is the instances table, needed to separate between tags for
-completion and navigation."
+PARENT is the module where TAG is defined/instantiated for dot completion."
   (let ((ignore-paren-decl (eq tag-type 'declarations-no-parens))
-        (inst-table (or inst-table (make-hash-table :test #'equal)))
         tag type data inner-start inner-limit)
     (unless start (setq start (point-min)))
     (unless limit (setq limit (point-max)))
@@ -138,62 +210,70 @@ completion and navigation."
                                        (when ignore-paren-decl
                                          (verilog-in-parenthesis-p))
                                        (not tag))
-                             (verilog-ext-tags-table-push :table table
-                                                          :tag tag
-                                                          :type type
-                                                          :desc (verilog-ext-tags-desc)
-                                                          :file file
-                                                          :parent parent))))
+                             (puthash `(,tag
+                                        :file ,file
+                                        :line ,(line-number-at-pos))
+                                      `(:type ,type
+                                        :desc ,(verilog-ext-tags-desc)
+                                        :col ,(current-column)
+                                        :parent ,parent)
+                                      verilog-ext-tags-defs-current-file))))
           ('tf (while (setq data (verilog-ext-find-function-task-fwd limit))
                  (setq tag (match-string-no-properties 1))
-                 (verilog-ext-tags-table-push :table table
-                                              :tag tag
-                                              :type (alist-get 'type data)
-                                              :desc (verilog-ext-tags-desc)
-                                              :file file
-                                              :parent parent)
+                 (puthash `(,tag
+                            :file ,file
+                            :line ,(line-number-at-pos))
+                          `(:type ,(alist-get 'type data)
+                            :desc ,(verilog-ext-tags-desc)
+                            :col ,(current-column)
+                            :parent ,parent)
+                          verilog-ext-tags-defs-current-file)
                  (save-excursion ; Get tasks and function declarations
                    (when (< (setq inner-start (alist-get 'pos data))
                             (setq inner-limit (save-excursion
                                                 (verilog-re-search-backward "\\<\\(function\\|task\\)\\>" (line-beginning-position) :no-error)
                                                 (verilog-ext-pos-at-forward-sexp))))
                      (verilog-ext-tags-table-push-defs :tag-type 'declarations-no-parens
-                                                       :table table
                                                        :file file
                                                        :start inner-start
                                                        :limit inner-limit
                                                        :parent tag)))))
           ('instances (while (verilog-ext-find-module-instance-fwd limit)
-                        (verilog-ext-tags-table-push :table inst-table
-                                                     :tag (match-string-no-properties 2)
-                                                     :type (match-string-no-properties 1)
-                                                     :desc (verilog-ext-tags-desc)
-                                                     :file file
-                                                     :parent parent)))
+                        (puthash `(,(match-string-no-properties 2)
+                                   :file ,file
+                                   :line ,(line-number-at-pos))
+                                 `(:type ,(match-string-no-properties 1)
+                                   :desc ,(verilog-ext-tags-desc)
+                                   :col ,(current-column)
+                                   :parent ,parent)
+                                 verilog-ext-tags-inst-current-file)))
           ('structs (while (setq data (verilog-ext-find-struct))
                       (setq tag (alist-get 'name data))
-                      (verilog-ext-tags-table-push :table table
-                                                   :tag tag
-                                                   :type "struct"
-                                                   :desc (verilog-ext-tags-desc)
-                                                   :file file
-                                                   :parent parent)
+                      (puthash `(,tag
+                                 :file ,file
+                                 :line ,(line-number-at-pos))
+                               `(:type "struct"
+                                 :desc ,(verilog-ext-tags-desc)
+                                 :col ,(current-column)
+                                 :parent ,parent)
+                               verilog-ext-tags-defs-current-file)
                       (save-excursion ; Get struct items
                         (verilog-ext-backward-syntactic-ws)
                         (verilog-ext-tags-table-push-defs :tag-type 'declarations
-                                                          :table table
                                                           :file file
                                                           :start (verilog-ext-pos-at-backward-sexp)
                                                           :limit (point)
                                                           :parent tag))))
           ('classes (while (setq data (verilog-ext-find-class-fwd limit))
                       (setq tag (alist-get 'name data))
-                      (verilog-ext-tags-table-push :table table
-                                                   :tag tag
-                                                   :type "class"
-                                                   :desc (verilog-ext-tags-desc)
-                                                   :file file
-                                                   :parent parent)
+                      (puthash `(,tag
+                                 :file ,file
+                                 :line ,(line-number-at-pos))
+                               `(:type "class"
+                                 :desc ,(verilog-ext-tags-desc)
+                                 :col ,(current-column)
+                                 :parent ,parent)
+                               verilog-ext-tags-defs-current-file)
                       ;; Get class items
                       (save-excursion
                         (verilog-re-search-backward "\\<class\\>" nil :no-error)
@@ -201,7 +281,6 @@ completion and navigation."
                         (setq inner-limit (verilog-ext-pos-at-forward-sexp)))
                       (dolist (defs '(declarations-no-parens tf structs))
                         (verilog-ext-tags-table-push-defs :tag-type defs
-                                                          :table table
                                                           :file file
                                                           :start inner-start
                                                           :limit inner-limit
@@ -209,11 +288,13 @@ completion and navigation."
           ('top-items (while (verilog-re-search-forward verilog-ext-top-re nil :no-error)
                         (setq tag (match-string-no-properties 3))
                         (setq type (match-string-no-properties 1))
-                        (verilog-ext-tags-table-push :table table
-                                                     :tag tag
-                                                     :type type
-                                                     :desc (verilog-ext-tags-desc)
-                                                     :file file)
+                        (puthash `(,tag
+                                   :file ,file
+                                   :line ,(line-number-at-pos))
+                                 `(:type ,type
+                                   :desc ,(verilog-ext-tags-desc)
+                                   :col ,(current-column))
+                                 verilog-ext-tags-defs-current-file)
                         ;; Get top-block items
                         (setq inner-start (match-beginning 1))
                         (save-excursion
@@ -224,44 +305,37 @@ completion and navigation."
                             (setq top-items-defs `(,@top-items-defs instances)))
                           (dolist (defs top-items-defs)
                             (verilog-ext-tags-table-push-defs :tag-type defs
-                                                              :table table
                                                               :file file
                                                               :start inner-start
                                                               :limit inner-limit
-                                                              :parent tag
-                                                              :inst-table inst-table)))))
+                                                              :parent tag)))))
           (_ (error "Unsupported tag type")))))))
 
-(cl-defun verilog-ext-tags-table-push-refs (&key table defs-table file start limit)
+(defun verilog-ext-tags-table-push-refs (file)
   "Push references inside hash table TABLE.
 
-Table DEFS-TABLE is used to filter out references that have already been parsed
-as definitions.
-
 FILE can be provided for the case when references are fetched from a
-temp-buffer.
-
-Limit search between START and LIMIT if provided, otherwise search the whole
-buffer."
-  (let (tag begin)
-    (unless start (setq start (point-min)))
-    (unless limit (setq limit (point-max)))
+temp-buffer."
+  (let (tag begin line)
     (save-match-data
       (save-excursion
-        (goto-char start)
-        (while (verilog-re-search-forward verilog-identifier-sym-re limit :no-error)
+        (goto-char (point-min))
+        (while (verilog-re-search-forward verilog-identifier-sym-re nil :no-error)
           (setq begin (match-beginning 0))
           (setq tag (match-string-no-properties 0))
+          (setq line (line-number-at-pos begin))
           (unless (or (member tag verilog-keywords) ; Filter verilog keywords
-                      (and defs-table ; Filter existing definitions
-                           (verilog-ext-tags-is-def-p tag defs-table file (point)))
+                      (member tag verilog-ext-compiler-directives)
+                      (gethash `(,tag :file ,file :line ,line) verilog-ext-tags-defs-current-file) ; Unless it's already a definition
                       (save-excursion ; Filter bit-width expressions
                         (goto-char begin)
                         (eq (preceding-char) ?')))
-            (verilog-ext-tags-table-push :table table
-                                         :tag tag
-                                         :desc (verilog-ext-tags-desc)
-                                         :file file)))))))
+            (puthash `(,tag ; Key plist
+                       :file ,file
+                       :line ,(line-number-at-pos))
+                     `(:desc ,(verilog-ext-tags-desc) ; Value plist
+                       :col ,(current-column))
+                     verilog-ext-tags-refs-current-file)))))))
 
 
 ;;;; Tree-sitter
@@ -324,23 +398,18 @@ completion.")
   (eval-when-compile
     (regexp-opt '("task_declaration" "function_declaration" "class_constructor_declaration") 'symbols)))
 
-(cl-defun verilog-ext-tags-table-push-defs-ts (&key table inst-table file)
-  "Push definitions inside hash table TABLE using tree-sitter.
+(defun verilog-ext-tags-table-push-defs-ts (file)
+  "Push current FILE definitions using tree-sitter.
 
-FILE might be specified for the cases when a temp-buffer without an associated
-file is being parsed.
-
-INST-TABLE is the instances table, needed to separate between tags for
-completion and navigation."
+Update hash tables `verilog-ext-tags-defs-current-file' and
+`verilog-ext-tags-inst-current-file'."
   (let* ((node (treesit-buffer-root-node 'verilog))
          (tree (treesit-induce-sparse-tree
                 node
                 verilog-ext-tags-definitions-ts-re
-                nil 1000))
-         (inst-table (or inst-table (make-hash-table :test #'equal))))
-    (verilog-ext-tags-table-push-defs-ts--recurse :table table
-                                                  :inst-table inst-table
-                                                  :node tree
+                nil 1000)))
+    (verilog-ext-tags-table-push-defs-ts--recurse :node tree
+                                                  :parent nil
                                                   :file file)))
 
 (defun verilog-ext-tags-table-push-defs-ts--parent (ts-node ts-type parent-node)
@@ -358,30 +427,21 @@ this function is synctactic sugar for
         (t ;; Default
          (verilog-ts--node-identifier-name parent-node))))
 
-(cl-defun verilog-ext-tags-table-push-defs-ts--recurse (&key table inst-table node parent file)
-  "Push definitions recursively inside hash table TABLE using tree-sitter.
+(cl-defun verilog-ext-tags-table-push-defs-ts--recurse (&key node parent file)
+  "Push current FILE definitions recursively using tree-sitter.
 
 Traverse the tree starting at NODE.
 
-PARENT is passed as an argument to build the :items prop list of TABLE.
-
-FILE might be specified for the cases when a temp-buffer without an associated
-file is being parsed.
-
-INST-TABLE is the instances table, needed to separate between tags for
-completion and navigation."
+PARENT is passed as an argument to build the :items prop list of
+`verilog-ext-tags-defs-current-file'."
   (let* ((ts-node (car node))
          (children (cdr node))
-         (ts-type (treesit-node-type ts-node))
-         (is-instance (and ts-type (string-match "\\(module\\|interface\\)_instantiation" ts-type)))
-         (is-typedef-class (and ts-type
-                                (string-match "\\<type_declaration\\>" ts-type)
-                                (string-match (concat "typedef\\s-+class\\s-+" verilog-identifier-re "\\s-*;") (treesit-node-text ts-node :no-prop)))))
+         (type (treesit-node-type ts-node))
+         (is-instance (and type (string-match verilog-ts-instance-re type)))
+         (is-typedef-class (verilog-ts--node-is-typedef-class-p ts-node)))
     ;; Iterate over all the nodes of the tree
     (mapc (lambda (child-node)
-            (verilog-ext-tags-table-push-defs-ts--recurse :table table
-                                                          :inst-table inst-table
-                                                          :node child-node
+            (verilog-ext-tags-table-push-defs-ts--recurse :node child-node
                                                           :parent ts-node
                                                           :file file))
           children)
@@ -389,48 +449,252 @@ completion and navigation."
     (when (and ts-node (not is-typedef-class)) ; root ts-node will be nil
       (goto-char (treesit-node-start ts-node))
       (if is-instance
-          (verilog-ext-tags-table-push :table inst-table
-                                       :tag (verilog-ts--node-instance-name ts-node)
-                                       :type (verilog-ts--node-identifier-name ts-node)
-                                       :file file
-                                       :parent (verilog-ts--node-identifier-name parent))
-        (verilog-ext-tags-table-push :table table
-                                     :tag (verilog-ts--node-identifier-name ts-node)
-                                     :type (verilog-ts--node-identifier-type ts-node)
-                                     :desc (verilog-ext-tags-desc)
-                                     :file file
-                                     :parent (verilog-ext-tags-table-push-defs-ts--parent ts-node ts-type parent))))))
+          (puthash `(,(verilog-ts--node-instance-name ts-node) ; Key plist
+                     :file ,file
+                     :line ,(line-number-at-pos))
+                   `(:type ,(verilog-ts--node-identifier-name ts-node) ; Value plist
+                     :col ,(current-column)
+                     :parent ,(verilog-ts--node-identifier-name parent))
+                   verilog-ext-tags-inst-current-file)
+        (puthash `(,(verilog-ts--node-identifier-name ts-node) ; Key plist
+                   :file ,file
+                   :line ,(line-number-at-pos))
+                 `(:type ,type ; Value plist
+                   :desc ,(verilog-ext-tags-desc)
+                   :col ,(current-column)
+                   :parent ,(verilog-ext-tags-table-push-defs-ts--parent ts-node type parent))
+                 verilog-ext-tags-defs-current-file)))))
 
-(cl-defun verilog-ext-tags-table-push-refs-ts (&key table defs-table file)
-  "Push references inside hash table TABLE using tree-sitter.
+(defun verilog-ext-tags-table-push-refs-ts (file)
+  "Push current FILE references using tree-sitter.
 
-Optional definitions table DEFS-TABLE is used to filter out references that have
-already been parsed as definitions.
-
-FILE can be provided for the case when references are fetched from a
-temp-buffer."
-  (let (tag pos)
+Update hash table `verilog-ext-tags-refs-current-file'."
+  (let (tag pos line)
     (dolist (node (verilog-ts-nodes "simple_identifier"))
       (setq tag (treesit-node-text node :no-prop))
       (setq pos (treesit-node-start node))
-      (unless (and defs-table
-                   (verilog-ext-tags-is-def-p tag defs-table file pos))
+      (setq line (line-number-at-pos pos))
+      (unless (gethash `(,tag :file ,file :line ,line) verilog-ext-tags-defs-current-file) ; Unless it's already a definition
         (goto-char pos)
-        (verilog-ext-tags-table-push :table table
-                                     :tag tag
-                                     :desc (verilog-ext-tags-desc)
-                                     :file file)))))
+        (puthash `(,tag ; Key plist
+                   :file ,file
+                   :line ,(line-number-at-pos))
+                 `(:desc ,(verilog-ext-tags-desc) ; Value plist
+                   :col ,(current-column))
+                 verilog-ext-tags-refs-current-file)))))
 
-;;;; Setup
+
+;;;; Tags collection and cache
+(defun verilog-ext-tags-proj-init (proj)
+  "Initialize value of PROJ variables and hash-tables needed for tags collection."
+  (dolist (var '(verilog-ext-tags-file-hashes
+                 verilog-ext-tags-defs-file-tables
+                 verilog-ext-tags-inst-file-tables
+                 verilog-ext-tags-refs-file-tables
+                 verilog-ext-tags-defs-table
+                 verilog-ext-tags-inst-table
+                 verilog-ext-tags-refs-table))
+    (unless (verilog-ext-aget (eval var) proj)
+      (set var (cons (cons proj (make-hash-table :test 'equal)) (symbol-value var))))))
+
+(defun verilog-ext-tags-get--process-file (file proj &optional file-was-removed verbose)
+  "Auxiliary function to process FILE tags of project PROJ.
+
+Steps:
+ - Initialize tags variables
+ - For removed files, remove corresponding file locs from tags tables
+   (FILE-WAS-REMOVED should be non-nil)
+ - Check current file hash and compare to previous stored ones to check if it
+   has changed
+ - If it did, consider 3 different scenarios:
+    - File did not change: skip that file and check next one
+    - File changed: remove previous file locs, collect new file tags and update
+      tables and file hashes
+    - File is new: collect new file tags and update tables and file hashes (no
+      need to remove any file locs).
+
+Optional arg VERBOSE to display extra messages for debugging."
+  (let ((proj-file-hashes (verilog-ext-aget verilog-ext-tags-file-hashes proj))
+        (proj-defs-file-tables (verilog-ext-aget verilog-ext-tags-defs-file-tables proj))
+        (proj-defs-table (verilog-ext-aget verilog-ext-tags-defs-table proj))
+        (proj-inst-file-tables (verilog-ext-aget verilog-ext-tags-inst-file-tables proj))
+        (proj-inst-table (verilog-ext-aget verilog-ext-tags-inst-table proj))
+        (proj-refs-file-tables (verilog-ext-aget verilog-ext-tags-refs-file-tables proj))
+        (proj-refs-table (verilog-ext-aget verilog-ext-tags-refs-table proj))
+        file-hash-new file-hash-old)
+    ;; Reset current file tags
+    (setq verilog-ext-tags-defs-current-file (make-hash-table :test 'equal))
+    (setq verilog-ext-tags-inst-current-file (make-hash-table :test 'equal))
+    (setq verilog-ext-tags-refs-current-file (make-hash-table :test 'equal))
+    ;; Process tags
+    (if file-was-removed
+        (progn ; Remove tags in reverse order: first locs from the table, then from intermediate tables, and finally from file-hashes
+          (verilog-ext-tags-table-remove-file-locs file proj-defs-file-tables proj-defs-table)
+          (verilog-ext-tags-table-remove-file-locs file proj-inst-file-tables proj-inst-table)
+          (verilog-ext-tags-table-remove-file-locs file proj-refs-file-tables proj-refs-table)
+          (remhash file proj-defs-file-tables)
+          (remhash file proj-inst-file-tables)
+          (remhash file proj-refs-file-tables)
+          (remhash file proj-file-hashes))
+      ;; File not removed: Could be not modified, modified or added
+      (with-temp-buffer
+        (insert-file-contents file)
+        (setq file-hash-new (secure-hash 'md5 (buffer-substring-no-properties (point-min) (point-max))))
+        (setq file-hash-old (gethash file proj-file-hashes))
+        (if (string= file-hash-new file-hash-old)
+            (when verbose (message "Skipping file: %s" file)) ; Not modified
+          ;; Modified/added
+          (puthash file file-hash-new proj-file-hashes)
+          ;; If file has changed remove old tags
+          (when file-hash-old
+            (verilog-ext-tags-table-remove-file-locs file proj-defs-file-tables proj-defs-table)
+            (verilog-ext-tags-table-remove-file-locs file proj-inst-file-tables proj-inst-table)
+            (verilog-ext-tags-table-remove-file-locs file proj-refs-file-tables proj-refs-table))
+          ;; If file is new or has changed, collect tags
+          (cond (;; Tree-sitter
+                 (eq verilog-ext-tags-backend 'tree-sitter)
+                 (if verilog-ext-tags-fontify-matches
+                     (verilog-ext-with-no-hooks ; Avoid spending time on any possible hooks, just on fontifying to get text properties
+                       (verilog-ts-mode)
+                       (font-lock-ensure))
+                   (treesit-parser-create 'verilog)) ; Not running `verilog-ts-mode' avoids unnecessary hooks for this task
+                 (verilog-ext-tags-table-push-defs-ts file)  ; Populates `verilog-ext-tags-defs-current-file' and `verilog-ext-tags-inst-current-file'
+                 (verilog-ext-tags-table-push-refs-ts file)) ; Populates `verilog-ext-tags-refs-current-file'
+                (;; Builtin
+                 (eq verilog-ext-tags-backend 'builtin)
+                 (verilog-ext-with-no-hooks
+                   (verilog-mode))
+                 (when verilog-ext-tags-fontify-matches
+                   (font-lock-ensure))
+                 (cond (;; Top-block based-file (module/interface/package/program)
+                        (save-excursion (verilog-re-search-forward verilog-ext-top-re nil :no-error))
+                        (verilog-ext-tags-table-push-defs :tag-type 'top-items :file file))
+                       ;; No top-blocks class-based file
+                       ((save-excursion (verilog-ext-find-class-fwd))
+                        (verilog-ext-tags-table-push-defs :tag-type 'classes :file file))
+                       ;; Default,
+                       (t (dolist (defs '(declarations tf structs))
+                            (verilog-ext-tags-table-push-defs :tag-type defs :file file))))
+                 (verilog-ext-tags-table-push-refs file))
+                (t ; Fallback error
+                 (error "Wrong backend for `verilog-ext-tags-backend'")))
+          ;; Update file tables
+          (puthash file verilog-ext-tags-defs-current-file proj-defs-file-tables)
+          (puthash file verilog-ext-tags-inst-current-file proj-inst-file-tables)
+          (puthash file verilog-ext-tags-refs-current-file proj-refs-file-tables)
+          ;; Update tables
+          (verilog-ext-tags-add-file-locs file proj-defs-file-tables proj-defs-table)
+          (verilog-ext-tags-add-file-locs file proj-inst-file-tables proj-inst-table)
+          (verilog-ext-tags-add-file-locs file proj-refs-file-tables proj-refs-table))))))
+
+(defun verilog-ext-tags-get (&optional verbose)
+  "Get tags of current project.
+With current-prefix or VERBOSE, dump output log."
+  (interactive "P")
+  (let* ((proj (verilog-ext-buffer-proj))
+         (files (verilog-ext-proj-files proj))
+         (files-removed (seq-difference (map-keys (verilog-ext-aget verilog-ext-tags-file-hashes proj)) files))
+         (num-files (+ (length files-removed) (length files)))
+         (num-files-processed 0)
+         (log-file verilog-ext-tags-cache-log-file)
+         (tags-progress-reporter (make-progress-reporter "[Tags collection]: " 0 num-files)))
+    (verilog-ext-tags-proj-init proj)
+    (when verbose
+      (delete-file log-file))
+    (dolist (file files-removed)
+      (progress-reporter-update tags-progress-reporter num-files-processed (format "[%s]" file))
+      (verilog-ext-tags-get--process-file file proj :file-was-removed verbose)
+      (setq num-files-processed (1+ num-files-processed)))
+    (dolist (file files)
+      (when verbose
+        (append-to-file (format "(%0d%%) [Tags collection] Processing %s\n" (/ (* num-files-processed 100) num-files) file) nil log-file))
+      (progress-reporter-update tags-progress-reporter num-files-processed (format "[%s]" file))
+      (verilog-ext-tags-get--process-file file proj nil verbose)
+      (setq num-files-processed (1+ num-files-processed)))
+    (message "Finished collection of tags!")))
+
+(defun verilog-ext-tags-get-async (&optional verbose)
+  "Create tags table asynchronously.
+With current-prefix or VERBOSE, dump output log."
+  (interactive "P")
+  (let ((proj-root (verilog-ext-buffer-proj-root)))
+    (unless proj-root
+      (user-error "Not in a Verilog project buffer"))
+    (message "Starting tag collection for %s" proj-root)
+    (async-start
+     `(lambda ()
+        ,(async-inject-variables verilog-ext-tags-async-inject-variables-re)
+        (require 'verilog-ext)
+        (verilog-ext-tags-unserialize)   ; Read environment in child process
+        (verilog-ext-tags-get ,@verbose) ; Update variables in child process
+        (verilog-ext-tags-serialize))    ; Update cache file in childe process
+     (lambda (_result)
+       (verilog-ext-tags-unserialize)
+       (message "Finished collection of tags!"))))) ; Update parent process from cache file
+
+(defun verilog-ext-tags-serialize ()
+  "Write variables to their cache files."
+  (message "Serializing `verilog-ext' tags cache...")
+  (dolist (var `((,verilog-ext-tags-defs-file-tables . ,verilog-ext-tags-defs-file-tables-cache-file)
+                 (,verilog-ext-tags-refs-file-tables . ,verilog-ext-tags-refs-file-tables-cache-file)
+                 (,verilog-ext-tags-inst-file-tables . ,verilog-ext-tags-inst-file-tables-cache-file)
+                 (,verilog-ext-tags-defs-table       . ,verilog-ext-tags-defs-table-cache-file)
+                 (,verilog-ext-tags-inst-table       . ,verilog-ext-tags-inst-table-cache-file)
+                 (,verilog-ext-tags-refs-table       . ,verilog-ext-tags-refs-table-cache-file)
+                 (,verilog-ext-tags-file-hashes      . ,verilog-ext-tags-file-hashes-cache-file)))
+    (verilog-ext-serialize (car var) (cdr var)))
+  (message "Serialized `verilog-ext' tags cache!"))
+
+(defun verilog-ext-tags-unserialize ()
+  "Read cache files into their corresponding variables."
+  (dolist (var `((verilog-ext-tags-defs-file-tables . ,verilog-ext-tags-defs-file-tables-cache-file)
+                 (verilog-ext-tags-refs-file-tables . ,verilog-ext-tags-refs-file-tables-cache-file)
+                 (verilog-ext-tags-inst-file-tables . ,verilog-ext-tags-inst-file-tables-cache-file)
+                 (verilog-ext-tags-defs-table       . ,verilog-ext-tags-defs-table-cache-file)
+                 (verilog-ext-tags-inst-table       . ,verilog-ext-tags-inst-table-cache-file)
+                 (verilog-ext-tags-refs-table       . ,verilog-ext-tags-refs-table-cache-file)
+                 (verilog-ext-tags-file-hashes      . ,verilog-ext-tags-file-hashes-cache-file)))
+    (set (car var) (verilog-ext-unserialize (cdr var)))))
+
 (defun verilog-ext-tags-setup ()
-  "Setup tags backend depending on tree-sitter availability.
-If it has been set before, keep its value."
+  "Setup tags feature: backend, cache read at startup and write before exit."
   (let ((backend (or verilog-ext-tags-backend
                      (if (and (treesit-available-p)
                               (treesit-language-available-p 'verilog))
                          'tree-sitter
                        'builtin))))
-    (setq verilog-ext-tags-backend backend)))
+    (setq verilog-ext-tags-backend backend)
+    (when verilog-ext-cache-enable
+      (verilog-ext-tags-unserialize)
+      (add-hook 'kill-emacs-hook #'verilog-ext-tags-serialize))))
+
+(defun verilog-ext-tags-clear-cache (&optional all)
+  "Clear tags cache files for current project.
+
+With prefix arg, clear cache for ALL projects."
+  (interactive "P")
+  (if (not all)
+      (let ((proj (verilog-ext-buffer-proj)))
+        (unless proj
+          (user-error "Not in a Verilog project buffer"))
+        (verilog-ext-proj-setcdr proj verilog-ext-tags-defs-table nil)
+        (verilog-ext-proj-setcdr proj verilog-ext-tags-refs-table nil)
+        (verilog-ext-proj-setcdr proj verilog-ext-tags-inst-table nil)
+        (verilog-ext-proj-setcdr proj verilog-ext-tags-defs-file-tables nil)
+        (verilog-ext-proj-setcdr proj verilog-ext-tags-refs-file-tables nil)
+        (verilog-ext-proj-setcdr proj verilog-ext-tags-inst-file-tables nil)
+        (verilog-ext-proj-setcdr proj verilog-ext-tags-file-hashes nil)
+        (verilog-ext-tags-serialize)
+        (message "[%s] Cleared tags cache!" proj))
+    (setq verilog-ext-tags-defs-table nil)
+    (setq verilog-ext-tags-refs-table nil)
+    (setq verilog-ext-tags-inst-table nil)
+    (setq verilog-ext-tags-defs-file-tables nil)
+    (setq verilog-ext-tags-refs-file-tables nil)
+    (setq verilog-ext-tags-inst-file-tables nil)
+    (setq verilog-ext-tags-file-hashes nil)
+    (verilog-ext-tags-serialize)
+    (message "Cleared all projects tags cache!")))
 
 
 (provide 'verilog-ext-tags)

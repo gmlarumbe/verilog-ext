@@ -38,12 +38,13 @@
 ;;; Code:
 
 (require 'verilog-mode)
+(require 'verilog-ext-template)
+(require 'make-mode)
+
 
 (defgroup verilog-ext-compile nil
   "Verilog-ext compilation."
   :group 'verilog-ext)
-
-(defconst verilog-ext-compile-filename-re "[a-zA-Z0-9-_\\.\\/]+")
 
 (defconst verilog-ext-compile-msg-code-face 'verilog-ext-compile-msg-code-face)
 (defface verilog-ext-compile-msg-code-face
@@ -56,6 +57,62 @@
   '((t (:inherit font-lock-function-name-face)))
   "Face for compilation binaries."
   :group 'verilog-ext-compile)
+
+
+;;;; Preprocess
+(defun verilog-ext-preprocess ()
+  "Preprocess current file.
+Choose among different available programs and update `verilog-preprocessor'
+variable."
+  (interactive)
+  (let ((tools-available (seq-filter (lambda (bin)
+                                       (executable-find bin))
+                                     '("verilator" "iverilog" "vppreproc"))))
+    (pcase (completing-read "Select tool: " tools-available)
+      ;; Verilator
+      ("verilator" (setq verilog-preprocessor "verilator -E __FLAGS__ __FILE__"))
+      ;; Verilog-Perl
+      ("vppreproc" (setq verilog-preprocessor "vppreproc __FLAGS__ __FILE__"))
+      ;; Icarus Verilog:  `iverilog' command syntax requires writing to an output file (defaults to a.out).
+      ("iverilog" (let* ((filename-sans-ext (file-name-sans-extension (file-name-nondirectory (buffer-file-name))))
+                         (iver-out-file (concat (temporary-file-directory) filename-sans-ext "_pp_iver.sv")))
+                    (setq verilog-preprocessor (concat "iverilog -E -o" iver-out-file " __FILE__ && "
+                                                       "echo \"\" && " ; Add blank line between run command and first preprocessed line
+                                                       "cat " iver-out-file)))))
+    (verilog-preprocess)
+    (pop-to-buffer "*Verilog-Preprocessed*")))
+
+
+;;;; Makefile
+(defun verilog-ext-makefile-create ()
+  "Create Iverilog/Verilator Yasnippet based Makefile.
+Create it only if in a project and the Makefile does not already exist."
+  (interactive)
+  (let ((project-root (verilog-ext-buffer-proj-root))
+        file)
+    (if project-root
+        (if (file-exists-p (setq file (file-name-concat project-root "Makefile")))
+            (error "File %s already exists!" file)
+          (find-file file)
+          (verilog-ext-template-insert-yasnippet "verilog"))
+      (error "Not in a project!"))))
+
+(defun verilog-ext-makefile-compile ()
+  "Prompt to available Makefile targets and compile.
+Compiles them with various verilog regexps."
+  (interactive)
+  (let ((makefile (file-name-concat (verilog-ext-buffer-proj-root) "Makefile"))
+        (makefile-need-target-pickup t) ; Force refresh of makefile targets
+        target cmd)
+    (unless (file-exists-p makefile)
+      (error "%s does not exist!" makefile))
+    (with-temp-buffer
+      (insert-file-contents makefile)
+      (makefile-pickup-targets)
+      (setq target (completing-read "Target: " makefile-target-table)))
+    (setq cmd (concat "cd " (verilog-ext-buffer-proj-root) " && make " target))
+    (compile cmd)))
+
 
 (defmacro verilog-ext-compile-define-mode (name &rest args)
   "Macro to define a compilation derived mode for a Verilog error regexp.
@@ -97,6 +154,8 @@ ARGS is a property list."
 
 
 ;;;; Compilation-re
+(defconst verilog-ext-compile-filename-re "[a-zA-Z0-9-_\\.\\/]+")
+
 (defconst verilog-ext-compile-verilator-re
   `((verilator-error   ,(concat "^%\\(?1:Error: Internal Error\\): \\(?2:" verilog-ext-compile-filename-re "\\):\\(?3:[0-9]+\\):\\(?4:[0-9]+\\)") 2 3 4 2 nil (1 compilation-error-face))
     (verilator-error2  ,(concat "^%\\(?1:Error\\): \\(?2:" verilog-ext-compile-filename-re "\\):\\(?3:[0-9]+\\):\\(?4:[0-9]+\\): ") 2 3 4 2 nil (1 compilation-error-face))
@@ -223,29 +282,44 @@ ARGS is a property list."
   :comp-mode verilog-ext-compile-surelog-mode)
 
 
-;;;; Other compilation commands
-(defun verilog-ext-preprocess ()
-  "Preprocess current file.
-Choose among different available programs and update `verilog-preprocessor'
-variable."
-  (interactive)
-  (let ((tools-available (seq-filter (lambda (bin)
-                                       (executable-find bin))
-                                     '("verilator" "iverilog" "vppreproc"))))
-    (pcase (completing-read "Select tool: " tools-available)
-      ;; Verilator
-      ("verilator" (setq verilog-preprocessor "verilator -E __FLAGS__ __FILE__"))
-      ;; Verilog-Perl
-      ("vppreproc" (setq verilog-preprocessor "vppreproc __FLAGS__ __FILE__"))
-      ;; Icarus Verilog:  `iverilog' command syntax requires writing to an output file (defaults to a.out).
-      ("iverilog" (let* ((filename-sans-ext (file-name-sans-extension (file-name-nondirectory (buffer-file-name))))
-                         (iver-out-file (concat (temporary-file-directory) filename-sans-ext "_pp_iver.sv")))
-                    (setq verilog-preprocessor (concat "iverilog -E -o" iver-out-file " __FILE__ && "
-                                                       "echo \"\" && " ; Add blank line between run command and first preprocessed line
-                                                       "cat " iver-out-file)))))
-    (verilog-preprocess)
-    (pop-to-buffer "*Verilog-Preprocessed*")))
+(defun verilog-ext-compile ()
+  "Compile using command of :compile-cmd of `verilog-ext-project-alist' project.
 
+Depending on the command, different syntax highlight will be applied.
+
+The function will detect any of the supported compilation error parsers and will
+set the appropriate mode."
+  (interactive)
+  (let* ((proj (verilog-ext-buffer-proj))
+         (compile-cmd (verilog-ext-proj-compile-cmd proj))
+         (cmd-list (if (not compile-cmd)
+                       (error "You first need to set `:compile-cmd' for current project [%s] in `verilog-ext-project-alist'" proj)
+                     (split-string (verilog-ext-proj-compile-cmd))))
+         (cmd-args (cdr cmd-list))
+         (cmd-bin (car cmd-list))
+         (fn (pcase cmd-bin
+               ("verilator" #'verilog-ext-compile-verilator)
+               ("iverilog" #'verilog-ext-compile-iverilog)
+               ("slang" #'verilog-ext-compile-slang)
+               ("svlint" #'verilog-ext-compile-svlint)
+               ("surelog" #'verilog-ext-compile-surelog)
+               ("verible-verilog-lint" #'verilog-ext-compile-verible)
+               (_ #'compile)))
+         (cmd-processed (cond (;; For svlint, make sure the -1 arg is present
+                               (string= cmd-bin "svlint")
+                               (if (member "-1" cmd-args)
+                                   compile-cmd
+                                 (mapconcat #'identity `(,cmd-bin "-1" ,@cmd-args) " ")))
+                              ;; For slang make sure that there is no colored output
+                              ((string= cmd-bin "slang")
+                               (if (member "--color-diagnostics=false" cmd-args)
+                                   compile-cmd
+                                 (mapconcat #'identity `(,cmd-bin "--color-diagnostics=false" ,@cmd-args) " ")))
+                              ;; For the rest use the provided command
+                              (t
+                               compile-cmd)))
+         (cmd (concat "cd " (verilog-ext-buffer-proj-root proj) " && " cmd-processed)))
+    (funcall fn cmd)))
 
 
 (provide 'verilog-ext-compile)

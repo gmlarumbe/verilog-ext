@@ -36,11 +36,63 @@ Defaults to .v, .vh, .sv and .svh."
   :type 'string
   :group 'verilog-ext)
 
+(defcustom verilog-ext-cache-enable t
+  "Enable use of cache files if set to non-nil."
+  :type 'boolean
+  :group 'verilog-ext)
+
+(defcustom verilog-ext-cache-do-compression t
+  "If set to non-nil compress cache files.
+Requires having \"gzip\" and \"gunzip\" in the PATH."
+  :type 'boolean
+  :group 'verilog-ext)
+
+(defcustom verilog-ext-project-alist nil
+  "`verilog-ext' project alist.
+
+Used for per-project functionality in `verilog-ext'.
+
+Its elements have the following structure: their car is a string with the name
+of the project and their cdr a property list with the following properties:
+ - :root - base directory of the project (mandatory)
+ - :dirs - directories to search for project files (list of strings)
+ - :ignore-dirs - directories to ignore (list of strings)
+ - :files - files to be used for the project, keep in order for vhier
+            hierarchy extraction (list of strings)
+ - :ignore-files - files to be ignored for project (list of stings)
+
+Compilation:
+ - :compile-cmd - command used to compile current project (string)
+
+Vhier:
+ - :command-file - vhier command file
+ - :lib-search-path - list of dirs to look for include directories or libraries."
+  :type '(repeat
+          (list (string :tag "Project")
+                (plist :tag "Properties"
+                       :options ((:root string)
+                                 (:dirs (repeat directory))
+                                 (:ignore-dirs (repeat directory))
+                                 (:files (repeat file))
+                                 (:ignore-files (repeat file))
+                                 (:compile-cmd string)
+                                 (:command-file file)
+                                 (:lib-search-path (repeat directory))))))
+  :group 'verilog-ext)
+
+
 
 ;;;; Consts/Vars
 (defconst verilog-ext-keywords-re
   (eval-when-compile
     (regexp-opt verilog-keywords 'symbols)))
+
+(defconst verilog-ext-compiler-directives
+  (eval-when-compile
+    (mapcar (lambda (directive)
+              (substring directive 1 nil))
+            verilog-compiler-directives))
+  "List of Verilog compiler directives, without the tick.")
 
 (defconst verilog-ext-top-instantiable-re
   (concat "\\<\\(?1:module\\|interface\\)\\>\\(\\s-+\\<automatic\\>\\)?\\s-+\\(?3:" verilog-identifier-sym-re "\\)"))
@@ -87,6 +139,8 @@ type_t foo1, foo2 , foo4, foo6[], foo7 [25], foo8 ;")
                                                  "\\(" verilog-ext-typedef-class-params-optional-re "\\|" verilog-ext-range-optional-re "\\)"
                                                  "\\s-*\\(?2:\\<" verilog-identifier-re "\\>\\)"))
 
+(defconst verilog-ext-cache-dir (file-name-concat user-emacs-directory "verilog-ext")
+  "The directory where verilog-ext cache files will be placed at.")
 
 (defconst verilog-ext-server-lsp-list
   '((ve-hdl-checker  . ("hdl_checker" "--lsp"))
@@ -99,7 +153,25 @@ type_t foo1, foo2 , foo4, foo6[], foo7 [25], foo8 ;")
 (defconst verilog-ext-server-lsp-ids
   (mapcar #'car verilog-ext-server-lsp-list))
 
-(defconst verilog-ext-async-inject-variables-re "\\`\\(load-path\\|buffer-file-name\\|verilog-ext-workspace-\\|verilog-ext-tags-\\|verilog-ext-hierarchy-\\|verilog-ext-typedef-\\|verilog-align-typedef-\\)")
+
+;;;; Macros
+(defmacro verilog-ext-with-no-hooks (&rest body)
+  "Execute BODY without running any Verilog related hooks."
+  (declare (indent 0) (debug t))
+  `(let ((prog-mode-hook nil)
+         (verilog-mode-hook '(verilog-ext-mode))
+         (verilog-ts-mode-hook nil))
+     ,@body))
+
+(defmacro verilog-ext-proj-setcdr (proj alist value)
+  "Set cdr of ALIST for current PROJ to VALUE.
+
+ALIST is an alist and its keys are projects in `verilog-ext-project-alist' as
+strings.
+
+If current VALUE is nil remove its key from the alist ALIST."
+  (declare (indent 0) (debug t))
+  `(setf (alist-get ,proj ,alist nil 'remove 'string=) ,value))
 
 
 ;;;; Wrappers
@@ -208,9 +280,12 @@ the replacement text (see `replace-match' for more info)."
       (while (search-forward string endpos t)
         (replace-match to-string fixedcase)))))
 
+
 ;;;; Dirs/files
-(defun verilog-ext-dir-files (dir &optional follow-symlinks ignore-dirs)
-  "Find SystemVerilog files recursively on DIR.
+(defun verilog-ext-dir-files (dir &optional recursive follow-symlinks ignore-dirs)
+  "Find SystemVerilog files on DIR.
+
+If RECURSIVE is non-nil find files recursively.
 
 Follow symlinks if optional argument FOLLOW-SYMLINKS is non-nil.
 
@@ -219,9 +294,9 @@ symlink #.test.sv).
 
 Optional arg IGNORE-DIRS specifies which directories should be excluded from
 search."
-  (let* ((files (directory-files-recursively dir
-                                             verilog-ext-file-extension-re
-                                             nil nil follow-symlinks))
+  (let* ((files (if recursive
+                    (directory-files-recursively dir verilog-ext-file-extension-re nil nil follow-symlinks)
+                  (directory-files dir t verilog-ext-file-extension-re)))
          (files-after-ignored (seq-filter (lambda (file)
                                             ;; Each file checks if it has its prefix in the list of ignored directories
                                             (let (ignore-file)
@@ -254,9 +329,17 @@ search."
     (delete "" (split-string (buffer-substring-no-properties (point-min) (point-max)) "\n"))))
 
 (defun verilog-ext-file-from-filefile (filelist out-file)
-  "Write FILELIST to FILE as one line per file."
+  "Write FILELIST to OUT-FILE as one line per file."
   (with-temp-file out-file
     (insert (mapconcat #'identity filelist "\n"))))
+
+(defun verilog-ext-expand-file-list (file-list &optional rel-dir)
+  "Expand files in FILE-LIST.
+
+Expand with respect to REL-DIR if non-nil."
+  (mapcar (lambda (file)
+            (expand-file-name file rel-dir))
+          file-list))
 
 
 ;;;; File modules
@@ -665,6 +748,138 @@ If on a `verilog-ts-mode' buffer, run `indent-for-tab-command' with ARG."
          (indent-for-tab-command arg))
         (t
          (error "Wrong major-mode to run `verilog-ext-tab'"))))
+
+
+;;;; Project
+(defun verilog-ext-aget (alist key)
+  "Return the value in ALIST that is associated with KEY.
+If KEY is not found, then nil is returned."
+  (cdr (assoc key alist)))
+
+(defun verilog-ext-buffer-proj ()
+  "Return current buffer project if it belongs to `verilog-ext-project-alist'."
+  (catch 'project
+    (when (and buffer-file-name verilog-ext-project-alist)
+      (dolist (proj verilog-ext-project-alist)
+        (when (string-prefix-p (expand-file-name (plist-get (cdr proj) :root))
+                               (expand-file-name buffer-file-name))
+          (throw 'project (car proj)))))))
+
+(defun verilog-ext-buffer-proj-root (&optional project)
+  "Return current buffer PROJECT root if it belongs to `verilog-ext-project-alist'."
+  (let ((proj (or project (verilog-ext-buffer-proj))))
+    (when proj
+      (expand-file-name (plist-get (verilog-ext-aget verilog-ext-project-alist proj) :root)))))
+
+(defun verilog-ext-proj-compile-cmd (&optional project)
+  "Return current PROJECT compile-cmd from `verilog-ext-project-alist'."
+  (let ((proj (or project (verilog-ext-buffer-proj))))
+    (when proj
+      (plist-get (verilog-ext-aget verilog-ext-project-alist proj) :compile-cmd))))
+
+(defun verilog-ext-proj-command-file (&optional project)
+  "Return current PROJECT vhier command-file from `verilog-ext-project-alist'."
+  (let* ((proj (or project (verilog-ext-buffer-proj)))
+         (root (verilog-ext-buffer-proj-root proj))
+         (cmd-file (plist-get (verilog-ext-aget verilog-ext-project-alist proj) :command-file)))
+    (when (and root cmd-file)
+      (expand-file-name cmd-file root))))
+
+(defun verilog-ext-proj-lib-search-path (&optional project)
+  "Return current PROJECT lib search path for vhier."
+  (let ((proj (or project (verilog-ext-buffer-proj))))
+    (when proj
+      (plist-get (verilog-ext-aget verilog-ext-project-alist proj) :lib-search-path))))
+
+(defun verilog-ext-proj-files (&optional project)
+  "Return list of files for PROJECT.
+
+These depend on the value of property list of `verilog-ext-project-alist'.
+ :dirs - list of strings with optional \"-r\" to find files recursively
+ :ignore-dirs - list of strings of dirs to be ignored
+ :files - list of strings with the files
+ :ignore-files - list of strings of ignored files"
+  (let* ((proj (or project (verilog-ext-buffer-proj)))
+         (proj-plist (verilog-ext-aget verilog-ext-project-alist proj))
+         (proj-root (when proj-plist (expand-file-name (plist-get proj-plist :root))))
+         (proj-dirs (plist-get proj-plist :dirs))
+         (proj-ignore-dirs (plist-get proj-plist :ignore-dirs))
+         (proj-files (plist-get proj-plist :files))
+         (proj-ignore-files (plist-get proj-plist :ignore-files))
+         files-dirs files-all)
+    ;; Basic checks
+    (unless proj
+      (user-error "Not in a Verilog project buffer, check `verilog-ext-project-alist'"))
+    (unless proj-root
+      (user-error "Project root not set for project %s" proj))
+    ;; Expand filenames (except for proj-dirs since they need to parse the -r recursive flag)
+    (when proj-ignore-dirs
+      (setq proj-ignore-dirs (verilog-ext-expand-file-list proj-ignore-dirs proj-root)))
+    (when proj-files
+      (setq proj-files (verilog-ext-expand-file-list proj-files proj-root)))
+    (when proj-ignore-files
+      (setq proj-ignore-files (verilog-ext-expand-file-list proj-ignore-files proj-root)))
+    ;; Analyze directories
+    (when proj-dirs
+      (mapc (lambda (dir)
+              (if (string= "-r" (car (split-string dir)))
+                  (setq files-dirs (append files-dirs (verilog-ext-dir-files (expand-file-name (cadr (split-string dir)) proj-root) :recursive :follow-symlinks proj-ignore-dirs)))
+                (setq files-dirs (append files-dirs (verilog-ext-dir-files (expand-file-name dir proj-root) nil :follow-symlinks proj-ignore-dirs)))))
+            proj-dirs))
+    ;; Merge and filter
+    (setq files-dirs (delete-dups files-dirs))
+    (setq files-all (append files-dirs proj-files))
+    (seq-filter (lambda (file)
+                  (not (member file proj-ignore-files)))
+                files-all)))
+
+;;;; Cache
+(defun verilog-ext-serialize (data filename)
+  "Serialize DATA to FILENAME.
+
+Compress cache files if gzip is available."
+  (let ((dir (file-name-directory filename))
+        (gzip-proc-name "verilog-ext-serialize-compress")
+        (gzip-buf "*verilog-ext-serialize-compress*"))
+    (unless (file-exists-p dir)
+      (make-directory dir :parents))
+    (if (not (file-writable-p filename))
+        (message "Verilog-ext cache '%s' not writeable" filename)
+      (with-temp-file filename
+        (insert (let (print-length) (prin1-to-string data))))
+      (when (and verilog-ext-cache-do-compression
+                 (executable-find "gzip"))
+        ;; Async compressing
+        (start-process-shell-command gzip-proc-name gzip-buf (format "gzip -9f %s" filename))))))
+
+(defun verilog-ext-unserialize (filename)
+  "Read data serialized by `verilog-ext-serialize' from FILENAME."
+  (let* ((compressed-filename (concat filename ".gz"))
+         (temp-filename (make-temp-file (concat (file-name-nondirectory filename) "-")))
+         (gzip-buf "*verilog-ext-serialize-decompress*")
+         (decompress-cmd (format "gunzip -c %s > %s" compressed-filename temp-filename))) ; Keep original compressed file
+    (with-demoted-errors
+        "Error during file deserialization: %S"
+      ;; INFO: Tried using zlib with `zlib-available-p' and
+      ;; `zlib-decompress-region', which are faster.  However, these require the
+      ;; buffer to be unibyte (i.e. have only ASCII characters). That could not
+      ;; be the case for paths with non-latin characters
+      ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Disabling-Multibyte.html
+      (if (and verilog-ext-cache-do-compression
+               (executable-find "gunzip")
+               (file-exists-p compressed-filename))
+          ;; External gunzip program: This doesn't need to be asynchronous as it will only be done during initial setup
+          (unless (eq 0 (call-process-shell-command decompress-cmd nil gzip-buf t))
+            (error "Error uncompressing %s" compressed-filename))
+        (setq temp-filename filename))
+      (when (file-exists-p temp-filename)
+        (with-temp-buffer
+          (insert-file-contents temp-filename)
+          (delete-file temp-filename)
+          ;; this will blow up if the contents of the file aren't lisp data structures
+          (read (buffer-string)))))))
+
+
 
 
 (provide 'verilog-ext-utils)

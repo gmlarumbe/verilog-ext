@@ -24,29 +24,29 @@
 
 ;;; Code:
 
-(require 'verilog-ext-workspace)
+(require 'verilog-ext-tags)
 
 (defgroup verilog-ext-xref nil
   "Verilog-ext xref customization."
   :group 'verilog-ext)
 
-(defcustom verilog-ext-xref-match-face 'font-lock-warning-face
+(defface verilog-ext-xref-match-face '((t :inherit match))
   "Verilog-ext face used to highlight matches in xref."
-  :type '(repeat string)
   :group 'verilog-ext-xref)
 
 
 (defun verilog-ext-xref--find-symbol (symbol type)
   "Return list of TYPE xref objects for SYMBOL."
-  (let* ((table (cond ((eq type 'def)
-                       verilog-ext-workspace-tags-defs-table)
+  (let* ((proj (verilog-ext-buffer-proj))
+         (table (cond ((eq type 'def)
+                       (verilog-ext-aget verilog-ext-tags-defs-table proj))
                       ((eq type 'ref)
-                       verilog-ext-workspace-tags-refs-table)
+                       (verilog-ext-aget verilog-ext-tags-refs-table proj))
                       (t
                        (error "Wrong table"))))
          (table-entry (if table
                           (gethash symbol table)
-                        (error "Tags table empty.  Run first `verilog-ext-workspace-get-tags' or `verilog-ext-workspace-get-tags-async'")))
+                        (error "Tags table empty.  Run first `verilog-ext-tags-get' or `verilog-ext-tags-get-async'")))
          (entry-locs (plist-get table-entry :locs))
          (entry-locs-grouped (seq-group-by (lambda (loc)
                                              (equal buffer-file-name (plist-get loc :file)))
@@ -59,9 +59,9 @@
       (dolist (loc entry-locs-sorted)
         (setq file (plist-get loc :file))
         (setq line (plist-get loc :line))
-        (setq column nil)
+        (setq column (plist-get loc :col))
         (setq desc (replace-regexp-in-string (concat "\\_<" symbol "\\_>")
-                                             (propertize symbol 'face verilog-ext-xref-match-face)
+                                             (propertize symbol 'face 'verilog-ext-xref-match-face)
                                              (plist-get loc :desc)
                                              :fixedcase))
         (push (xref-make desc (xref-make-file-location file line column)) xref-entries)))
@@ -69,7 +69,7 @@
 
 (defun verilog-ext-xref-backend ()
   "Verilog-ext backend for Xref."
-  (when (verilog-ext-workspace-root)
+  (when (verilog-ext-buffer-proj)
     'verilog-ext))
 
 (cl-defmethod xref-backend-identifier-at-point ((_backend (eql verilog-ext)))

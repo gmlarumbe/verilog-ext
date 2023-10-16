@@ -48,53 +48,49 @@
                  (const :tag "Hierarchy" hierarchy))
   :group 'verilog-ext-hierarchy)
 
-(defcustom verilog-ext-hierarchy-vhier-use-open-buffers t
-  "Set to non-nil to use list of open Verilog files/dirs with vhier backend."
-  :type 'boolean
-  :group 'verilog-ext-hierarchy)
-
-(defcustom verilog-ext-hierarchy-vhier-dirs nil
-  "List of library directories to search for with vhier backend."
-  :type '(repeat directory)
-  :group 'verilog-ext-hierarchy)
-
-(defcustom verilog-ext-hierarchy-vhier-files nil
-  "List of additional files to parse before `current-buffer' with vhier backend.
-They will be parsed in the order they are included in the list."
-  :type '(repeat file)
-  :group 'verilog-ext-hierarchy)
-
-(defcustom verilog-ext-hierarchy-vhier-command-file nil
-  "Verilog-ext vhier command file."
-  :type 'string
-  :group 'verilog-ext-hierarchy)
-
-(defcustom verilog-ext-hierarchy-builtin-dirs nil
-  "Verilog-ext list of directories for builtin hierarchy extraction.
-
-If set to nil default to search for current workspace files.
-
-It is a list of strings containing directories that will be searched for Verilog
-files to obtain a flat hierarchy used for hierarchy extraction with the builtin
-backend."
-  :type '(repeat directory)
-  :group 'verilog-ext-hierarchy)
-
 (defcustom verilog-ext-hierarchy-twidget-init-expand nil
   "Set to non-nil to initially expand the hierarchy using hierarchy.el frontend."
   :group 'verilog-ext-hierarchy
   :type 'boolean)
 
+(defcustom verilog-ext-hierarchy-vhier-use-open-buffers nil
+  "Set to non-nil to use list of open Verilog files/dirs with vhier backend."
+  :type 'boolean
+  :group 'verilog-ext-hierarchy)
+
 
 ;;;; Utils
+(defvar verilog-ext-hierarchy-module-alist nil
+  "Per project module alist.")
+
+(defconst verilog-ext-hierarchy-async-inject-variables-re
+  (eval-when-compile
+    (regexp-opt '("load-path"
+                  "buffer-file-name"
+                  "default-directory"
+                  "verilog-ext-feature-list"
+                  "verilog-ext-project-alist"
+                  "verilog-ext-hierarchy-backend")
+                'symbols)))
+
 ;;;;; hierarchy.el
-(defvar verilog-ext-hierarchy-current-flat-hierarchy nil
+(defconst verilog-ext-hierarchy-module-cache-file (file-name-concat verilog-ext-cache-dir "module")
+  "The file where Verilog-ext modules will be written to.
+Used to navigate definitions with `verilog-ext-hierarchy-twidget-nav-open'.")
+(defconst verilog-ext-hierarchy-internal-cache-file (file-name-concat verilog-ext-cache-dir "hierarchy-builtin")
+  "The file where Verilog-ext builtin/tree-sitter hierarchies will be written to.")
+
+(defvar verilog-ext-hierarchy-internal-alist nil
+  "Per project flat hierarchy alist.
+Used by builtin and tree-sitter backends.")
+(defvar verilog-ext-hierarchy-current-flat-hier nil
   "Current flat hierarchy.
 
-Used by `verilog-ext-hierarchy-extract--internal' and its subroutines.
+Used by `verilog-ext-hierarchy-extract--internal',
+`verilog-ext-hierarchy-ghdl-extract' and their subroutines.
+Needed since `verilog-ext-hierarchy-extract--childrenfn' can only
+have one argument (item).")
 
-Needed since `verilog-ext-hierarchy-extract--childrenfn' can only have one
-argument (item).")
 
 (defun verilog-ext-hierarchy--get-node-leaf (node)
   "Return leaf name of hierarchical reference NODE.
@@ -113,14 +109,14 @@ E.g: return \"top.block.subblock\" for \"top.block.subblock.leaf\"."
 Arg ITEM are hierarchy nodes."
   (let* ((prefix (verilog-ext-hierarchy--get-node-prefix item))
          (leaf (verilog-ext-hierarchy--get-node-leaf item))
-         (children (cdr (assoc (car (split-string leaf ":")) verilog-ext-hierarchy-current-flat-hierarchy))))
+         (children (cdr (assoc (car (split-string leaf ":")) verilog-ext-hierarchy-current-flat-hier))))
     (mapcar (lambda (child) (concat (when prefix (concat prefix ".")) leaf "." child)) children)))
 
 (defun verilog-ext-hierarchy-extract--construct-node (node hierarchy)
   "Recursively build HIERARCHY for NODE using childrenfn."
   (let ((children (mapcar (lambda (child)
                             (concat node "." child))
-                          (cdr (assoc (verilog-ext-hierarchy--get-node-leaf node) verilog-ext-hierarchy-current-flat-hierarchy)))))
+                          (cdr (assoc (verilog-ext-hierarchy--get-node-leaf node) verilog-ext-hierarchy-current-flat-hier)))))
     (when children
       (hierarchy-add-tree hierarchy node nil #'verilog-ext-hierarchy-extract--childrenfn)
       (dolist (child children)
@@ -130,24 +126,35 @@ Arg ITEM are hierarchy nodes."
 (defun verilog-ext-hierarchy-extract--internal (module)
   "Construct hierarchy struct for MODULE.
 
-Modules and instances will be analyzed from the value of
-`verilog-ext-hierarchy-current-flat-hierarchy'.
-This alist must be populated before calling the function!
+Entities and instances will be analyzed from corresponding entry in
+`verilog-ext-hierarchy-current-flat-hier'.  These entries will have an
+associated project present `verilog-ext-project-alist' and will be of the form:
+\(module instance1:NAME1 instance2:NAME2 ...\).
 
-`verilog-ext-hierarchy-current-flat-hierarchy' is an alist of the form:
- ((moduleA instanceA1:NAME_A1 instanceA2:NAME_A2 ...)
-  (moduleB instanceB1:NAME_B1 instanceB2:NAME_B2 ...)
-  ..)
+With current prefix, force refreshing of hierarchy database for active project.
 
 Return populated `hierarchy' struct."
-  ;; Some checks
-  (unless verilog-ext-hierarchy-current-flat-hierarchy
-    (user-error "Empty hierarchy database, maybe run first `verilog-ext-workspace-hierarchy-parse'?"))
-  (unless (assoc module verilog-ext-hierarchy-current-flat-hierarchy)
-    (user-error "Could not find %s in the flat-hierarchy" module))
-  (if (not (cdr (assoc module verilog-ext-hierarchy-current-flat-hierarchy)))
-      (user-error "Current module has no instances")
-    ;; Construct node
+  (let* ((proj (verilog-ext-buffer-proj))
+         (hierarchy-alist (if current-prefix-arg
+                              nil
+                            (verilog-ext-aget verilog-ext-hierarchy-internal-alist proj))))
+    ;; Error checking
+    (unless hierarchy-alist
+      (cond (current-prefix-arg
+             (message "Forcing refresh of hierarchy database for [%s]" proj)
+             (verilog-ext-hierarchy-parse)
+             (setq hierarchy-alist (verilog-ext-aget verilog-ext-hierarchy-internal-alist proj)))
+            ((y-or-n-p (format "Empty hierarchy database for [%s].  Run `verilog-ext-hierarchy-parse'?" proj))
+             (verilog-ext-hierarchy-parse)
+             (setq hierarchy-alist (verilog-ext-aget verilog-ext-hierarchy-internal-alist proj)))
+            (t
+             (user-error "Aborting"))))
+    (unless (assoc module hierarchy-alist)
+      (user-error "Could not find %s in the flat-hierarchy for project [%s]" module proj))
+    (unless (cdr (assoc module hierarchy-alist))
+      (user-error "Current module has no instances"))
+    ;; Extract hierarchy
+    (setq verilog-ext-hierarchy-current-flat-hier hierarchy-alist)
     (verilog-ext-hierarchy-extract--construct-node module (hierarchy-new))))
 
 
@@ -230,6 +237,43 @@ Alist will be of the form (module instance1:NAME1 instance2:NAME2 ...)."
     ;; Return value
     hierarchy-alist))
 
+;;;;; Module-alist
+(defun verilog-ext-hierarchy-build-module-alist (files proj)
+  "Build alist of modules for FILES in project PROJ.
+
+Used for hierarchy.el frontend to visit file of module at point."
+  (let (module-alist)
+    (dolist (file files)
+      (cond (;; Builtin or vhier without tree-sitter support
+             (or (eq verilog-ext-hierarchy-backend 'builtin)
+                 (and (eq verilog-ext-hierarchy-backend 'vhier)
+                      (not (treesit-language-available-p 'verilog))))
+             (with-temp-buffer
+               (insert-file-contents file)
+               (verilog-ext-with-no-hooks
+                 (verilog-mode))
+               (dolist (module-and-pos (verilog-ext-scan-buffer-modules))
+                 (push `(,(car module-and-pos)
+                         ,file
+                         ,(cadr module-and-pos))
+                       module-alist))))
+            (;; Tree-sitter or vhier with tree-sitter support
+             (or (eq verilog-ext-hierarchy-backend 'tree-sitter)
+                 (and (eq verilog-ext-hierarchy-backend 'vhier)
+                      (treesit-language-available-p 'verilog)))
+             (with-temp-buffer
+               (insert-file-contents file)
+               (treesit-parser-create 'verilog)
+               (dolist (module-node (verilog-ts-nodes "\\<module_declaration\\>"))
+                 (push `(,(verilog-ts--node-identifier-name module-node)
+                         ,file
+                         ,(line-number-at-pos (treesit-node-start module-node)))
+                       module-alist))))
+            ;; Default, wrong backend
+            (t
+             (error "Wrong backend selected"))))
+    (setf (alist-get proj verilog-ext-hierarchy-module-alist nil 'remove 'string=) module-alist)))
+
 
 ;;;; Backends/extraction
 ;;;;; Vhier
@@ -244,36 +288,68 @@ Alist will be of the form (module instance1:NAME1 instance2:NAME2 ...)."
 (defvar verilog-ext-hierarchy-vhier-open-dirs nil "List of open dirs for `verilog-ext-hierarchy-vhier-extract'.")
 (defvar verilog-ext-hierarchy-vhier-open-files nil "List of open files for `verilog-ext-hierarchy-vhier-extract'.")
 
+(defconst verilog-ext-hierarchy-vhier-cache-file (file-name-concat verilog-ext-cache-dir "hierarchy-vhier")
+  "The file where Verilog-ext Vhier hierarchy will be written to.")
+
+(defvar verilog-ext-hierarchy-vhier-alist nil)
+
 (defun verilog-ext-hierarchy-vhier-extract (module)
   "Extract hierarchy of MODULE using Verilog-Perl vhier as a backend.
 Return hierarchy as an indented string."
   (unless (executable-find "vhier")
     (error "Executable vhier not found"))
-  (let* ((vhier-args (mapconcat #'identity verilog-ext-hierarchy-vhier-bin-args " "))
+  (let* ((proj (verilog-ext-buffer-proj))
+         (proj-files `(,@(verilog-ext-proj-files proj) ,@verilog-ext-hierarchy-vhier-open-files))
+         (proj-lib-search-path (verilog-ext-proj-lib-search-path proj))
+         (cached-hierarchy-alist (if current-prefix-arg
+                                     nil
+                                   (verilog-ext-aget verilog-ext-hierarchy-vhier-alist proj)))
+         (vhier-args (mapconcat #'identity verilog-ext-hierarchy-vhier-bin-args " "))
          (library-args (concat "+libext+" (mapconcat #'concat verilog-library-extensions "+") " "
                                (mapconcat (lambda (dir)
                                             (concat "-y " dir))
-                                          `(,@verilog-ext-hierarchy-vhier-dirs ,@verilog-ext-hierarchy-vhier-open-dirs)
+                                          `(,@proj-lib-search-path ,@verilog-ext-hierarchy-vhier-open-dirs)
                                           " ")))
-         (input-files (mapconcat #'identity
-                                 `(,@verilog-ext-hierarchy-vhier-files ,@verilog-ext-hierarchy-vhier-open-files)
-                                 " "))
+         (input-files (mapconcat #'identity proj-files " "))
+         (command-file (verilog-ext-proj-command-file proj))
          (buf verilog-ext-hierarchy-vhier-buffer-name)
          (buf-err verilog-ext-hierarchy-vhier-shell-cmds-buffer-name)
          (err-msg (format "vhier returned with errors\nCheck %s buffer" buf-err))
          (cmd (mapconcat #'identity
                          `("vhier" ,vhier-args ,library-args
-                           ,(when verilog-ext-hierarchy-vhier-command-file
-                              (mapconcat #'identity `("-f " ,verilog-ext-hierarchy-vhier-command-file)))
-                           ,input-files ,buffer-file-name "--top-module" ,module)
-                         " ")))
-    (unless (= 0 (shell-command cmd buf buf-err))
-      (pop-to-buffer buf-err)
-      (error err-msg))
-    (with-current-buffer buf
-      ;; Perform a bit of postprocessing to get the format module:INSTANCE
-      (verilog-ext-replace-regexp-whole-buffer (concat "\\(?1:" verilog-identifier-sym-re "\\) \\(?2:" verilog-identifier-sym-re "\\)") "\\2:\\1")
-      (buffer-substring-no-properties (point-min) (point-max)))))
+                           ,(when command-file (mapconcat #'identity `("-f " ,command-file)))
+                           ,input-files ,buffer-file-name
+                           "--top-module" ,module)
+                         " "))
+         hierarchy-string hierarchy-alist)
+    ;; Basic checks
+    (unless proj
+      (user-error "Not in a Verilog project buffer, check `verilog-ext-project-alist'"))
+    ;; Use cache if already available instead of running vhier command
+    (if cached-hierarchy-alist
+        (setq verilog-ext-hierarchy-current-flat-hier cached-hierarchy-alist)
+      ;; Otherwise run vhier command to extract project hierarchy
+      (unless (= 0 (shell-command cmd buf buf-err))
+        (pop-to-buffer buf-err)
+        (error err-msg))
+      (with-current-buffer buf
+        ;; Perform a bit of postprocessing to get the format module:INSTANCE
+        (verilog-ext-replace-regexp-whole-buffer (concat "\\(?1:" verilog-identifier-sym-re "\\) \\(?2:" verilog-identifier-sym-re "\\)") "\\2:\\1")
+        (setq hierarchy-string (buffer-substring-no-properties (point-min) (point-max))))
+      ;; Convert indented string to alist for caching and default hierarchy.el displaying
+      (setq hierarchy-alist (verilog-ext-hierarchy--convert-string-to-alist hierarchy-string))
+      (verilog-ext-proj-setcdr proj verilog-ext-hierarchy-vhier-alist hierarchy-alist)
+      (verilog-ext-hierarchy-build-module-alist proj-files proj)
+      (setq verilog-ext-hierarchy-current-flat-hier hierarchy-alist)
+      (when verilog-ext-cache-enable
+        (verilog-ext-serialize verilog-ext-hierarchy-vhier-alist verilog-ext-hierarchy-vhier-cache-file)
+        (verilog-ext-serialize verilog-ext-hierarchy-module-alist verilog-ext-hierarchy-module-cache-file)))
+    ;; Construct hierarchy struct after setting `verilog-ext-hierarchy-current-flat-hier'
+    (unless (assoc module verilog-ext-hierarchy-current-flat-hier)
+      (user-error "Could not find %s in the flat-hierarchy for project [%s].\nTry running `verilog-ext-hierarchy-current-buffer' with prefix arg on current buffer" module proj))
+    (unless (cdr (assoc module verilog-ext-hierarchy-current-flat-hier))
+      (user-error "Current module has no instances"))
+    (verilog-ext-hierarchy-extract--construct-node module (hierarchy-new))))
 
 
 ;;;;; Tree-sitter
@@ -289,7 +365,7 @@ declaration."
   (let (module-nodes instances module-instances-alist)
     (with-temp-buffer
       (insert-file-contents file)
-      (verilog-ts-mode)
+      (treesit-parser-create 'verilog)
       (setq module-nodes (verilog-ts-module-declarations-nodes-current-buffer))
       (dolist (module-node module-nodes module-instances-alist)
         (setq instances nil)
@@ -301,7 +377,7 @@ declaration."
 (defun verilog-ext-hierarchy-tree-sitter-extract (module)
   "Extract hierarchy of MODULE using tree-sitter as a backend.
 
-Populate `verilog-ext-hierarchy-current-flat-hierarchy' with alist of modules
+Populate `verilog-ext-hierarchy-current-flat-hier' with alist of modules
 and instances."
   (unless (eq verilog-ext-hierarchy-backend 'tree-sitter)
     (error "Wrong backend!"))
@@ -321,7 +397,8 @@ declaration."
   (let (modules instances module-instances-alist)
     (with-temp-buffer
       (insert-file-contents file)
-      (verilog-mode)
+      (verilog-ext-with-no-hooks
+        (verilog-mode))
       (setq modules (verilog-ext-scan-buffer-modules))
       (dolist (module modules module-instances-alist)
         (setq instances nil)
@@ -333,7 +410,7 @@ declaration."
 (defun verilog-ext-hierarchy-builtin-extract (module)
   "Extract hierarchy of MODULE using builtin Elisp backend.
 
-Populate `verilog-ext-hierarchy-current-flat-hierarchy' with alist of modules
+Populate `verilog-ext-hierarchy-current-flat-hier' with alist of modules
 and instances."
   (unless (eq verilog-ext-hierarchy-backend 'builtin)
     (error "Wrong backend!"))
@@ -342,23 +419,43 @@ and instances."
 
 ;;;; Frontends/navigation
 ;;;;; hierarchy.el
+(defun verilog-ext-hierarchy-twidget-buf--name ()
+  "Return buffer name for twidget hierarchy buffer."
+  (concat "*" (verilog-ext-buffer-proj) "*"))
+
+(defun verilog-ext-hierarchy-twidget--buf-project ()
+  "Return current project from twidget buffer name.
+
+Assumes that hierarchy buffer name is `verilog-ext-buffer-proj' with stars.
+See `verilog-ext-hierarchy-twidget-buf--name'."
+  (string-remove-prefix "*" (string-remove-suffix "*" (buffer-name))))
+
 (defun verilog-ext-hierarchy-twidget-nav-open (&optional other-window)
   "Find definition of node/module at point.
-Requires having active some backend on `xref-backend-functions',
-e.g. lsp/eglot/ggtags.
+
+Looks at value of `verilog-ext-hierarchy-module-alist' to check definition place
+of modules.
 
 If optional arg OTHER-WINDOW is non-nil find definition in other window."
   (interactive)
   (let ((module (save-excursion
                   (widget-end-of-line)
                   (backward-sexp)
-                  (thing-at-point 'symbol :no-props))))
+                  (thing-at-point 'symbol :no-props)))
+        modules-files file line)
     (when module
-      (widget-end-of-line)
-      (backward-sexp)
-      (if other-window
-          (xref-find-definitions-other-window module)
-        (xref-find-definitions module)))))
+      (setq modules-files (verilog-ext-aget verilog-ext-hierarchy-module-alist (verilog-ext-hierarchy-twidget--buf-project)))
+      (setq file (nth 1 (assoc module modules-files)))
+      (setq line (nth 2 (assoc module modules-files)))
+      (if (and file line)
+          (progn
+            (if other-window
+                (find-file-other-window file)
+              (find-file file))
+            (goto-char (point-min))
+            (forward-line (1- line))
+            (recenter '(4) t))
+        (user-error "Could not find %s in `verilog-ext-hierarchy-module-alist'" module)))))
 
 (defun verilog-ext-hierarchy-twidget-nav-open-other-window ()
   "Find definition of node/module at point in other window."
@@ -399,19 +496,17 @@ INFO: Assumes it's initially collapsed, which is the case by default."
   :lighter " vH"
   (message "Navigating hierarchy..."))
 
-(defun verilog-ext-hierarchy-twidget-display (hierarchy &optional module)
+(defun verilog-ext-hierarchy-twidget-display (hierarchy)
   "Display HIERARCHY using builtin `hierarchy' and `tree-widget' packages.
 
-Show only module name, discard instance name after colon (mod:INST).
-
-Optional arg MODULE will set the name of the display buffer, if provided."
+Show only module name, discard instance name after colon (mod:INST)."
   (unless (hierarchy-p hierarchy)
     (error "Hierarchy must be of hierarchy struct type"))
   (pop-to-buffer
    (hierarchy-tree-display
     hierarchy
     (lambda (item _) (insert (car (split-string (verilog-ext-hierarchy--get-node-leaf item) ":"))))
-    (get-buffer-create (concat "*" module "*"))))
+    (get-buffer-create (verilog-ext-hierarchy-twidget-buf--name))))
   ;; Navigation mode and initial expansion
   (verilog-ext-hierarchy-twidget-nav-mode)
   (when verilog-ext-hierarchy-twidget-init-expand
@@ -480,12 +575,10 @@ Makes use of processed output under `outline-minor-mode' and `outshine'."
   (setq buffer-read-only t)
   (view-mode -1))
 
-(defun verilog-ext-hierarchy-outshine-display (hierarchy &optional module)
+(defun verilog-ext-hierarchy-outshine-display (hierarchy)
   "Display HIERARCHY using `outshine'.
-Expects HIERARCHY to be a indented string.
-Optional arg MODULE will set the name of the display buffer, if provided."
-  (let ((buf (or (concat "*" module "*")
-                 "*Verilog-outshine*")))
+Expects HIERARCHY to be a indented string."
+  (let ((buf "*Verilog-outshine*"))
     (with-current-buffer (get-buffer-create buf)
       (setq buffer-read-only nil)
       (erase-buffer)
@@ -516,7 +609,19 @@ Optional arg MODULE will set the name of the display buffer, if provided."
       (verilog-ext-hierarchy-outshine-nav-mode))
     (pop-to-buffer buf)))
 
-;;;; Common
+;;;; Core
+(defun verilog-ext-hierarchy-serialize ()
+  "Write variables to their cache files."
+  (verilog-ext-serialize verilog-ext-hierarchy-internal-alist verilog-ext-hierarchy-internal-cache-file)
+  (verilog-ext-serialize verilog-ext-hierarchy-vhier-alist verilog-ext-hierarchy-vhier-cache-file)
+  (verilog-ext-serialize verilog-ext-hierarchy-module-alist verilog-ext-hierarchy-module-cache-file))
+
+(defun verilog-ext-hierarchy-unserialize ()
+  "Read cache files into their corresponding variables."
+  (setq verilog-ext-hierarchy-internal-alist (verilog-ext-unserialize verilog-ext-hierarchy-internal-cache-file))
+  (setq verilog-ext-hierarchy-vhier-alist (verilog-ext-unserialize verilog-ext-hierarchy-vhier-cache-file))
+  (setq verilog-ext-hierarchy-module-alist (verilog-ext-unserialize verilog-ext-hierarchy-module-cache-file)))
+
 (defun verilog-ext-hierarchy-setup ()
   "Setup hierarchy backend/frontend depending on available binaries/packages.
 If these have been set before, keep their values."
@@ -531,7 +636,30 @@ If these have been set before, keep their values."
         (frontend (or verilog-ext-hierarchy-frontend
                       'hierarchy)))
     (setq verilog-ext-hierarchy-backend backend)
-    (setq verilog-ext-hierarchy-frontend frontend)))
+    (setq verilog-ext-hierarchy-frontend frontend)
+    ;; Cache
+    (when verilog-ext-cache-enable
+      (verilog-ext-hierarchy-unserialize))))
+
+(defun verilog-ext-hierarchy-clear-cache (&optional all)
+  "Clear hierarchy cache files for current project.
+
+With prefix arg, clear cache for ALL projects."
+  (interactive "P")
+  (if (not all)
+      (let ((proj (verilog-ext-buffer-proj)))
+        (unless proj
+          (user-error "Not in a Verilog project buffer"))
+        (verilog-ext-proj-setcdr proj verilog-ext-hierarchy-internal-alist nil)
+        (verilog-ext-proj-setcdr proj verilog-ext-hierarchy-vhier-alist nil)
+        (verilog-ext-proj-setcdr proj verilog-ext-hierarchy-module-alist nil)
+        (verilog-ext-hierarchy-serialize)
+        (message "[%s] Cleared hierarchy cache!" proj))
+    (setq verilog-ext-hierarchy-internal-alist nil)
+    (setq verilog-ext-hierarchy-vhier-alist nil)
+    (setq verilog-ext-hierarchy-module-alist nil)
+    (verilog-ext-hierarchy-serialize)
+    (message "Cleared hierarchy cache!")))
 
 (defun verilog-ext-hierarchy-extract (module)
   "Construct hierarchy for MODULE depending on selected backend."
@@ -547,40 +675,98 @@ If these have been set before, keep their values."
         ;; Fallback
         (t (error "Must set a proper extraction backend in `verilog-ext-hierarchy-backend'"))))
 
-(defun verilog-ext-hierarchy-display (hierarchy &optional module)
+(defun verilog-ext-hierarchy-display (hierarchy)
   "Display HIERARCHY depending on selected frontend.
 
 Handle conversion (if needed) of input extracted data depending on output
 frontend.
 
 E.g.: If extracted with vhier and displayed with hierarchy it is needed to
-convert between an indented string and a populated hierarchy struct.
-
-Optional arg MODULE will set the name of the display buffer, if provided."
+convert between an indented string and a populated hierarchy struct."
   (let ((display-hierarchy hierarchy))
     (cond (;; Outshine
            (eq verilog-ext-hierarchy-frontend 'outshine)
            (when (hierarchy-p hierarchy)
              (setq display-hierarchy (verilog-ext-hierarchy--convert-struct-to-string hierarchy)))
-           (verilog-ext-hierarchy-outshine-display display-hierarchy module))
+           (verilog-ext-hierarchy-outshine-display display-hierarchy))
           ;; Hierarchy
           ((eq verilog-ext-hierarchy-frontend 'hierarchy)
-           (when (stringp hierarchy)
-             (let ((top-module (string-trim-left (car (split-string (car (split-string hierarchy "\n")) ":")))) ; First line of the string, as parsed by vhier
-                   (hierarchy-alist (verilog-ext-hierarchy--convert-string-to-alist hierarchy)))
-               (setq verilog-ext-hierarchy-current-flat-hierarchy hierarchy-alist)
-               (setq display-hierarchy (verilog-ext-hierarchy-extract--internal top-module))))
-           (verilog-ext-hierarchy-twidget-display display-hierarchy module))
+           (setq display-hierarchy hierarchy)
+           (verilog-ext-hierarchy-twidget-display display-hierarchy))
           ;; Fallback
           (t (error "Must set a proper display frontend in `verilog-ext-hierarchy-frontend'")))))
+
+(defun verilog-ext-hierarchy-parse (&optional verbose)
+  "Return flat hierarchy of modules and instances of project.
+
+Populates `verilog-ext-hierarchy-internal-alist' for subsequent hierarchy
+extraction and display.
+
+With current-prefix or VERBOSE, dump output log."
+  (interactive "P")
+  (let* ((proj (verilog-ext-buffer-proj))
+         (files (verilog-ext-proj-files proj))
+         (num-files (length files))
+         (num-files-processed 0)
+         (log-file (concat verilog-ext-hierarchy-internal-cache-file ".log"))
+         (hier-progress-reporter (make-progress-reporter "[Hierarchy parsing]: " 0 num-files))
+         flat-hierarchy data)
+    (unless files
+      (error "No files found for current buffer project.  Set `verilog-ext-project-alist' accordingly?"))
+    (when verbose
+      (delete-file log-file))
+    (dolist (file files)
+      (when verbose
+        (append-to-file (format "(%0d%%) [Hierarchy parsing] Processing %s\n" (/ (* num-files-processed 100) num-files) file) nil log-file))
+      (progress-reporter-update hier-progress-reporter num-files-processed (format "[%s]" file))
+      (setq data (cond ((eq verilog-ext-hierarchy-backend 'tree-sitter)
+                        (verilog-ext-hierarchy-tree-sitter-parse-file file))
+                       ((eq verilog-ext-hierarchy-backend 'builtin)
+                        (verilog-ext-hierarchy-builtin-parse-file file))
+                       (t
+                        (error "Wrong backend selected!"))))
+      (when data
+        (dolist (entry data)
+          (push entry flat-hierarchy)))
+      (setq num-files-processed (1+ num-files-processed)))
+    ;; Update hierarchy and module alists and cache
+    (verilog-ext-proj-setcdr proj verilog-ext-hierarchy-internal-alist flat-hierarchy)
+    (verilog-ext-hierarchy-build-module-alist files proj)
+    (when verilog-ext-cache-enable
+      (verilog-ext-serialize verilog-ext-hierarchy-internal-alist verilog-ext-hierarchy-internal-cache-file)
+      (verilog-ext-serialize verilog-ext-hierarchy-module-alist verilog-ext-hierarchy-module-cache-file)) ; Updated after initial call to `verilog-ext-proj-files'
+    ;; Return value for async related function
+    (message "Finished analyzing hierarchy!")
+    (list verilog-ext-hierarchy-internal-alist verilog-ext-hierarchy-module-alist)))
+
+(defun verilog-ext-hierarchy-parse-async (&optional verbose)
+  "Return flat hierarchy of modules and instances of project asynchronously.
+
+Populates `verilog-ext-hierarchy-internal-alist' for subsequent hierarchy
+extraction and display.
+
+With current-prefix or VERBOSE, dump output log."
+  (interactive "P")
+  (message "Starting hierarchy parsing for %s" (verilog-ext-buffer-proj))
+  (async-start
+   `(lambda ()
+      ,(async-inject-variables verilog-ext-hierarchy-async-inject-variables-re)
+      (require 'verilog-ext)
+      ;; Preserve cache on child Emacs process
+      (setq verilog-ext-hierarchy-internal-alist (verilog-ext-unserialize verilog-ext-hierarchy-internal-cache-file))
+      (setq verilog-ext-hierarchy-module-alist (verilog-ext-unserialize verilog-ext-hierarchy-module-cache-file))
+      (verilog-ext-hierarchy-parse ,@verbose))
+   (lambda (result)
+     (message "Finished analyzing hierarchy!")
+     (setq verilog-ext-hierarchy-internal-alist (car result))
+     (setq verilog-ext-hierarchy-module-alist (cadr result)))))
 
 (defun verilog-ext-hierarchy-current-buffer ()
   "Extract and display hierarchy for module of `current-buffer'."
   (interactive)
   (let* ((module (verilog-ext-select-file-module))
          (hierarchy (verilog-ext-hierarchy-extract module)))
-    (verilog-ext-hierarchy-display hierarchy module)))
-
+    (verilog-ext-hierarchy-display hierarchy)))
 
 
 (provide 'verilog-ext-hierarchy)

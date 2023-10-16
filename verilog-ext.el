@@ -40,7 +40,7 @@
 ;;  - Improve `imenu' entries: detect instances, classes and methods
 ;;  - Enhanced support for `which-func'
 ;;  - Code folding via `hideshow'
-;;  - Workspace tags, typedef analysis and caching
+;;  - Project tags, typedef analysis and caching
 ;;  - Time-stamp auto-configuration
 ;;  - Convert block end comments to names
 ;;  - Port connections utilities
@@ -75,7 +75,7 @@
   "Which Verilog-ext features to enable."
   :type '(set (const :tag "Improved syntax highlighting via `font-lock'."
                 font-lock)
-              (const :tag "Xref backend to navigate definitions/references in current workspace."
+              (const :tag "Xref backend to navigate definitions/references in current project."
                 xref)
               (const :tag "Completion at point builtin function with dot and scope completion."
                 capf)
@@ -103,7 +103,7 @@
                 which-func)
               (const :tag "`hideshow' configuration."
                 hideshow)
-              (const :tag "Scan typedefs and classes of current workspace for syntax highlighting and alignment."
+              (const :tag "Scan typedefs and classes of current project for syntax highlighting and alignment."
                 typedefs)
               (const :tag "`time-stamp' configuration."
                 time-stamp)
@@ -146,7 +146,6 @@ FEATURES can be a single feature or a list of features."
 (require 'verilog-ext-hierarchy)
 (require 'verilog-ext-beautify)
 (require 'verilog-ext-template)
-(require 'verilog-ext-workspace)
 (require 'verilog-ext-xref)
 (require 'verilog-ext-formatter)
 (require 'verilog-ext-flycheck)
@@ -162,7 +161,7 @@ FEATURES can be a single feature or a list of features."
     (verilog-ext-when-feature 'formatter
       (define-key map (kbd "C-c C-l") 'verilog-ext-formatter-run))
     (verilog-ext-when-feature 'compilation
-      (define-key map (kbd "C-c <f5>") 'verilog-ext-workspace-compile)
+      (define-key map (kbd "C-c <f5>") 'verilog-ext-compile)
       (define-key map (kbd "C-c C-p") 'verilog-ext-preprocess))
     (verilog-ext-when-feature 'flycheck
       (define-key map (kbd "C-c C-f") 'verilog-ext-flycheck-mode))
@@ -173,27 +172,31 @@ FEATURES can be a single feature or a list of features."
     (verilog-ext-when-feature 'beautify
       (define-key map (kbd "C-M-i") 'verilog-ext-beautify-block-at-point-indent)
       (define-key map (kbd "C-c C-b") 'verilog-ext-beautify-module-at-point))
+    (verilog-ext-when-feature 'xref
+      (define-key map (kbd "C-c C-u") 'verilog-ext-tags-get))
     (verilog-ext-when-feature 'navigation
-      (define-key map (kbd "C-M-a") 'verilog-ext-nav-beg-of-defun-dwim)
-      (define-key map (kbd "C-M-e") 'verilog-ext-nav-end-of-defun-dwim)
-      (define-key map (kbd "C-M-d") 'verilog-ext-nav-down-dwim)
-      (define-key map (kbd "C-M-u") 'verilog-ext-nav-up-dwim)
-      (define-key map (kbd "C-M-p") 'verilog-ext-nav-prev-dwim)
-      (define-key map (kbd "C-M-n") 'verilog-ext-nav-next-dwim)
+      (when (eq major-mode 'verilog-mode)
+        (define-key map (kbd "C-M-a") 'verilog-ext-nav-beg-of-defun-dwim)
+        (define-key map (kbd "C-M-e") 'verilog-ext-nav-end-of-defun-dwim)
+        (define-key map (kbd "C-M-d") 'verilog-ext-nav-down-dwim)
+        (define-key map (kbd "C-M-u") 'verilog-ext-nav-up-dwim)
+        (define-key map (kbd "C-M-p") 'verilog-ext-nav-prev-dwim)
+        (define-key map (kbd "C-M-n") 'verilog-ext-nav-next-dwim))
       (define-key map (kbd "C-c M-.") 'verilog-ext-jump-to-module-at-point-def)
       (define-key map (kbd "C-c M-?") 'verilog-ext-jump-to-module-at-point-ref)
-      (define-key map (kbd "C-M-.") 'verilog-ext-workspace-jump-to-parent-module))
+      (define-key map (kbd "C-M-.") 'verilog-ext-jump-to-parent-module))
     (verilog-ext-when-feature 'ports
       (define-key map (kbd "C-c C-c c") 'verilog-ext-ports-clean-blanks)
       (define-key map (kbd "C-c C-c t") 'verilog-ext-ports-toggle-connect)
-      (define-key map (kbd "C-c C-c r") 'verilog-ext-ports-connect-recursively)
+      (define-key map (kbd "C-c C-c r") 'verilog-ext-ports-connect-recursively))
     ;; Misc
-    (define-key map (kbd "TAB") 'verilog-ext-tab)
-    (define-key map (kbd "M-d") 'verilog-ext-kill-word)
-    (define-key map (kbd "M-f") 'verilog-ext-forward-word)
-    (define-key map (kbd "M-b") 'verilog-ext-backward-word)
-    (define-key map (kbd "C-<backspace>") 'verilog-ext-backward-kill-word)
-    (define-key map (kbd "M-DEL") 'verilog-ext-backward-kill-word))
+    (when (eq major-mode 'verilog-mode)
+      (define-key map (kbd "TAB") 'verilog-ext-tab)
+      (define-key map (kbd "M-d") 'verilog-ext-kill-word)
+      (define-key map (kbd "M-f") 'verilog-ext-forward-word)
+      (define-key map (kbd "M-b") 'verilog-ext-backward-word)
+      (define-key map (kbd "C-<backspace>") 'verilog-ext-backward-kill-word)
+      (define-key map (kbd "M-DEL") 'verilog-ext-backward-kill-word))
     map)
   "Key map for the `verilog-ext'.")
 
@@ -209,10 +212,9 @@ FEATURES can be a single feature or a list of features."
   (verilog-ext-when-feature 'template
     (verilog-ext-template-add-snippets))
   (verilog-ext-when-feature 'typedefs
-    (verilog-ext-workspace-typedefs-setup))
+    (verilog-ext-typedef-set))
   (verilog-ext-when-feature 'hierarchy
-    (verilog-ext-hierarchy-setup)
-    (verilog-ext-workspace-hierarchy-setup))
+    (verilog-ext-hierarchy-setup))
   (verilog-ext-when-feature 'formatter
     (verilog-ext-formatter-setup))
   (verilog-ext-when-feature 'flycheck
@@ -223,8 +225,7 @@ FEATURES can be a single feature or a list of features."
     (verilog-ext-lsp-setup)
     (verilog-ext-lsp-set-server verilog-ext-lsp-mode-default-server))
   (verilog-ext-when-feature '(capf xref)
-    (verilog-ext-tags-setup)
-    (verilog-ext-workspace-tags-table-setup))
+    (verilog-ext-tags-setup))
   ;; Jump to parent module ag/ripgrep hooks
   (add-hook 'ag-search-finished-hook #'verilog-ext-navigation-ag-rg-hook)
   (add-hook 'ripgrep-search-finished-hook #'verilog-ext-navigation-ag-rg-hook))
@@ -265,7 +266,7 @@ FEATURES can be a single feature or a list of features."
         (verilog-ext-when-feature 'time-stamp
           (verilog-ext-time-stamp-mode))
         (verilog-ext-when-feature 'capf
-          (verilog-ext-workspace-capf-set))
+          (verilog-ext-capf-set))
         (verilog-ext-when-feature 'xref
           (verilog-ext-xref-set))
         ;; `verilog-mode'-only customization (exclude `verilog-ts-mode')
@@ -293,10 +294,12 @@ FEATURES can be a single feature or a list of features."
       (verilog-ext-block-end-comments-to-names-mode -1))
     (verilog-ext-when-feature 'time-stamp
       (verilog-ext-time-stamp-mode -1))
+    (verilog-ext-when-feature 'typedef
+      (verilog-ext-typedef-set :disable))
     (verilog-ext-when-feature 'xref
       (verilog-ext-xref-set :disable))
     (verilog-ext-when-feature 'capf
-      (verilog-ext-workspace-capf-set :disable))))
+      (verilog-ext-capf-set :disable))))
 
 
 ;;; Provide

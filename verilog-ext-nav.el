@@ -707,18 +707,13 @@ Runs only when the ag/rg search was triggered by
 (defvar verilog-ext-jump-to-parent-module-starting-windows nil
   "Variable to register how many windows are open when trying to jump-to-parent.")
 
-(defun verilog-ext-jump-to-parent-module (&optional dir)
+(defun verilog-ext-jump-to-parent-module ()
   "Find current module/interface instantiations via `ag'/`rg'.
-
-Perform search in DIR.  If not specified use current directory.
-See also `verilog-ext-workspace-jump-to-parent-module'.
 
 Configuration should be done so that `verilog-ext-navigation-ag-rg-hook' is run
 after the search has been done."
   (interactive)
-  (unless dir
-    (setq dir default-directory))
-  (let* ((proj-dir dir)
+  (let* ((proj-dir (verilog-ext-buffer-proj-root))
          (module-name (or (verilog-ext-select-file-module buffer-file-name)
                           (error "No module/interface found @ %s" buffer-file-name)))
          (module-instance-pcre ; Many thanks to Kaushal Modi for this PCRE
@@ -733,6 +728,9 @@ after the search has been done."
                   "\\b(" verilog-identifier-re ")\\b" ; Instance name
                   "(?=[^a-zA-Z0-9_]*\\()"             ; Nested lookahead (space/newline after instance name and before opening parenthesis)
                   ")")))                            ; Closing lookahead
+    ;; Check we are in a project
+    (unless proj-dir
+      (user-error "Not in a Verilog project buffer"))
     ;; Update variables used by the ag/rg search finished hooks
     (setq verilog-ext-jump-to-parent-module-name module-name)
     (setq verilog-ext-jump-to-parent-module-dir proj-dir)
@@ -936,8 +934,6 @@ Otherwise move to previous paragraph."
           (string= (symbol-at-point) "end"))
       (verilog-ext-backward-sexp)
     (backward-paragraph)))
-
-
 
 
 (provide 'verilog-ext-nav)

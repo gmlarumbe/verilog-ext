@@ -24,7 +24,7 @@
 
 ;;; Code:
 
-(require 'verilog-ext-utils)
+(require 'verilog-ext-tags)
 
 ;; Fetched from IEEE 1800-2012
 ;; https://ece.uah.edu/~gaede/cpe526/2012%20System%20Verilog%20Language%20Reference%20Manual.pdf
@@ -278,14 +278,20 @@ Return value is a cons with (start . end) bounds."
     (when (and start end)
       (cons start end))))
 
-(defun verilog-ext-capf-annotation-function (cand defs-table inst-table)
+(defun verilog-ext-capf-annotation-function (cand)
   "Completion annotation function for candidate CAND.
 
-Get candidate type from DEFS-TABLE, or if not found, from INST-TABLE."
-  (let* ((entry (or (and defs-table (gethash cand defs-table))
+Get candidate type from `verilog-ext-tags-defs-table' or if not found, from
+`verilog-ext-tags-inst-table'.
+
+See available types in `verilog-ext-tags-definitions-ts-re'."
+  (let* ((proj (verilog-ext-buffer-proj))
+         (defs-table (alist-get proj verilog-ext-tags-defs-table nil nil #'string=))
+         (inst-table (alist-get proj verilog-ext-tags-inst-table nil nil #'string=))
+         (entry (or (and defs-table (gethash cand defs-table))
                     (and inst-table (gethash cand inst-table))))
          (locs (plist-get entry :locs))
-         (type (plist-get (car locs) :type))) ; TODO: Getting the type of the first appearance
+         (type (plist-get (car locs) :type))) ; INFO: Getting the type of the first appearance
     (cond (;; Type
            type
            (pcase type
@@ -310,15 +316,20 @@ Get candidate type from DEFS-TABLE, or if not found, from INST-TABLE."
           (t ;; Default
            nil))))
 
-(cl-defun verilog-ext-capf (&key defs-table inst-table refs-table annotation-fn)
-  "Complete with identifiers present in DEFS-TABLE, INST-TABLE and REFS-TABLE.
+(defun verilog-ext-capf ()
+  "Complete with identifiers present in various hash tables.
 
-Show annotations using function ANNOTATION-FN.
+Tables used: `verilog-ext-tags-defs-table', `verilog-ext-tags-inst-table' and
+`verilog-ext-tags-refs-table'.
 
-Verilog-ext `completion-at-point' function to be called by a wrapper function in
-the workspace."
+Show annotations using function `verilog-ext-capf-annotation-function'."
   (interactive)
-  (let (bounds start end completions)
+  (let* ((proj (verilog-ext-buffer-proj))
+         (defs-table (alist-get proj verilog-ext-tags-defs-table nil 'remove #'string=))
+         (refs-table (alist-get proj verilog-ext-tags-refs-table nil 'remove #'string=))
+         (inst-table (alist-get proj verilog-ext-tags-inst-table nil 'remove #'string=))
+         (annotation-fn #'verilog-ext-capf-annotation-function)
+         bounds start end completions)
     (cond (;; Dot completion for object methods/attributes and hierarchical references
            (setq bounds (verilog-ext-capf--dot-completion-bounds))
            (let (table-entry-value block-type)
@@ -363,6 +374,12 @@ the workspace."
     (list start end completions
           :annotation-function annotation-fn
           :company-docsig #'identity)))
+
+(defun verilog-ext-capf-set (&optional disable)
+  "Enable or DISABLE builtin capf function."
+  (if disable
+      (remove-hook 'completion-at-point-functions #'verilog-ext-capf :local)
+    (add-hook 'completion-at-point-functions #'verilog-ext-capf nil :local)))
 
 
 (provide 'verilog-ext-capf)
