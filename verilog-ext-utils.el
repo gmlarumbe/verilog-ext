@@ -826,9 +826,13 @@ These depend on the value of property list of `verilog-ext-project-alist'.
                   (setq files-dirs (append files-dirs (verilog-ext-dir-files (expand-file-name (cadr (split-string dir)) proj-root) :recursive :follow-symlinks proj-ignore-dirs)))
                 (setq files-dirs (append files-dirs (verilog-ext-dir-files (expand-file-name dir proj-root) nil :follow-symlinks proj-ignore-dirs)))))
             proj-dirs))
+    ;; If no dirs or files are specified get recursively all files in root
+    (if (and (not proj-files)
+             (not proj-dirs))
+        (setq files-all (verilog-ext-dir-files proj-root :recursive :follow-symlinks proj-ignore-dirs))
+      (setq files-dirs (delete-dups files-dirs))
+      (setq files-all (append files-dirs proj-files)))
     ;; Merge and filter
-    (setq files-dirs (delete-dups files-dirs))
-    (setq files-all (append files-dirs proj-files))
     (seq-filter (lambda (file)
                   (not (member file proj-ignore-files)))
                 files-all)))
