@@ -44,7 +44,7 @@
 
 (defun verilog-ext-typedef--var-find (regex &optional limit)
   "Search for REGEX and bound to LIMIT.
-Match data is expected to fits that one of
+Match data is expected to fit that one of
 `verilog-ext-typedef-var-decl-single-re' or
 `verilog-ext-typedef-var-decl-multiple-re'."
   (let (found pos type)
@@ -126,7 +126,7 @@ I.e: populate `verilog-ext-typedef-align-words-current-proj'."
   (verilog-ext-typedef--typedef-buffer-update verilog-ext-typedef-generic-re))
 
 (defun verilog-ext-typedef-get (&optional verbose)
-  "Scan all (System)Verilog FILES and udpate typedef list.
+  "Scan all (System)Verilog files of current project and udpate typedef list.
 
 It will return the updated value of
 `verilog-ext-typedef-align-words-current-proj', which can be used later along

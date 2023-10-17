@@ -1,4 +1,4 @@
-;;; verilog-ext-time-stamp.el --- Verilog-ext Timestamp  -*- lexical-binding: t -*-
+;;; verilog-ext-time-stamp.el --- Verilog-ext Time-stamp  -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2022-2023 Gonzalo Larumbe
 
@@ -20,7 +20,7 @@
 
 ;;; Commentary:
 
-;; Timestamp setup
+;; `time-stamp' setup.
 
 ;;; Code:
 
@@ -34,17 +34,17 @@
   :group 'verilog-ext-time-stamp)
 
 (defcustom verilog-ext-time-stamp-regex "^// Last modified : "
-  "Timestamp regexp."
+  "`time-stamp' regexp."
   :type 'string
   :group 'verilog-ext-time-stamp)
 
 (defcustom verilog-ext-time-stamp-pattern (concat verilog-ext-time-stamp-regex "%%$")
-  "Timestamp pattern.  See `time-stamp-pattern'."
+  "`time-stamp' pattern.  See `time-stamp-pattern'."
   :type 'string
   :group 'verilog-ext-time-stamp)
 
 (defcustom verilog-ext-time-stamp-format  "%:y/%02m/%02d"
-  "Timestamp format.  See `time-stamp-format'."
+  "`time-stamp' format.  See `time-stamp-format'."
   :type 'string
   :group 'verilog-ext-time-stamp)
 

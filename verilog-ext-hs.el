@@ -20,7 +20,7 @@
 
 ;;; Commentary:
 
-;; Basic hideshow configuration
+;; `hideshow' configuration for code folding.
 
 ;;; Code:
 
@@ -62,7 +62,7 @@
             "\\)" "\\)")))
 
 (defun verilog-ext-hs-setup ()
-  "Configure hideshow."
+  "Configure `hideshow'."
   (dolist (mode '((verilog-mode    . verilog-forward-sexp-function)
                   (verilog-ts-mode . verilog-ts-forward-sexp)))
     (add-to-list 'hs-special-modes-alist `(,(car mode)
@@ -72,7 +72,11 @@
                                            ,(cdr mode)))))
 
 (defun verilog-ext-hs-toggle-hiding (&optional e)
-  "Wrapper for `hs-toggle-hiding' with proper syntax table.
+  "Wrapper for `hs-toggle-hiding' depending on current Verilog `major-mode'.
+
+For `verilog-mode' use a modified syntax table.  For `verilog-ts-mode' use
+existing one.
+
 Toggle hiding/showing of a block.
 See `hs-hide-block' and `hs-show-block'.
 Argument E should be the event that triggered this action."

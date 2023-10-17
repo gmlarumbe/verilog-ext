@@ -19,9 +19,25 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
+;;
 ;; Tag collection for jump to definition/reference and semantic completion.
-
+;;
+;; `verilog-ext-tags-get-async' relies on emacs-async: https://github.com/jwiegley/emacs-async:
+;;
+;; - Limitations with async tag collection:
+;;
+;;   - The `async' library has limitations with hash-tables:
+;;      - async-start returns hash tables as lists: https://github.com/jwiegley/emacs-async/issues/164
+;;      - Since the # is stripped (https://github.com/jwiegley/emacs-async/issues/145) and it's needed to
+;;        properly represent hash-tables, the result is that this implementation requires a workaround
+;;      - Solution:
+;;        - Reading/writing to/from stored cached files
+;;
+;;   - Injecting the environment with the value of large hash tables (e.g. `verilog-ext-tags-defs-table') in
+;;   `async-start' via `async-inject-variables' takes a long time in the parent process
+;;      - Solution:
+;;        - Reading environment from stored cached files
+;;
 ;;; Code:
 
 (require 'async)
@@ -184,7 +200,7 @@ project."
 
 ;;;; Builtin
 (cl-defun verilog-ext-tags-table-push-defs (&key tag-type file start limit parent)
-  "Push definitions of TAG-TYPE inside hash table TABLE.
+  "Push definitions of TAG-TYPE inside tags hash table.
 
 FILE might be specified for the cases when a temp-buffer without an associated
 file is being parsed.
@@ -314,7 +330,7 @@ PARENT is the module where TAG is defined/instantiated for dot completion."
 (defun verilog-ext-tags-table-push-refs (file)
   "Push references inside hash table TABLE.
 
-FILE can be provided for the case when references are fetched from a
+FILE must be provided for the case when references are fetched from a
 temp-buffer."
   (let (tag begin line)
     (save-match-data
@@ -506,7 +522,7 @@ Steps:
    (FILE-WAS-REMOVED should be non-nil)
  - Check current file hash and compare to previous stored ones to check if it
    has changed
- - If it did, consider 3 different scenarios:
+ - Consider 3 different scenarios:
     - File did not change: skip that file and check next one
     - File changed: remove previous file locs, collect new file tags and update
       tables and file hashes

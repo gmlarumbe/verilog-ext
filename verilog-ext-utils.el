@@ -20,30 +20,28 @@
 
 ;;; Commentary:
 
-;; Utils
+;; Common utils used in different features.
 
 ;;; Code:
 
 (require 'verilog-mode)
-(require 'xref)
-(require 'ag)
-(require 'ripgrep)
 
 ;;;; Custom
 (defcustom verilog-ext-file-extension-re "\\.s?vh?\\'"
-  "(SystemVerilog) file extensions.
+  "(System)Verilog file extension regexp.
 Defaults to .v, .vh, .sv and .svh."
   :type 'string
   :group 'verilog-ext)
 
 (defcustom verilog-ext-cache-enable t
-  "Enable use of cache files if set to non-nil."
+  "If set to non-nil enable use of cache files."
   :type 'boolean
   :group 'verilog-ext)
 
 (defcustom verilog-ext-cache-do-compression t
   "If set to non-nil compress cache files.
-Requires having \"gzip\" and \"gunzip\" in the PATH."
+
+Requires having \"gzip\" and \"gunzip\" in the $PATH."
   :type 'boolean
   :group 'verilog-ext)
 
@@ -59,7 +57,7 @@ of the project and their cdr a property list with the following properties:
  - :ignore-dirs - directories to ignore (list of strings)
  - :files - files to be used for the project, keep in order for vhier
             hierarchy extraction (list of strings)
- - :ignore-files - files to be ignored for project (list of stings)
+ - :ignore-files - files to be ignored for project (list of strings)
 
 Compilation:
  - :compile-cmd - command used to compile current project (string)
@@ -83,16 +81,10 @@ Vhier:
 
 
 ;;;; Consts/Vars
+;;;;; Regexps
 (defconst verilog-ext-keywords-re
   (eval-when-compile
     (regexp-opt verilog-keywords 'symbols)))
-
-(defconst verilog-ext-compiler-directives
-  (eval-when-compile
-    (mapcar (lambda (directive)
-              (substring directive 1 nil))
-            verilog-compiler-directives))
-  "List of Verilog compiler directives, without the tick.")
 
 (defconst verilog-ext-top-instantiable-re
   (concat "\\<\\(?1:module\\|interface\\)\\>\\(\\s-+\\<automatic\\>\\)?\\s-+\\(?3:" verilog-identifier-sym-re "\\)"))
@@ -107,12 +99,6 @@ Vhier:
           "\\(?3:" verilog-identifier-sym-re "\\)"))
 (defconst verilog-ext-class-re (concat "\\(?1:\\<class\\>\\)\\s-+\\(?3:" verilog-identifier-sym-re "\\)"))
 (defconst verilog-ext-top-re (concat "\\<\\(?1:package\\|program\\|module\\|interface\\)\\>\\(\\s-+\\<automatic\\>\\)?\\s-+\\(?3:" verilog-identifier-sym-re "\\)"))
-
-(defvar verilog-ext-buffer-list nil)
-(defvar verilog-ext-dir-list nil)
-(defvar verilog-ext-file-list nil)
-(defvar-local verilog-ext-file-allows-instances nil
-  "Non nil if current file includes a module or interface block.")
 
 (defconst verilog-ext-range-optional-re
   (concat "\\(\\s-*" verilog-range-re "\\)?"))
@@ -138,10 +124,7 @@ type_t foo1, foo2 , foo4, foo6[], foo7 [25], foo8 ;")
 (defconst verilog-ext-typedef-generic-re (concat "^\\s-*typedef\\s-+\\(?1:\\<" verilog-identifier-re "\\>\\)"
                                                  "\\(" verilog-ext-typedef-class-params-optional-re "\\|" verilog-ext-range-optional-re "\\)"
                                                  "\\s-*\\(?2:\\<" verilog-identifier-re "\\>\\)"))
-
-(defconst verilog-ext-cache-dir (file-name-concat user-emacs-directory "verilog-ext")
-  "The directory where verilog-ext cache files will be placed at.")
-
+;;;;; LSP
 (defconst verilog-ext-server-lsp-list
   '((ve-hdl-checker  . ("hdl_checker" "--lsp"))
     (ve-svlangserver . "svlangserver")
@@ -149,14 +132,28 @@ type_t foo1, foo2 , foo4, foo6[], foo7 [25], foo8 ;")
     (ve-svls         . "svls")
     (ve-veridian     . "veridian"))
   "Verilog-ext available LSP servers.")
+(defconst verilog-ext-server-lsp-ids (mapcar #'car verilog-ext-server-lsp-list))
 
-(defconst verilog-ext-server-lsp-ids
-  (mapcar #'car verilog-ext-server-lsp-list))
+;;;;; Misc
+(defvar verilog-ext-buffer-list nil)
+(defvar verilog-ext-dir-list nil)
+(defvar verilog-ext-file-list nil)
+(defvar-local verilog-ext-file-allows-instances nil
+  "Non nil if current file includes a module or interface block.")
 
+(defconst verilog-ext-cache-dir (file-name-concat user-emacs-directory "verilog-ext")
+  "The directory where verilog-ext cache files will be placed at.")
+
+(defconst verilog-ext-compiler-directives
+  (eval-when-compile
+    (mapcar (lambda (directive)
+              (substring directive 1 nil))
+            verilog-compiler-directives))
+  "List of Verilog compiler directives, without the tick.")
 
 ;;;; Macros
 (defmacro verilog-ext-with-no-hooks (&rest body)
-  "Execute BODY without running any Verilog related hooks."
+  "Execute BODY without running any additional Verilog hooks."
   (declare (indent 0) (debug t))
   `(let ((prog-mode-hook nil)
          (verilog-mode-hook '(verilog-ext-mode))
@@ -166,10 +163,9 @@ type_t foo1, foo2 , foo4, foo6[], foo7 [25], foo8 ;")
 (defmacro verilog-ext-proj-setcdr (proj alist value)
   "Set cdr of ALIST for current PROJ to VALUE.
 
-ALIST is an alist and its keys are projects in `verilog-ext-project-alist' as
-strings.
+If current VALUE is nil remove its key from ALIST.
 
-If current VALUE is nil remove its key from the alist ALIST."
+ALIST keys are strings that define projects in `verilog-ext-project-alist'."
   (declare (indent 0) (debug t))
   `(setf (alist-get ,proj ,alist nil 'remove 'string=) ,value))
 
@@ -230,11 +226,11 @@ If current VALUE is nil remove its key from the alist ALIST."
     (down-list)))
 
 (defun verilog-ext-skip-identifier-backwards ()
-  "Return non-nil if point skipped backwards verilog identifier chars."
+  "Return non-nil if point skipped backwards Verilog identifier chars."
   (< (skip-chars-backward "a-zA-Z0-9_") 0))
 
 (defun verilog-ext-skip-identifier-forward ()
-  "Return non-nil if point skipped forward verilog identifier chars."
+  "Return non-nil if point skipped forward Verilog identifier chars."
   (> (skip-chars-forward "a-zA-Z0-9_") 0))
 
 (defmacro verilog-ext-when-t (cond &rest body)
@@ -245,7 +241,7 @@ Same function `when' from subr.el but returning t if COND is nil."
 
 (defmacro verilog-ext-while-t (cond &rest body)
   "Execute BODY while COND is non-nil.
-Same function `while' but returning t after last condition for use in ands."
+Same function `while' but returning t after last condition."
   (declare (indent 1) (debug t))
   `(progn
      (while ,cond
@@ -341,7 +337,6 @@ Expand with respect to REL-DIR if non-nil."
             (expand-file-name file rel-dir))
           file-list))
 
-
 ;;;; File modules
 (defun verilog-ext-scan-buffer-modules ()
   "Find modules in current buffer.
@@ -382,7 +377,8 @@ Return list with found modules or nil if not found."
         (when debug
           (clone-indirect-buffer-other-window "*debug*" t))
         (insert-file-contents file)
-        (verilog-mode)
+        (verilog-ext-with-no-hooks
+          (verilog-mode))
         (verilog-ext-scan-buffer-modules)))))
 
 (defun verilog-ext-select-file-module (&optional file)
@@ -398,8 +394,7 @@ Return nil if no module was found."
 
 ;;;; Block at point / point inside block
 (defun verilog-ext-class-declaration-is-typedef-p ()
-  "Return non-nil if point is at a class declaration.
-Ensure it is not a typedef class declaration."
+  "Return non-nil if point is at a typedef class declaration."
   (save-excursion
     (save-match-data
       (and (looking-at verilog-ext-class-re)
@@ -409,7 +404,7 @@ Ensure it is not a typedef class declaration."
 
 (defun verilog-ext-looking-at-class-declaration ()
   "Return non-nil if point is at a class declaration (i.e. not a typedef).
-Also updates `match-data' with that of `verilog-ext-class-re'."
+Updates `match-data' with matches of `verilog-ext-class-re'."
   (and (looking-at verilog-ext-class-re)
        (not (verilog-ext-class-declaration-is-typedef-p))))
 
@@ -422,7 +417,7 @@ Also updates `match-data' with that of `verilog-ext-class-re'."
          (match-string-no-properties 2)))) ; Match 2 corresponds to class name classifier
 
 (defun verilog-ext-point-inside-multiline-define ()
-  "Return non-nil if point is inside a multilin define.
+  "Return non-nil if point is inside a multiline define.
 Check `verilog-indent-ignore-p'."
   (save-match-data
     (or (save-excursion
@@ -577,8 +572,10 @@ Return alist with block type, name and boundaries."
 
 (defun verilog-ext-block-at-point (&optional return-pos)
   "Return current block type and name at point.
+
 If RETURN-POS is non-nil, return also the begin and end positions for the block
 at point.
+
 Do not reuse `verilog-ext-point-inside-block' implementation to improve
 efficiency and be able to use it for features such as `which-func'."
   (let ((start-pos (point))
@@ -719,8 +716,10 @@ Optional ARG sets number of words to kill."
 
 (defun verilog-ext-indent-region (start end &optional column)
   "Wrapper for `indent-region'.
+
 Prevents indentation issues with compiler directives with a modified syntax
 table.
+
 Pass the args START, END and optional COLUMN to `indent-region'."
   (cond ((eq major-mode 'verilog-mode)
          (let ((table (make-syntax-table verilog-mode-syntax-table)))
@@ -734,9 +733,11 @@ Pass the args START, END and optional COLUMN to `indent-region'."
 
 (defun verilog-ext-tab (&optional arg)
   "Run corresponding TAB function depending on `major-mode'.
+
 If on a `verilog-mode' buffer, run `electric-verilog-tab' with original
 `verilog-mode' syntax table.  Prevents indentation issues with compiler
 directives with a modified syntax table.
+
 If on a `verilog-ts-mode' buffer, run `indent-for-tab-command' with ARG."
   (interactive "P")
   (cond ((eq major-mode 'verilog-mode)
@@ -753,7 +754,7 @@ If on a `verilog-ts-mode' buffer, run `indent-for-tab-command' with ARG."
 ;;;; Project
 (defun verilog-ext-aget (alist key)
   "Return the value in ALIST that is associated with KEY.
-If KEY is not found, then nil is returned."
+If KEY is not found return nil."
   (cdr (assoc key alist)))
 
 (defun verilog-ext-buffer-proj ()
@@ -786,7 +787,7 @@ If KEY is not found, then nil is returned."
       (expand-file-name cmd-file root))))
 
 (defun verilog-ext-proj-lib-search-path (&optional project)
-  "Return current PROJECT lib search path for vhier."
+  "Return current PROJECT vhier lib search path."
   (let ((proj (or project (verilog-ext-buffer-proj))))
     (when proj
       (plist-get (verilog-ext-aget verilog-ext-project-alist proj) :lib-search-path))))
@@ -882,8 +883,6 @@ Compress cache files if gzip is available."
           (delete-file temp-filename)
           ;; this will blow up if the contents of the file aren't lisp data structures
           (read (buffer-string)))))))
-
-
 
 
 (provide 'verilog-ext-utils)

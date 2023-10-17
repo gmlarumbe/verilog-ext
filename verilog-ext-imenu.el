@@ -30,6 +30,12 @@
 (require 'verilog-ext-nav)
 
 
+(defconst verilog-ext-imenu-class-item-face 'verilog-ext-imenu-class-item-face)
+(defface verilog-ext-imenu-class-item-face
+  '((t nil))
+  "Face for class items."
+  :group 'verilog-ext)
+
 (defconst verilog-ext-imenu-top-re        "^\\s-*\\(?1:connectmodule\\|m\\(?:odule\\|acromodule\\)\\|p\\(?:rimitive\\|rogram\\|ackage\\)\\)\\(\\s-+automatic\\)?\\s-+\\(?2:[a-zA-Z0-9_.:]+\\)")
 (defconst verilog-ext-imenu-localparam-re "^\\s-*localparam\\(?1:\\s-+\\(logic\\|bit\\|int\\|integer\\)\\s-*\\(\\[.*\\]\\)?\\)?\\s-+\\(?2:[a-zA-Z0-9_.:]+\\)")
 (defconst verilog-ext-imenu-define-re     "^\\s-*`define\\s-+\\([a-zA-Z0-9_.:]+\\)")
@@ -50,6 +56,7 @@
 
 (defun verilog-ext-imenu-find-module-instance-index ()
   "Create imenu entries of modules and instances.
+
 Placing this outside of `imenu--generic-function' avoids running it if
 `which-func' is enabled.  It also allows to conditionally disable the index
 building if file cannot contain instances."
@@ -93,7 +100,7 @@ Group the ones that belong to same external method definitions."
 
 (defun verilog-ext-imenu--format-class-item-label (type name modifiers)
   "Return Imenu label for single node using TYPE, NAME and MODIFIERS."
-  (let* ((prop-name (propertize name 'face '(:foreground "goldenrod" :weight bold)))
+  (let* ((prop-name (propertize name 'face verilog-ext-imenu-class-item-face))
          (short-type (pcase type
                        ("task"     " [T]")
                        ("function" " [F]")
@@ -156,6 +163,7 @@ Find recursively tasks and functions inside classes."
 
 (defun verilog-ext-imenu-index ()
   "Index builder function for Verilog Imenu.
+
 Makes use of `verilog-ext-imenu-generic-expression' for everything but classes
 and methods.  These are collected with `verilog-ext-imenu-classes-index'."
   (append (verilog-ext-imenu-find-module-instance-index)

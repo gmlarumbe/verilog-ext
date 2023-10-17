@@ -44,7 +44,7 @@
 
 (defconst verilog-ext-template-snippets-dir
   (expand-file-name "snippets" (file-name-directory (or load-file-name (buffer-file-name))))
-  "Yasnippet verilog-ext snippets directory.")
+  "Yasnippet `verilog-ext' snippets directory.")
 
 
 (defmacro with-verilog-ext-template (&rest body)
@@ -363,39 +363,39 @@ If ASYNC is non-nil create an asynchronous reset."
 
 
 ;;;; Instances
-(defvar verilog-ext-template-inst-auto-header "// Beginning of Verilog AUTO_TEMPLATE")
-(defvar verilog-ext-template-inst-auto-footer "// End of Verilog AUTO_TEMPLATE")
+(defconst verilog-ext-template-inst-auto-header "// Beginning of Verilog AUTO_TEMPLATE")
+(defconst verilog-ext-template-inst-auto-footer "// End of Verilog AUTO_TEMPLATE")
 
 (defun verilog-ext-template-inst-auto (template)
   "Insert header and footer to TEMPLATE strings for instantiation."
   (concat "\n" verilog-ext-template-inst-auto-header " " template " " verilog-ext-template-inst-auto-footer "\n"))
 
-(defvar verilog-ext-template-inst-auto-conn-ports
+(defconst verilog-ext-template-inst-auto-conn-ports
   (verilog-ext-template-inst-auto "
 /* <module> AUTO_TEMPLATE (
  .\\(.*\\) (\\1),
  ); */")
   "Template with connected ports (same signal name as the port).")
 
-(defvar verilog-ext-template-inst-auto-disc-ports
+(defconst verilog-ext-template-inst-auto-disc-ports
   (verilog-ext-template-inst-auto "
 /* <module> AUTO_TEMPLATE (
  .\\(.*\\) (),
  ); */")
   "Template with disconnected ports.")
 
-(defvar verilog-ext-template-inst-auto-conn-ports-ss
+(defconst verilog-ext-template-inst-auto-conn-ports-ss
   (verilog-ext-template-inst-auto "
 /* <module> AUTO_TEMPLATE (
  .\\(.*\\) (\\1[]),
  ); */")
   "Template with connected ports and subscripts.")
 
-(defvar verilog-ext-template-inst-auto-simple "\
+(defconst verilog-ext-template-inst-auto-simple "\
 <module> <instance_name> (/*AUTOINST*/);
 ")
 
-(defvar verilog-ext-template-inst-auto-params "\
+(defconst verilog-ext-template-inst-auto-params "\
 <module> # (/*AUTOINSTPARAM*/) <instance_name> (/*AUTOINST*/);
 ")
 
@@ -693,7 +693,7 @@ Files will be created at {BASE-DIR}/{NAME} directory."
         (save-buffer)
         (kill-buffer)))))
 
-;;;; Yasnippet/Hydra
+;;;; Yasnippet
 (defun verilog-ext-template-insert-yasnippet (snippet)
   "Insert SNIPPET programatically."
   (insert snippet)
@@ -704,6 +704,22 @@ Files will be created at {BASE-DIR}/{NAME} directory."
   (add-to-list 'yas-snippet-dirs verilog-ext-template-snippets-dir)
   (yas-reload-all))
 
+;;;; Makefile
+(defun verilog-ext-template-makefile ()
+  "Create iverilog/verilator `yasnippet' based Makefile.
+
+Create it only if in a project and the Makefile does not already exist."
+  (interactive)
+  (let ((project-root (verilog-ext-buffer-proj-root))
+        file)
+    (if project-root
+        (if (file-exists-p (setq file (file-name-concat project-root "Makefile")))
+            (error "File %s already exists!" file)
+          (find-file file)
+          (verilog-ext-template-insert-yasnippet "verilog"))
+      (error "Not in a project!"))))
+
+;;;; Hydra
 (defhydra verilog-ext-hydra (:color blue
                              :hint nil)
   ("aa"  (verilog-ext-template-insert-yasnippet "aa")  "always" :column "A-C")

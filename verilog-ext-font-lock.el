@@ -683,6 +683,7 @@ Similar to `verilog-match-translate-off' but including
 ;;; Setup
 (defun verilog-ext-font-lock-setup ()
   "Setup syntax highlighting of SystemVerilog buffers.
+
 Add `verilog-ext-mode' font lock keywords before running
 `verilog-mode' in order to populate `font-lock-keywords-alist'
 before `font-lock' is loaded."

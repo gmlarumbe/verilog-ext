@@ -20,7 +20,7 @@
 
 ;;; Commentary:
 
-;; Basic `which-func' setup
+;; `which-func' integration.
 
 ;;; Code:
 

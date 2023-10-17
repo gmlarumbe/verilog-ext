@@ -20,7 +20,7 @@
 
 ;;; Commentary:
 
-;; Block end comments to names mode
+;; Convert block end comments to names.
 
 ;;; Code:
 

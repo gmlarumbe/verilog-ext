@@ -23,7 +23,7 @@
 ;; Indent, align parameters and ports:
 ;;  - Interactively for module at point
 ;;  - Interactively for current buffer
-;;  - In batch for files of current directory
+;;  - In batch for list of files and files of current directory
 
 ;;; Code:
 
@@ -136,7 +136,8 @@ FILES is a list of strings containing the filepaths."
     (dolist (file files)
       (with-temp-file file
         (insert-file-contents file)
-        (verilog-mode)
+        (verilog-ext-with-no-hooks
+          (verilog-mode))
         (verilog-ext-beautify-current-buffer)))))
 
 (defun verilog-ext-beautify-dir-files (dir)

@@ -85,7 +85,7 @@ https://chipsalliance.github.io/verible/lint.html"
 (defcustom verilog-ext-flycheck-svlint-include-path nil
   "List of include paths for svlint linter.
 
-Variables is needed since svlint doesn't allow both source and -f command file
+Variable is needed since svlint doesn't allow both source and -f command file
 at the same time."
   :type '(repeat directory)
   :group 'verilog-ext-flycheck)

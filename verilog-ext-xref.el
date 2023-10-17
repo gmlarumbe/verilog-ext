@@ -20,11 +20,13 @@
 
 ;;; Commentary:
 
-;; Find definitions and references builtin backend.
+;; Find definitions and references `xref' backend.
 
 ;;; Code:
 
+(require 'xref)
 (require 'verilog-ext-tags)
+
 
 (defgroup verilog-ext-xref nil
   "Verilog-ext xref customization."
@@ -97,12 +99,13 @@ Still experimental.  Removes the rest of xref backends."
 
 (defun verilog-ext-xref-set (&optional disable)
   "Setup `verilog-ext' to use builtin `xref' backend.
+
 If optional arg DISABLE is provided, remove the hook that enabled the backend.
-Still experimental:
-- Removes the rest of xref backends by being a hook for `verilog-ext-mode'
-instead of to `verilog-mode', since the first one is loaded later and overwrites
-the hook value.  Otherwise, hooks are not ran in a specific order, and rely on
-the priority argument."
+
+Removes the rest of xref backends by being a hook for `verilog-ext-mode' instead
+of to `verilog-mode', since the first one is loaded later and overwrites the
+hook value.  Otherwise, hooks are not ran in a specific order, and rely on the
+priority argument."
   (if disable
       (remove-hook 'verilog-ext-mode-hook #'verilog-ext-xref-backend-enable)
     (add-hook 'verilog-ext-mode-hook #'verilog-ext-xref-backend-enable)))
