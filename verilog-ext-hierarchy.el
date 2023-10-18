@@ -35,14 +35,16 @@
   "Verilog-ext hierarchy."
   :group 'verilog-ext)
 
-(defcustom verilog-ext-hierarchy-backend nil
+(defcustom verilog-ext-hierarchy-backend (if (and (treesit-available-p) (treesit-language-available-p 'verilog))
+                                             'tree-sitter
+                                           'builtin)
   "Verilog-ext hierarchy extraction backend."
   :type '(choice (const :tag "Verilog-Perl vhier" vhier)
                  (const :tag "Tree-sitter"        tree-sitter)
                  (const :tag "Built-in"           builtin))
   :group 'verilog-ext-hierarchy)
 
-(defcustom verilog-ext-hierarchy-frontend nil
+(defcustom verilog-ext-hierarchy-frontend 'hierarchy
   "Verilog-ext hierarchy display and navigation frontend."
   :type '(choice (const :tag "Outshine"  outshine)
                  (const :tag "Hierarchy" hierarchy))
@@ -629,23 +631,10 @@ Expects HIERARCHY to be a indented string."
   (setq verilog-ext-hierarchy-module-alist (verilog-ext-unserialize verilog-ext-hierarchy-module-cache-file)))
 
 (defun verilog-ext-hierarchy-setup ()
-  "Setup hierarchy backend/frontend depending on available binaries/packages.
-If these have been set before, keep their values."
-  (let ((backend (or verilog-ext-hierarchy-backend
-                     (cond ((executable-find "vhier")
-                            'vhier)
-                           ((and (treesit-available-p)
-                                 (treesit-language-available-p 'verilog))
-                            'tree-sitter)
-                           (t
-                            'builtin))))
-        (frontend (or verilog-ext-hierarchy-frontend
-                      'hierarchy)))
-    (setq verilog-ext-hierarchy-backend backend)
-    (setq verilog-ext-hierarchy-frontend frontend)
-    ;; Cache
-    (when verilog-ext-cache-enable
-      (verilog-ext-hierarchy-unserialize))))
+  "Setup hierarchy feature.
+Read hierarchy cache if enabled."
+  (when verilog-ext-cache-enable
+    (verilog-ext-hierarchy-unserialize)))
 
 (defun verilog-ext-hierarchy-clear-cache (&optional all)
   "Clear hierarchy cache files for current project.

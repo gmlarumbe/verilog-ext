@@ -50,7 +50,9 @@
   "Verilog-ext tags."
   :group 'verilog-ext)
 
-(defcustom verilog-ext-tags-backend nil
+(defcustom verilog-ext-tags-backend (if (and (treesit-available-p) (treesit-language-available-p 'verilog))
+                                        'tree-sitter
+                                      'builtin)
   "Verilog-ext tags extraction backend."
   :type '(choice (const :tag "Tree-sitter" tree-sitter)
                  (const :tag "Built-in"    builtin))
@@ -61,7 +63,7 @@
 
 This setting slightly increases processing time of `verilog-ext-tags-get'."
   :type 'boolean
-  :group 'verilog-ext)
+  :group 'verilog-ext-tags)
 
 
 (defvar verilog-ext-tags-file-hashes nil)
@@ -106,6 +108,10 @@ This setting slightly increases processing time of `verilog-ext-tags-get'."
                   "verilog-ext-project-alist"
                   "verilog-ext-tags-backend")
                 'symbols)))
+
+(defvar verilog-ext-tags-have-been-updated nil
+  "Determines whether or not tags have been updated.
+Used to conditionally serialize tags cache.")
 
 
 ;;;; Common
@@ -603,51 +609,6 @@ Optional arg VERBOSE to display extra messages for debugging."
           (verilog-ext-tags-add-file-locs file proj-inst-file-tables proj-inst-table)
           (verilog-ext-tags-add-file-locs file proj-refs-file-tables proj-refs-table))))))
 
-(defun verilog-ext-tags-get (&optional verbose)
-  "Get tags of current project.
-With current-prefix or VERBOSE, dump output log."
-  (interactive "P")
-  (let* ((proj (verilog-ext-buffer-proj))
-         (files (verilog-ext-proj-files proj))
-         (files-removed (seq-difference (map-keys (verilog-ext-aget verilog-ext-tags-file-hashes proj)) files))
-         (num-files (+ (length files-removed) (length files)))
-         (num-files-processed 0)
-         (log-file verilog-ext-tags-cache-log-file)
-         (tags-progress-reporter (make-progress-reporter "[Tags collection]: " 0 num-files)))
-    (verilog-ext-tags-proj-init proj)
-    (when verbose
-      (delete-file log-file))
-    (dolist (file files-removed)
-      (progress-reporter-update tags-progress-reporter num-files-processed (format "[%s]" file))
-      (verilog-ext-tags-get--process-file file proj :file-was-removed verbose)
-      (setq num-files-processed (1+ num-files-processed)))
-    (dolist (file files)
-      (when verbose
-        (append-to-file (format "(%0d%%) [Tags collection] Processing %s\n" (/ (* num-files-processed 100) num-files) file) nil log-file))
-      (progress-reporter-update tags-progress-reporter num-files-processed (format "[%s]" file))
-      (verilog-ext-tags-get--process-file file proj nil verbose)
-      (setq num-files-processed (1+ num-files-processed)))
-    (message "Finished collection of tags!")))
-
-(defun verilog-ext-tags-get-async (&optional verbose)
-  "Create tags table asynchronously.
-With current-prefix or VERBOSE, dump output log."
-  (interactive "P")
-  (let ((proj-root (verilog-ext-buffer-proj-root)))
-    (unless proj-root
-      (user-error "Not in a Verilog project buffer"))
-    (message "Starting tag collection for %s" proj-root)
-    (async-start
-     `(lambda ()
-        ,(async-inject-variables verilog-ext-tags-async-inject-variables-re)
-        (require 'verilog-ext)
-        (verilog-ext-tags-unserialize)   ; Read environment in child process
-        (verilog-ext-tags-get ,@verbose) ; Update variables in child process
-        (verilog-ext-tags-serialize))    ; Update cache file in childe process
-     (lambda (_result)
-       (verilog-ext-tags-unserialize)
-       (message "Finished collection of tags!"))))) ; Update parent process from cache file
-
 (defun verilog-ext-tags-serialize ()
   "Write variables to their cache files."
   (message "Serializing `verilog-ext' tags cache...")
@@ -663,6 +624,7 @@ With current-prefix or VERBOSE, dump output log."
 
 (defun verilog-ext-tags-unserialize ()
   "Read cache files into their corresponding variables."
+  (message "Unserializing `verilog-ext' tags cache...")
   (dolist (var `((verilog-ext-tags-defs-file-tables . ,verilog-ext-tags-defs-file-tables-cache-file)
                  (verilog-ext-tags-refs-file-tables . ,verilog-ext-tags-refs-file-tables-cache-file)
                  (verilog-ext-tags-inst-file-tables . ,verilog-ext-tags-inst-file-tables-cache-file)
@@ -670,19 +632,14 @@ With current-prefix or VERBOSE, dump output log."
                  (verilog-ext-tags-inst-table       . ,verilog-ext-tags-inst-table-cache-file)
                  (verilog-ext-tags-refs-table       . ,verilog-ext-tags-refs-table-cache-file)
                  (verilog-ext-tags-file-hashes      . ,verilog-ext-tags-file-hashes-cache-file)))
-    (set (car var) (verilog-ext-unserialize (cdr var)))))
+    (set (car var) (verilog-ext-unserialize (cdr var))))
+  (message "Unserializing `verilog-ext' tags cache... Done"))
 
-(defun verilog-ext-tags-setup ()
-  "Setup tags feature: backend, cache read at startup and write before exit."
-  (let ((backend (or verilog-ext-tags-backend
-                     (if (and (treesit-available-p)
-                              (treesit-language-available-p 'verilog))
-                         'tree-sitter
-                       'builtin))))
-    (setq verilog-ext-tags-backend backend)
-    (when verilog-ext-cache-enable
-      (verilog-ext-tags-unserialize)
-      (add-hook 'kill-emacs-hook #'verilog-ext-tags-serialize))))
+(defun verilog-ext-tags-save-cache ()
+  "Save tags cache only if tables have been updated.
+Removes serializing and compression processing overhead if no change was made."
+  (when verilog-ext-tags-have-been-updated
+    (verilog-ext-tags-serialize)))
 
 (defun verilog-ext-tags-clear-cache (&optional all)
   "Clear tags cache files for current project.
@@ -711,6 +668,59 @@ With prefix arg, clear cache for ALL projects."
     (setq verilog-ext-tags-file-hashes nil)
     (verilog-ext-tags-serialize)
     (message "Cleared all projects tags cache!")))
+
+(defun verilog-ext-tags-setup ()
+  "Setup tags feature: backend, cache read at startup and write before exit."
+  (when verilog-ext-cache-enable
+    (verilog-ext-tags-unserialize)
+    (add-hook 'kill-emacs-hook #'verilog-ext-tags-save-cache)))
+
+(defun verilog-ext-tags-get (&optional verbose)
+  "Get tags of current project.
+With current-prefix or VERBOSE, dump output log."
+  (interactive "P")
+  (let* ((proj (verilog-ext-buffer-proj))
+         (files (verilog-ext-proj-files proj))
+         (files-removed (seq-difference (map-keys (verilog-ext-aget verilog-ext-tags-file-hashes proj)) files))
+         (num-files (+ (length files-removed) (length files)))
+         (num-files-processed 0)
+         (log-file verilog-ext-tags-cache-log-file)
+         (tags-progress-reporter (make-progress-reporter "[Tags collection]: " 0 num-files)))
+    (verilog-ext-tags-proj-init proj)
+    (when verbose
+      (delete-file log-file))
+    (dolist (file files-removed)
+      (progress-reporter-update tags-progress-reporter num-files-processed (format "[%s]" file))
+      (verilog-ext-tags-get--process-file file proj :file-was-removed verbose)
+      (setq num-files-processed (1+ num-files-processed)))
+    (dolist (file files)
+      (when verbose
+        (append-to-file (format "(%0d%%) [Tags collection] Processing %s\n" (/ (* num-files-processed 100) num-files) file) nil log-file))
+      (progress-reporter-update tags-progress-reporter num-files-processed (format "[%s]" file))
+      (verilog-ext-tags-get--process-file file proj nil verbose)
+      (setq num-files-processed (1+ num-files-processed)))
+    (setq verilog-ext-tags-have-been-updated t)
+    (message "Finished collection of tags!")))
+
+(defun verilog-ext-tags-get-async (&optional verbose)
+  "Create tags table asynchronously.
+With current-prefix or VERBOSE, dump output log."
+  (interactive "P")
+  (let ((proj-root (verilog-ext-buffer-proj-root)))
+    (unless proj-root
+      (user-error "Not in a Verilog project buffer"))
+    (message "Starting tag collection for %s" proj-root)
+    (async-start
+     `(lambda ()
+        ,(async-inject-variables verilog-ext-tags-async-inject-variables-re)
+        (require 'verilog-ext)
+        (verilog-ext-tags-unserialize)   ; Read environment in child process
+        (verilog-ext-tags-get ,@verbose) ; Update variables in child process
+        (verilog-ext-tags-serialize))    ; Update cache file in child process
+     (lambda (_result)
+       (verilog-ext-tags-unserialize)
+       (setq verilog-ext-tags-have-been-updated t)
+       (message "Finished collection of tags!"))))) ; Update parent process from cache file
 
 
 (provide 'verilog-ext-tags)

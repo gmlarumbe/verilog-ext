@@ -30,11 +30,16 @@
 (require 'verilog-ext-nav)
 
 
+(defgroup verilog-ext-imenu nil
+  "Verilog-ext imenu."
+  :group 'verilog-ext)
+
 (defconst verilog-ext-imenu-class-item-face 'verilog-ext-imenu-class-item-face)
 (defface verilog-ext-imenu-class-item-face
   '((t nil))
   "Face for class items."
-  :group 'verilog-ext)
+  :group 'verilog-ext-imenu)
+
 
 (defconst verilog-ext-imenu-top-re        "^\\s-*\\(?1:connectmodule\\|m\\(?:odule\\|acromodule\\)\\|p\\(?:rimitive\\|rogram\\|ackage\\)\\)\\(\\s-+automatic\\)?\\s-+\\(?2:[a-zA-Z0-9_.:]+\\)")
 (defconst verilog-ext-imenu-localparam-re "^\\s-*localparam\\(?1:\\s-+\\(logic\\|bit\\|int\\|integer\\)\\s-*\\(\\[.*\\]\\)?\\)?\\s-+\\(?2:[a-zA-Z0-9_.:]+\\)")

@@ -40,7 +40,7 @@
   "Verilog-ext flycheck."
   :group 'verilog-ext)
 
-(defcustom verilog-ext-flycheck-use-open-buffers t
+(defcustom verilog-ext-flycheck-use-open-buffers nil
   "Set to non-nil to use list of open Verilog buffers/dirs for linters."
   :type 'boolean
   :group 'verilog-ext-flycheck)

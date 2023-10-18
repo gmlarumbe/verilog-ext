@@ -38,69 +38,69 @@
 ;;;; svlangserver
 ;; These customization values are copied from `lsp-verilog' to make `eglot'
 ;; config independent from `lsp-mode'.
-(defgroup verilog-ext-eglot-svlangserver nil
-  "Settings for the SystemVerilog language server client."
+(defgroup verilog-ext-eglot nil
+  "Verilog-ext eglot."
   :group 'verilog-ext
   :link '(url-link "https://github.com/imc-trading/svlangserver")
   :package-version '(lsp-mode . "8.0.0"))
 
 (defcustom verilog-ext-eglot-svlangserver-includeIndexing '["**/*.{sv,svh}"]
   "Files included for indexing (glob pattern)."
-  :group 'verilog-ext-eglot-svlangserver
+  :group 'verilog-ext-eglot
   :type '(lsp-repeatable-vector string)
   :safe (lambda (x) (seq-every-p #'stringp x)))
 
 (defcustom verilog-ext-eglot-svlangserver-excludeIndexing '["test/**/*.{sv,svh}"]
   "Files excluded for indexing (glob pattern)."
-  :group 'verilog-ext-eglot-svlangserver
+  :group 'verilog-ext-eglot
   :type '(lsp-repeatable-vector string)
   :safe (lambda (x) (seq-every-p #'stringp x)))
 
 (defcustom verilog-ext-eglot-svlangserver-defines nil
   "Defines needed for linting."
-  :group 'verilog-ext-eglot-svlangserver
+  :group 'verilog-ext-eglot
   :type '(lsp-repeatable-vector string)
   :safe (lambda (x) (seq-every-p #'stringp x)))
 
 (defcustom verilog-ext-eglot-svlangserver-launchConfiguration "verilator -sv --lint-only -Wall"
   "Verilator command used for linting."
-  :group 'verilog-ext-eglot-svlangserver
+  :group 'verilog-ext-eglot
   :type 'string
   :safe (lambda (x) (stringp x)))
 
 (defcustom verilog-ext-eglot-svlangserver-lintOnUnsaved t
   "Enable linting on unsaved files."
-  :group 'verilog-ext-eglot-svlangserver
+  :group 'verilog-ext-eglot
   :type 'boolean
   :safe (lambda (x) (booleanp x)))
 
 (defcustom verilog-ext-eglot-svlangserver-formatCommand "verible-verilog-format"
   "Verible verilog format command."
-  :group 'verilog-ext-eglot-svlangserver
+  :group 'verilog-ext-eglot
   :type 'string
   :safe (lambda (x) (stringp x)))
 
 (defcustom verilog-ext-eglot-svlangserver-disableCompletionProvider nil
   "Disable auto completion provided by the language server."
-  :group 'verilog-ext-eglot-svlangserver
+  :group 'verilog-ext-eglot
   :type 'boolean
   :safe (lambda (x) (booleanp x)))
 
 (defcustom verilog-ext-eglot-svlangserver-disableHoverProvider nil
   "Disable hover over help provided by the language server."
-  :group 'verilog-ext-eglot-svlangserver
+  :group 'verilog-ext-eglot
   :type 'boolean
   :safe (lambda (x) (booleanp x)))
 
 (defcustom verilog-ext-eglot-svlangserver-disableSignatureHelpProvider nil
   "Disable signature help provided by the language server."
-  :group 'verilog-ext-eglot-svlangserver
+  :group 'verilog-ext-eglot
   :type 'boolean
   :safe (lambda (x) (booleanp x)))
 
 (defcustom verilog-ext-eglot-svlangserver-disableLinting nil
   "Disable verilator linting."
-  :group 'verilog-ext-eglot-svlangserver
+  :group 'verilog-ext-eglot
   :type 'boolean
   :safe (lambda (x) (booleanp x)))
 
