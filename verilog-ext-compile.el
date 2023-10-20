@@ -26,10 +26,10 @@
 ;; and jump to error based on `compilation-mode':
 ;;
 ;; - Interactive functions examples:
-;;   - `verilog-ext-compile-makefile': prompt to available Makefile targets and compile
 ;;   - `verilog-ext-compile-project': compile using :compile-cmd of `verilog-ext-project-alist'
 ;;
 ;; - Non-interactive function usage examples:
+;;   - (verilog-ext-compile "make")
 ;;   - (verilog-ext-compile-verilator (concat "verilator --lint-only " buffer-file-name))
 ;;   - (verilog-ext-compile-iverilog (concat "iverilog " buffer-file-name))
 ;;   - (verilog-ext-compile-verible (concat "verible-verilog-lint " buffer-file-name))
@@ -117,12 +117,20 @@
     (surelog-info2    ,(concat "^\\[\\(?1:INF:\\(?2:[A-Z0-9]+\\)\\)\\]\\s-+") nil nil nil 0 nil (1 compilation-info-face) (2 verilog-ext-compile-msg-code-face)))
   "Surelog regexps.")
 
+(defconst verilog-ext-compile-all-re (append verilog-ext-compile-verilator-re
+                                             verilog-ext-compile-iverilog-re
+                                             verilog-ext-compile-verible-re
+                                             verilog-ext-compile-slang-re
+                                             verilog-ext-compile-svlint-re
+                                             verilog-ext-compile-surelog-re))
+
 (defconst verilog-ext-compile-verilator-buf "*verilator*")
 (defconst verilog-ext-compile-iverilog-buf "*iverilog*")
 (defconst verilog-ext-compile-verible-buf "*verible*")
 (defconst verilog-ext-compile-slang-buf "*slang*")
 (defconst verilog-ext-compile-svlint-buf "*svlint*")
 (defconst verilog-ext-compile-surelog-buf "*surelog*")
+(defconst verilog-ext-compile-all-buf "*verilog-ext-compile")
 
 ;;;; Compilation-modes and macros
 (defmacro verilog-ext-compile-define-mode (name &rest args)
@@ -229,6 +237,17 @@ ARGS is a property list."
   :buf verilog-ext-compile-surelog-buf
   :comp-mode verilog-ext-compile-surelog-mode)
 
+(verilog-ext-compile-define-mode verilog-ext-compile-mode
+  :desc "Verilog"
+  :docstring "All Verilog supported tools Compilation mode."
+  :compile-re verilog-ext-compile-all-re
+  :buf-name verilog-ext-compile-all-buf)
+
+(verilog-ext-compile-define-fn verilog-ext-compile
+  :docstring "Compile Verilog COMMAND with error regexp highlighting."
+  :buf verilog-ext-compile-all-buf
+  :comp-mode verilog-ext-compile-mode)
+
 
 ;;;; Compilation interactive functions
 (defun verilog-ext-compile-makefile ()
@@ -268,7 +287,7 @@ set the appropriate mode."
                ("svlint" #'verilog-ext-compile-svlint)
                ("surelog" #'verilog-ext-compile-surelog)
                ("verible-verilog-lint" #'verilog-ext-compile-verible)
-               (_ #'compile)))
+               (_ #'verilog-ext-compile)))
          (cmd-processed (cond (;; For svlint, make sure the -1 arg is present
                                (string= cmd-bin "svlint")
                                (if (member "-1" cmd-args)
@@ -282,7 +301,7 @@ set the appropriate mode."
                               ;; For the rest use the provided command
                               (t
                                compile-cmd)))
-         (cmd (mapconcat `("cd" ,(verilog-ext-buffer-proj-root proj) "&&" ,cmd-processed) " ")))
+         (cmd (mapconcat #'identity `("cd" ,(verilog-ext-buffer-proj-root proj) "&&" ,cmd-processed) " ")))
     (funcall fn cmd)))
 
 

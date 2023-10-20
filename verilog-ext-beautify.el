@@ -134,6 +134,7 @@ FILES is a list of strings containing the filepaths."
       (error "File %s does not exist! Aborting!" file)))
   (save-window-excursion
     (dolist (file files)
+      (message "Processing %s..." file)
       (with-temp-file file
         (insert-file-contents file)
         (verilog-ext-with-no-hooks
@@ -141,9 +142,11 @@ FILES is a list of strings containing the filepaths."
         (verilog-ext-beautify-current-buffer)))))
 
 (defun verilog-ext-beautify-dir-files (dir)
-  "Beautify Verilog files on DIR."
+  "Beautify Verilog files on DIR.
+
+Include subdirectory files recursively."
   (interactive "DDirectory: ")
-  (let ((files (verilog-ext-dir-files dir)))
+  (let ((files (verilog-ext-dir-files dir :recursive)))
     (verilog-ext-beautify-files files)))
 
 

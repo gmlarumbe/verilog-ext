@@ -924,8 +924,8 @@ after the search has been done."
   "Jump to the first result and push xref marker if there were any matches.
 Kill the buffer if there is only one match."
   (when verilog-ext-jump-to-parent-trigger
-    (let ((module-name (propertize verilog-ext-jump-to-parent-module-name 'face '(:foreground "green")))
-          (dir (propertize verilog-ext-jump-to-parent-module-dir 'face '(:foreground "light blue")))
+    (let ((module-name (propertize verilog-ext-jump-to-parent-module-name 'face 'verilog-ext-font-lock-module-face))
+          (dir verilog-ext-jump-to-parent-module-dir)
           (num-matches))
       (save-excursion
         (goto-char (point-min))

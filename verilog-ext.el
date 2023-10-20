@@ -26,22 +26,22 @@
 ;; Extensions for Verilog Mode:
 ;;
 ;;  - Tree-sitter `verilog-ts-mode' support
-;;  - Improved syntax highlighting
-;;  - Builtin xref backend
+;;  - Improved syntax highlighting for `verilog-mode'
+;;  - Find definitions and references with builtin `xref' backend
 ;;  - Auto-completion with dot and scope completion
-;;  - Hierarchy extraction and navigation: builtin and vhier based
+;;  - Hierarchy extraction and navigation
 ;;  - LSP configuration for `lsp-mode' and `eglot'
 ;;  - Support for many linters via `flycheck'
 ;;  - Beautify modules and instances
 ;;  - Code navigation functions for RTL and Verification environments
-;;  - Extended collection of custom and `yasnippet' templates insertion via `hydra'
+;;  - Templates insertion via `hydra': custom and `yasnippet' based
 ;;  - Code formatter via `apheleia'
 ;;  - Compilation-based utilities
-;;  - Improve `imenu' entries: detect instances, classes and methods
-;;  - Enhanced support for `which-func'
+;;  - Improve `imenu': detect instances, classes and methods
+;;  - Add support for `which-func'
 ;;  - Code folding via `hideshow'
 ;;  - Project tags, typedef analysis and caching
-;;  - Time-stamp auto-configuration
+;;  - `time-stamp' auto-configuration
 ;;  - Convert block end comments to names
 ;;  - Port connections utilities
 
@@ -72,7 +72,7 @@
                                       time-stamp
                                       block-end-comments
                                       ports)
-  "Which Verilog-ext features to enable."
+  "Which `verilog-ext' features to enable."
   :type '(set (const :tag "Improved syntax highlighting via `font-lock'."
                 font-lock)
               (const :tag "Xref backend to navigate definitions/references in current project."
@@ -91,7 +91,7 @@
                 beautify)
               (const :tag "Code Navigation functions."
                 navigation)
-              (const :tag "`yasnippet' and custom templates."
+              (const :tag "`yasnippet' and custom templates via `hydra'."
                 template)
               (const :tag "`verible' formatter via `apheleia'."
                 formatter)
@@ -99,7 +99,7 @@
                 compilation)
               (const :tag "Improved `imenu'."
                 imenu)
-              (const :tag "Improved `which-function-mode'."
+              (const :tag "Support for `which-function-mode'."
                 which-func)
               (const :tag "`hideshow' configuration."
                 hideshow)
@@ -156,49 +156,47 @@ FEATURES can be a single feature or a list of features."
 (defvar verilog-ext-mode-map
   (let ((map (make-sparse-keymap)))
     ;; Features
-    (verilog-ext-when-feature 'hideshow
-      (define-key map (kbd "C-<tab>") 'verilog-ext-hs-toggle-hiding))
-    (verilog-ext-when-feature 'formatter
-      (define-key map (kbd "C-c C-l") 'verilog-ext-formatter-run))
-    (verilog-ext-when-feature 'compilation
-      (define-key map (kbd "C-c <f5>") 'verilog-ext-compile-project)
-      (define-key map (kbd "C-c C-p") 'verilog-ext-preprocess))
+    (verilog-ext-when-feature '(capf xref)
+      (define-key map (kbd "C-c C-u") 'verilog-ext-tags-get))
+    (verilog-ext-when-feature 'hierarchy
+      (define-key map (kbd "C-c C-v") 'verilog-ext-hierarchy-current-buffer))
     (verilog-ext-when-feature 'flycheck
       (define-key map (kbd "C-c C-f") 'verilog-ext-flycheck-mode))
     (verilog-ext-when-feature 'template
       (define-key map (kbd "C-c C-t") 'verilog-ext-hydra/body))
-    (verilog-ext-when-feature 'hierarchy
-      (define-key map (kbd "C-c C-v") 'verilog-ext-hierarchy-current-buffer))
+    (verilog-ext-when-feature 'formatter
+      (define-key map (kbd "C-c C-l") 'verilog-ext-formatter-run))
     (verilog-ext-when-feature 'beautify
       (define-key map (kbd "C-M-i") 'verilog-ext-beautify-block-at-point-indent)
       (define-key map (kbd "C-c C-b") 'verilog-ext-beautify-module-at-point))
-    (verilog-ext-when-feature 'xref
-      (define-key map (kbd "C-c C-u") 'verilog-ext-tags-get))
     (verilog-ext-when-feature 'navigation
-      (when (eq major-mode 'verilog-mode)
-        (define-key map (kbd "C-M-a") 'verilog-ext-nav-beg-of-defun-dwim)
-        (define-key map (kbd "C-M-e") 'verilog-ext-nav-end-of-defun-dwim)
-        (define-key map (kbd "C-M-d") 'verilog-ext-nav-down-dwim)
-        (define-key map (kbd "C-M-u") 'verilog-ext-nav-up-dwim)
-        (define-key map (kbd "C-M-p") 'verilog-ext-nav-prev-dwim)
-        (define-key map (kbd "C-M-n") 'verilog-ext-nav-next-dwim))
+      (define-key map (kbd "C-M-.") 'verilog-ext-jump-to-parent-module)
       (define-key map (kbd "C-c M-.") 'verilog-ext-jump-to-module-at-point-def)
       (define-key map (kbd "C-c M-?") 'verilog-ext-jump-to-module-at-point-ref)
-      (define-key map (kbd "C-M-.") 'verilog-ext-jump-to-parent-module))
+      (define-key map (kbd "C-M-a") 'verilog-ext-nav-beg-of-defun-dwim)
+      (define-key map (kbd "C-M-e") 'verilog-ext-nav-end-of-defun-dwim)
+      (define-key map (kbd "C-M-d") 'verilog-ext-nav-down-dwim)
+      (define-key map (kbd "C-M-u") 'verilog-ext-nav-up-dwim)
+      (define-key map (kbd "C-M-p") 'verilog-ext-nav-prev-dwim)
+      (define-key map (kbd "C-M-n") 'verilog-ext-nav-next-dwim))
+    (verilog-ext-when-feature 'compilation
+      (define-key map (kbd "C-c <f5>") 'verilog-ext-compile-project)
+      (define-key map (kbd "C-c C-p") 'verilog-ext-preprocess))
+    (verilog-ext-when-feature 'hideshow
+      (define-key map (kbd "C-<tab>") 'verilog-ext-hs-toggle-hiding))
     (verilog-ext-when-feature 'ports
       (define-key map (kbd "C-c C-c c") 'verilog-ext-ports-clean-blanks)
       (define-key map (kbd "C-c C-c t") 'verilog-ext-ports-toggle-connect)
       (define-key map (kbd "C-c C-c r") 'verilog-ext-ports-connect-recursively))
     ;; Misc
-    (when (eq major-mode 'verilog-mode)
-      (define-key map (kbd "TAB") 'verilog-ext-tab)
-      (define-key map (kbd "M-d") 'verilog-ext-kill-word)
-      (define-key map (kbd "M-f") 'verilog-ext-forward-word)
-      (define-key map (kbd "M-b") 'verilog-ext-backward-word)
-      (define-key map (kbd "C-<backspace>") 'verilog-ext-backward-kill-word)
-      (define-key map (kbd "M-DEL") 'verilog-ext-backward-kill-word))
+    (define-key map (kbd "TAB") 'verilog-ext-tab)
+    (define-key map (kbd "M-d") 'verilog-ext-kill-word)
+    (define-key map (kbd "M-f") 'verilog-ext-forward-word)
+    (define-key map (kbd "M-b") 'verilog-ext-backward-word)
+    (define-key map (kbd "C-<backspace>") 'verilog-ext-backward-kill-word)
+    (define-key map (kbd "M-DEL") 'verilog-ext-backward-kill-word)
     map)
-  "Key map for the `verilog-ext'.")
+  "Keymap for `verilog-ext'.")
 
 ;;;###autoload
 (defun verilog-ext-mode-setup ()
@@ -207,25 +205,25 @@ FEATURES can be a single feature or a list of features."
   ;; Features
   (verilog-ext-when-feature 'font-lock
     (verilog-ext-font-lock-setup))
-  (verilog-ext-when-feature 'hideshow
-    (verilog-ext-hs-setup))
-  (verilog-ext-when-feature 'template
-    (verilog-ext-template-add-snippets))
-  (verilog-ext-when-feature 'typedefs
-    (verilog-ext-typedef-set))
+  (verilog-ext-when-feature '(capf xref)
+    (verilog-ext-tags-setup))
   (verilog-ext-when-feature 'hierarchy
     (verilog-ext-hierarchy-setup))
-  (verilog-ext-when-feature 'formatter
-    (verilog-ext-formatter-setup))
-  (verilog-ext-when-feature 'flycheck
-    (verilog-ext-flycheck-setup))
   (verilog-ext-when-feature 'eglot
     (verilog-ext-eglot-set-server verilog-ext-eglot-default-server))
   (verilog-ext-when-feature 'lsp
     (verilog-ext-lsp-setup)
     (verilog-ext-lsp-set-server verilog-ext-lsp-mode-default-server))
-  (verilog-ext-when-feature '(capf xref)
-    (verilog-ext-tags-setup))
+  (verilog-ext-when-feature 'flycheck
+    (verilog-ext-flycheck-setup))
+  (verilog-ext-when-feature 'template
+    (verilog-ext-template-add-snippets))
+  (verilog-ext-when-feature 'formatter
+    (verilog-ext-formatter-setup))
+  (verilog-ext-when-feature 'hideshow
+    (verilog-ext-hs-setup))
+  (verilog-ext-when-feature 'typedefs
+    (verilog-ext-typedef-set))
   ;; Jump to parent module ag/ripgrep hooks
   (add-hook 'ag-search-finished-hook #'verilog-ext-navigation-ag-rg-hook)
   (add-hook 'ripgrep-search-finished-hook #'verilog-ext-navigation-ag-rg-hook))
@@ -239,7 +237,6 @@ FEATURES can be a single feature or a list of features."
   :global nil
   (unless (derived-mode-p 'verilog-mode)
     (error "Verilog-ext only works with `verilog-mode' or `verilog-ts-mode'"))
-  ;; Update list of open buffers/directories (Verilog AUTO, flycheck)
   (if verilog-ext-mode
       (progn
         ;; Common
@@ -247,6 +244,10 @@ FEATURES can be a single feature or a list of features."
         (verilog-ext-update-buffer-file-and-dir-list)
         (add-hook 'kill-buffer-hook #'verilog-ext-kill-buffer-hook nil :local)
         ;; Features
+        (verilog-ext-when-feature 'xref
+          (verilog-ext-xref-set))
+        (verilog-ext-when-feature 'capf
+          (verilog-ext-capf-set))
         (verilog-ext-when-feature 'hierarchy
           (if verilog-ext-hierarchy-vhier-use-open-buffers
               (progn (setq verilog-ext-hierarchy-vhier-open-dirs verilog-ext-dir-list)
@@ -265,10 +266,6 @@ FEATURES can be a single feature or a list of features."
           (verilog-ext-block-end-comments-to-names-mode))
         (verilog-ext-when-feature 'time-stamp
           (verilog-ext-time-stamp-mode))
-        (verilog-ext-when-feature 'capf
-          (verilog-ext-capf-set))
-        (verilog-ext-when-feature 'xref
-          (verilog-ext-xref-set))
         ;; `verilog-mode'-only customization (exclude `verilog-ts-mode')
         (when (eq major-mode 'verilog-mode)
           ;; Syntax table overriding:
@@ -277,9 +274,6 @@ FEATURES can be a single feature or a list of features."
           ;; and `verilog-ext-indent-region' to get back standard table to avoid
           ;; indentation issues with compiler directives.
           (modify-syntax-entry ?` ".")
-          ;; Imenu
-          (verilog-ext-when-feature 'imenu
-            (setq-local imenu-create-index-function #'verilog-ext-imenu-index))
           ;; Font-lock
           ;;   It's not possible to add font-lock keywords to minor-modes.
           ;;   The workaround consists in add/remove keywords to the major mode when
@@ -287,19 +281,22 @@ FEATURES can be a single feature or a list of features."
           ;;   https://emacs.stackexchange.com/questions/60198/font-lock-add-keywords-is-not-working
           (verilog-ext-when-feature 'font-lock
             (font-lock-flush)
-            (setq-local font-lock-multiline nil))))
+            (setq-local font-lock-multiline nil))
+          ;; Imenu
+          (verilog-ext-when-feature 'imenu
+            (setq-local imenu-create-index-function #'verilog-ext-imenu-index))))
     ;; Cleanup
     (remove-hook 'kill-buffer-hook #'verilog-ext-kill-buffer-hook :local)
-    (verilog-ext-when-feature 'block-end-comments
-      (verilog-ext-block-end-comments-to-names-mode -1))
-    (verilog-ext-when-feature 'time-stamp
-      (verilog-ext-time-stamp-mode -1))
-    (verilog-ext-when-feature 'typedef
-      (verilog-ext-typedef-set :disable))
     (verilog-ext-when-feature 'xref
       (verilog-ext-xref-set :disable))
     (verilog-ext-when-feature 'capf
-      (verilog-ext-capf-set :disable))))
+      (verilog-ext-capf-set :disable))
+    (verilog-ext-when-feature 'typedef
+      (verilog-ext-typedef-set :disable))
+    (verilog-ext-when-feature 'block-end-comments
+      (verilog-ext-block-end-comments-to-names-mode -1))
+    (verilog-ext-when-feature 'time-stamp
+      (verilog-ext-time-stamp-mode -1))))
 
 
 ;;; Provide

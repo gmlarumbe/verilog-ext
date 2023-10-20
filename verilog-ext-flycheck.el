@@ -409,7 +409,7 @@ be undefined when defining the checker."
   (verilog-ext-flycheck-setup-linter linter)
   (setq verilog-ext-flycheck-linter linter) ; Save state for reporting
   ;; Refresh linter if in a verilog buffer
-  (when (eq major-mode 'verilog-mode)
+  (when (member major-mode '(verilog-mode verilog-ts-mode))
     (flycheck-select-checker linter))
   (message "Linter set to: %s " linter))
 

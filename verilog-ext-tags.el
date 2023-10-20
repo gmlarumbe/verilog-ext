@@ -458,8 +458,8 @@ PARENT is passed as an argument to build the :items prop list of
 `verilog-ext-tags-defs-current-file'."
   (let* ((ts-node (car node))
          (children (cdr node))
-         (type (treesit-node-type ts-node))
-         (is-instance (and type (string-match verilog-ts-instance-re type)))
+         (ts-type (treesit-node-type ts-node))
+         (is-instance (and ts-type (string-match verilog-ts-instance-re ts-type)))
          (is-typedef-class (verilog-ts--node-is-typedef-class-p ts-node)))
     ;; Iterate over all the nodes of the tree
     (mapc (lambda (child-node)
@@ -481,10 +481,10 @@ PARENT is passed as an argument to build the :items prop list of
         (puthash `(,(verilog-ts--node-identifier-name ts-node) ; Key plist
                    :file ,file
                    :line ,(line-number-at-pos))
-                 `(:type ,type ; Value plist
+                 `(:type ,(verilog-ts--node-identifier-type ts-node) ; Value plist
                    :desc ,(verilog-ext-tags-desc)
                    :col ,(current-column)
-                   :parent ,(verilog-ext-tags-table-push-defs-ts--parent ts-node type parent))
+                   :parent ,(verilog-ext-tags-table-push-defs-ts--parent ts-node ts-type parent))
                  verilog-ext-tags-defs-current-file)))))
 
 (defun verilog-ext-tags-table-push-refs-ts (file)

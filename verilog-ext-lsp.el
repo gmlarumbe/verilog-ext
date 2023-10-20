@@ -47,7 +47,7 @@ Register additional clients."
     (unless (alist-get 'verilog-ts-mode lsp-language-id-configuration)
       (push (cons 'verilog-ts-mode "verilog") lsp-language-id-configuration))
     ;; Register clients
-    (dolist (server verilog-ext-server-lsp-list)
+    (dolist (server verilog-ext-lsp-available-servers)
       (setq server-id (car server))
       (setq server-bin (cdr server))
       (cond ((eq server-id 've-svlangserver)
@@ -67,8 +67,8 @@ Register additional clients."
   "Set language server defined by SERVER-ID.
 Disable the rest to avoid handling priorities.
 Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
-  (interactive (list (intern (completing-read "Server-id: " verilog-ext-server-lsp-ids nil t))))
-  (let ((cmd (cdr (assoc server-id verilog-ext-server-lsp-list))))
+  (interactive (list (intern (completing-read "Server-id: " verilog-ext-lsp-server-ids nil t))))
+  (let ((cmd (cdr (assoc server-id verilog-ext-lsp-available-servers))))
     (if (not (executable-find (if (listp cmd)
                                   (car cmd)
                                 cmd)))
@@ -76,7 +76,7 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
       ;; Else configure available server
       (dolist (mode '(verilog-mode verilog-ts-mode))
         (setq lsp-disabled-clients (assq-delete-all mode lsp-disabled-clients))
-        (push (cons mode (remove server-id verilog-ext-server-lsp-ids)) lsp-disabled-clients))
+        (push (cons mode (remove server-id verilog-ext-lsp-server-ids)) lsp-disabled-clients))
       (message "[Verilog LSP]: %s" server-id))))
 
 

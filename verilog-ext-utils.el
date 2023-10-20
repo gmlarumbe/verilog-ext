@@ -128,14 +128,14 @@ type_t foo1, foo2 , foo4, foo6[], foo7 [25], foo8 ;")
                                                  "\\(" verilog-ext-typedef-class-params-optional-re "\\|" verilog-ext-range-optional-re "\\)"
                                                  "\\s-*\\(?2:\\<" verilog-identifier-re "\\>\\)"))
 ;;;;; LSP
-(defconst verilog-ext-server-lsp-list
+(defconst verilog-ext-lsp-available-servers
   '((ve-hdl-checker  . ("hdl_checker" "--lsp"))
     (ve-svlangserver . "svlangserver")
     (ve-verible-ls   . "verible-verilog-ls")
     (ve-svls         . "svls")
     (ve-veridian     . "veridian"))
   "Verilog-ext available LSP servers.")
-(defconst verilog-ext-server-lsp-ids (mapcar #'car verilog-ext-server-lsp-list))
+(defconst verilog-ext-lsp-server-ids (mapcar #'car verilog-ext-lsp-available-servers))
 
 ;;;;; Misc
 (defvar verilog-ext-buffer-list nil)

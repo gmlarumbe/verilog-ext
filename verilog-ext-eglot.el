@@ -148,8 +148,8 @@ Configure in the same way as for `lsp-verilog'."
 (defun verilog-ext-eglot-set-server (server-id)
   "Configure Verilog for `eglot' with SERVER-ID server.
 Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
-  (interactive (list (intern (completing-read "Server-id: " verilog-ext-server-lsp-ids nil t))))
-  (let ((cmd (alist-get server-id verilog-ext-server-lsp-list)))
+  (interactive (list (intern (completing-read "Server-id: " verilog-ext-lsp-server-ids nil t))))
+  (let ((cmd (alist-get server-id verilog-ext-lsp-available-servers)))
     (unless cmd
       (error "%s not recognized as a supported server" server-id))
     (if (not (executable-find (if (listp cmd)
@@ -160,7 +160,7 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
       (dolist (mode '(verilog-mode verilog-ts-mode))
         (setq eglot-server-programs (assq-delete-all mode eglot-server-programs))
         (if (listp cmd)
-            (push `(,@mode ,cmd) eglot-server-programs)
+            (push `(,mode ,@cmd) eglot-server-programs)
           (push `(,mode ,cmd) eglot-server-programs)))
       ;; Additional settings depending on chosen server-id
       (when (equal server-id 've-svlangserver)
