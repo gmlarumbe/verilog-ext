@@ -10,6 +10,7 @@ This package provides useful extensions on top of [`verilog-mode`](https://githu
 and [`verilog-ts-mode`](https://github.com/gmlarumbe/verilog-ts-mode).
 
 * [Tree-sitter `verilog-ts-mode` support](#tree-sitter)
+* [Project management](#project-management)
 * [Improve syntax highlighting](#syntax-highlighting)
 * [Find definitions and references](#find-definitions-and-references)
 * [Auto-completion with dot and scope completion](#auto-completion)
@@ -121,39 +122,13 @@ If installed and loaded via `use-package`:
   (verilog-ext-mode-setup))
 ```
 
-## Workspace ##
-
-`verilog-ext` relies on the concept of a `workspace` to select which files will be analyzed
-for navigation, completion, hierarchy extraction, compilation directory, etc...
-
-For example, to analyze all the files inside a Git repo but excluding some 3rd party vendor libraries:
-
-  ``` elisp
-  (setq verilog-ext-workspace-ignore-dirs '("/path/to/my/repo/lib1" "/path/to/my/repo/lib2"))
-  (setq verilog-ext-workspace-ignore-files '("/path/to/my/repo/lib3/lib_file.sv"))
-  ```
-
-To analyze only files inside rtl/tb directories inside a Git repo, plus a couple of specific ones in other directory:
-
-  ``` elisp
-  (setq verilog-ext-workspace-dirs '("/path/to/my/repo/src/rtl" "/path/to/my/repo/src/tb"))
-  (setq verilog-ext-workspace-extra-files '("/path/to/my/repo/misc/specific_file1.sv" "/path/to/my/repo/misc/specific_file2.sv"))
-  ```
-
-To override the value of `workspace` root inside a Git repo:
-
-  ``` elisp
-  (setq verilog-ext-workspace-root-dir "/path/to/my/overriden/workspace/root")
-  ```
-
-
 ## Keybindings ##
 
 Enabling of `verilog-ext-mode` minor-mode creates the following keybindings:
 
 * Features:
   * <kbd>C-c C-l</kbd> `verilog-ext-formatter-run`
-  * <kbd>C-c \<f5\></kbd> `verilog-ext-workspace-compile`
+  * <kbd>C-c \<f5\></kbd> `verilog-ext-compile-project`
   * <kbd>C-c C-p</kbd> `verilog-ext-preprocess`
   * <kbd>C-c C-f</kbd> `verilog-ext-flycheck-mode`
   * <kbd>C-c C-t</kbd> `verilog-ext-hydra/body`
@@ -177,7 +152,7 @@ Enabling of `verilog-ext-mode` minor-mode creates the following keybindings:
   * <kbd>C-c M-?</kbd> `verilog-ext-jump-to-module-at-point-ref`
 
 * Jump to parent module
-  * <kbd>C-M-.</kbd> `verilog-ext-workspace-jump-to-parent-module`
+  * <kbd>C-M-.</kbd> `verilog-ext-jump-to-parent-module`
 
 * Port connections
   * <kbd>C-c C-c c</kbd> `verilog-ext-ports-clean-blanks`
@@ -198,7 +173,7 @@ Enabling of `verilog-ext-mode` minor-mode creates the following keybindings:
 
 Some of the features that `verilog-ext` provides are based either on
 builtin `verilog-mode` Emacs lisp parsing or on tree-sitter
-`verilog-ts-mode`.  These features are hierarchy extraction and workspace
+`verilog-ts-mode`.  These features are hierarchy extraction and project
 tags collection for completion and navigation of definitions and
 references.
 
@@ -207,6 +182,29 @@ efficient and accurate than internal Emacs lisp parsing.
 
 For information about installation of `verilog-ts-mode` check its
 [repo](https://github.com/gmlarumbe/verilog-ts-mode).
+
+
+## Project management ##
+
+The package provides the variable `verilog-ext-project-alist` to
+select which files belong to a specific project:
+
+  ```elisp
+  (setq verilog-ext-project-alist
+        `(("ucontroller" ; Project name
+           :root "/home/gonz/Repos/larumbe/ucontroller"
+           :dirs ("-r src" ; -r to add directories recursively
+                  "-r tb")
+           :ignore-dirs ("src/ignored_ip")
+           :ignore-files ("src/some_ip/ignored_sim_netlist.v")
+           :compile-cmd "make tb_top" ; command used to compile current project
+           ;; `vhier' related properties
+           :command-file "commands.f" ; vhier command file
+           :lib-search-path nil)))    ; list of dirs to look for include directories or libraries
+  ```
+
+The different properties for each project entry determine which files will be used
+for some features of the package, such as completion, xref navigation, hierarchy extraction and compilation.
 
 
 ## Syntax highlighting ##
@@ -218,7 +216,7 @@ For configuration information, see the [wiki](https://github.com/gmlarumbe/veril
 
 ## Find definitions and references ##
 
-`verilog-ext` provides an `xref` backend to navigate definitions and references of the [workspace](#workspace).
+`verilog-ext` provides an `xref` backend to navigate definitions and references of current project.
 
 <img src="https://github.com/gmlarumbe/verilog-ext/assets/51021955/d196a676-6d28-4bfa-9cee-2662d592b3fb" width=80%>
 
@@ -227,7 +225,7 @@ For configuration information, see the [wiki](https://github.com/gmlarumbe/veril
 
 ## Auto-completion ##
 
-Complete with tags from current [workspace](#workspace). Supports dot and scope completion for module signals, class attributes and methods.
+Complete with tags from current project. Supports dot and scope completion for module signals, class attributes and methods.
 
 <img src="https://github.com/gmlarumbe/verilog-ext/assets/51021955/7e0e6e49-8d5d-4be0-bb61-290c950e8623" width=80%>
 
@@ -338,10 +336,9 @@ and jump to error, buffer preprocessing and makefile development:
 
 <img src="https://github.com/gmlarumbe/verilog-ext/assets/51021955/1a78cc1b-da3e-4219-baaf-cb1fb11d335c" width=80%>
 
-  - `verilog-ext-workspace-compile`: <kbd>C-c \<f5\></kbd>
+  - `verilog-ext-compile-project`: <kbd>C-c \<f5\></kbd>
   - `verilog-ext-preprocess`: <kbd>C-c C-p</kbd>
-  - `verilog-ext-workspace-makefile-create`
-  - `verilog-ext-workspace-makefile-compile`
+  - `verilog-ext-compile-makefile`
 
 See configuration in the [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Compilation).
 

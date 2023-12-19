@@ -646,7 +646,7 @@ Similar to `verilog-match-translate-off' but including
     ;; Fallback to `verilog-ext-font-lock-var-decl-typedef-fontify'.
     ;; Try to fontify with a similar font those variable declarations whose regexps have not
     ;; been added to `verilog-align-typedef-regexp' (it won't be possible to align those)
-    ;; To do so, check `verilog-ext-workspace-typedef-update'.
+    ;; To do so, check `verilog-ext-typedef-get'.
     (list verilog-ext-typedef-var-decl-single-re
           '(1 verilog-ext-font-lock-typedef-face))
     (list verilog-ext-typedef-var-decl-multiple-re
