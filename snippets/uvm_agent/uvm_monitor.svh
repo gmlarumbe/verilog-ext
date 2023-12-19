@@ -28,7 +28,7 @@ function void <uvm_name>_monitor::build_phase(uvm_phase phase);
 endfunction : build_phase
 
 
-function void axi_lite_monitor::connect_phase(uvm_phase phase);
+function void <uvm_name>_monitor::connect_phase(uvm_phase phase);
     m_bfm = m_cfg.mon_bfm;
     m_bfm.proxy = this;
 endfunction: connect_phase

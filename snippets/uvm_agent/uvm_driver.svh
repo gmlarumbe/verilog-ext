@@ -26,7 +26,7 @@ function void <uvm_name>_driver::build_phase(uvm_phase phase);
 endfunction : build_phase
 
 
-function void axi_lite_driver::connect_phase(uvm_phase phase);
+function void <uvm_name>_driver::connect_phase(uvm_phase phase);
     m_bfm = m_cfg.drv_bfm;
 endfunction: connect_phase
 
