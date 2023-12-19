@@ -576,7 +576,7 @@ Similar to `verilog-match-translate-off' but including
 
 
 ;;; Font-lock keywords
-(defvar verilog-ext-font-lock-keywords
+(defconst verilog-ext-font-lock-keywords
   (list
    ;; Preprocessor macros and compiler directives (place at the top to preserve precendence in `else or `include macros over keywords)
    (cons (concat "`" verilog-identifier-re) 'verilog-ext-font-lock-preprocessor-face)
@@ -604,7 +604,7 @@ Similar to `verilog-match-translate-off' but including
          '(1 verilog-ext-font-lock-width-num-face)
          '(2 verilog-ext-font-lock-width-type-face))))
 
-(defvar verilog-ext-font-lock-keywords-1
+(defconst verilog-ext-font-lock-keywords-1
   (append
    verilog-ext-font-lock-keywords
    (list
@@ -652,7 +652,7 @@ Similar to `verilog-match-translate-off' but including
     (list verilog-ext-typedef-var-decl-multiple-re
           '(1 verilog-ext-font-lock-typedef-face)))))
 
-(defvar verilog-ext-font-lock-keywords-2
+(defconst verilog-ext-font-lock-keywords-2
   (append
    verilog-ext-font-lock-keywords-1
    (list
@@ -667,7 +667,7 @@ Similar to `verilog-match-translate-off' but including
     ;; Fontify property/sequence cycle delays - these start with '##'
     '("##\\(?1:\\sw+\\|\\[[^]]+\\]\\)" 1 font-lock-type-face))))
 
-(defvar verilog-ext-font-lock-keywords-3
+(defconst verilog-ext-font-lock-keywords-3
   (append
    verilog-ext-font-lock-keywords-2
    (list
@@ -686,12 +686,20 @@ Similar to `verilog-match-translate-off' but including
 
 Add `verilog-ext-mode' font lock keywords before running
 `verilog-mode' in order to populate `font-lock-keywords-alist'
-before `font-lock' is loaded."
+before `font-lock' is loaded.
+
+Otherwise reload `verilog-mode'.  This could occur if font-lock setup is run via
+`use-package' :config section instead of :init to allow for lazy loading of
+`verilog-ext'."
   (let ((keywords (append verilog-ext-font-lock-keywords
                           verilog-ext-font-lock-keywords-1
                           verilog-ext-font-lock-keywords-2
                           verilog-ext-font-lock-keywords-3)))
-    (font-lock-add-keywords 'verilog-mode keywords 'set)))
+    (font-lock-add-keywords 'verilog-mode keywords 'set)
+    ;; Workaround to refontify buffer if using :config section with `use-package'
+    ;;   https://emacs.stackexchange.com/questions/70083/how-to-refresh-font-lock-of-the-current-buffer
+    (when (eq major-mode 'verilog-mode)
+      (verilog-mode))))
 
 
 (provide 'verilog-ext-font-lock)
