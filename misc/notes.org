@@ -362,12 +362,102 @@ DANGER: Still very inefficient, removed funcall in
 
 
 * Dev
-** TODO Tags/workspace and caches
-*** TODO Check if a after-save hook can spawn a update-async of this type thing
+** TODO Dev: Check ox-hugo to generate blog with short tutorial
+** TODO Dev: Rebase/rewrite tree-sitter-verilog
+** TODO Dev: Implement vhdl-ts-mode and verilog-ts-mode features
+** TODO Pending before release 0.5.0
+*** TODO Dev: vhdl-ext
+- [ ] Missing vhdl-ts-mode integration:
+ - beautify: all (create vhdl-ext-beautify funcs that wrap vhdl-beautify/vhdl-ts-beautify depending on current mode)
+ - navigation: all except `vhdl-ext-jump-to-parent-entity'
+ - template: the beautify afterwards for vhdl-ts-mode
+ - which-func
+Respect to the keybindings, they cannot be set conditionally on major mode in the defvar keymao as this code
+is executed only once when the package is loaded. Therefore, the vhdl-ext will wrap functions and execute
+the proper one depending on if vhdl-mode or vhdl-ts-mode
+
+*** TODO Dev: verilog-ext
+- [ ] Check functionality: last 1 checked was navigation (still the fix for the define-key-map), continue on template
+ - beautify: all
+ - navigation: all except `verilog-ext-forward-word', `verilog-ext-backward-word' and `verilog-ext-jump-to-parent-module'
+ - template: syntax-ppss error with instance from file in `verilog-ts-mode', with `verilog-mode' works fine
+   - the rest of templates seem mode agnostic and seem to work fine (these are very old)
+ - which-func
+Respect to the keybindings, they cannot be set conditionally on major mode in the defvar keymao as this code
+is executed only once when the package is loaded. Therefore, the verilog-ext will wrap functions and execute
+the proper one depending on if verilog-mode or verilog-ts-mode
+
+** TODO Use a :vhier-files that overrides :files for cases where there are TB files decoupled from the RTL!?
+- Or something like that
+- [ ] Depends on whether vhier can handle complex class-based SV files or it reports syntax errors due to lack of support
+
+** DONE Pending before release 0.4.0
+CLOSED: [2023-12-20 Wed 14:13]
+*** DONE Dev: vhdl-ext
+CLOSED: [2023-12-20 Wed 14:13]
+- [X] Update README.md
+- [X] Update Wiki
+- [ ] Check tests (remove unused code, verify that everything testable is tested)
+
+*** DONE Dev: verilog-ext
+CLOSED: [2023-12-20 Wed 14:13]
+- [X] Update README.md
+- [X] Update Wiki
+- [ ] Check tests (remove unused code, verify that everything testable is tested)
+
+** DONE Performance
+CLOSED: [2023-10-10 Tue 12:55]
+- https://nullprogram.com/blog/2017/01/30/
+- Search for dolist/nreverse and change the structure
+  #+begin_src elisp
+    (dolist (x list (nreverse result))
+      (push (expt x e) result))
+  #+end_src
+- Also for vhdl-ext
+
+** DONE Tags/workspace and caches
+CLOSED: [2023-10-10 Tue 12:54]
+*** CANCELED Check if a after-save hook can spawn a update-async of this type thing
+CLOSED: [2023-10-10 Tue 12:54]
 - Tooslow some times?...
 - Snippet in temp file in $HOME in personal desktop computer
+*** DONE Trying to do a proj-alist similar to vhdl-proj-alist for project management
+CLOSED: [2023-10-10 Tue 12:51]
+#+begin_src elisp
+  ;; TODO: And somehow do it on a per project basis, as with vhdl-ext?
+  ;; TODO: It would be nice also to add some tests for caching
+  ;; TODO: Adapt these same tests to vhdl-ext
 
-*** TODO Hashes for cache/updating only modified files
+  (setq larumbe/test
+        '(("proj1"
+           :root "~/"
+           :dirs ("~/asdf1" "~/asdf2")
+           :extra-files ("~/asdf3/asdf.sv" "~/asdf3/asdf2.sv"))
+          ("proj2"
+           :root "~/"
+           :dirs ("~/asdf1" "~/asdf2")
+           :extra-files ("~/asdf3/asdf.sv" "~/asdf3/asdf2.sv"))
+          ("proj3"
+           :root "~/"
+           :dirs ("~/asdf1" "~/asdf2")
+           :extra-files ("~/asdf3/asdf.sv" "~/asdf3/asdf2.sv"))
+          ))
+
+  (setq larumbe/test-proj-props (alist-get "proj1" larumbe/test nil nil #'equal))
+  (setq larumbe/test-proj-root (plist-get larumbe/test-proj-props :root))
+
+  ;; ...
+
+  ;; In `verilog-ext-workspace-hierarchy-parse'
+    ;; TODO: Replace by the proj-setcdr once a per project table has been configured
+    (setq verilog-ext-hierarchy-current-flat-hierarchy flat-hierarchy)
+    ;; End of TODO
+  ;; This also applies to `verilog-ext-workspace-get-tags' and `verilog-ext-workspace-typedef-batch-update'
+
+#+end_src
+
+*** DONE Hashes for cache/updating only modified files
+CLOSED: [2023-10-10 Tue 12:54]
 - Check branch: file-hashes, or something like that
 - Create function that removes entries associated to :file in defs/inst/refs tables
 
@@ -412,7 +502,8 @@ DANGER: Still very inefficient, removed funcall in
                                    :parent (plist-get :parent tag-and-props)))
      #+end_src
 
-*** TODO Move to notes the thing of doing a per project/dir cache (same as vhdl-ext or projectile)
+*** DONE Move to notes the thing of doing a per project/dir cache (same as vhdl-ext or projectile)
+CLOSED: [2023-10-10 Tue 12:54]
 
 
 * Tests
