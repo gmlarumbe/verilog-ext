@@ -93,9 +93,8 @@ Find references of SYMBOL."
   nil)
 
 (defun verilog-ext-xref-backend-enable ()
-  "Enable `verilog-ext' backend on current buffer.
-Still experimental.  Removes the rest of xref backends."
-  (setq-local xref-backend-functions '(verilog-ext-xref-backend t)))
+  "Enable `verilog-ext' backend on current buffer."
+  (setq-local xref-backend-functions `(verilog-ext-xref-backend ,@xref-backend-functions)))
 
 (defun verilog-ext-xref-set (&optional disable)
   "Setup `verilog-ext' to use builtin `xref' backend.
