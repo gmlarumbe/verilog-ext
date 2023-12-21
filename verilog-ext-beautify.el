@@ -31,7 +31,6 @@
 
 (defun verilog-ext-beautify-block-at-point-indent ()
   "Indent current block at point."
-  (interactive)
   (let ((data (verilog-ext-block-at-point :return-pos))
         start-pos end-pos block name)
     (unless data
@@ -45,6 +44,24 @@
       (setq end-pos (line-end-position))
       (verilog-ext-indent-region start-pos end-pos)
       (message "Indented %s : %s" block name))))
+
+(defun verilog-ext-beautify--module-at-point-indent ()
+  "Indent current module."
+  (let ((case-fold-search nil)
+        (current-ids (verilog-ext-instance-at-point))
+        current-module beg end)
+    (unless current-ids
+      (user-error "Not inside an instance!"))
+    (setq current-module (car current-ids))
+    (save-excursion
+      (goto-char (match-beginning 0))
+      (beginning-of-line)
+      (setq beg (point))
+      (goto-char (match-end 0))
+      (end-of-line)
+      (setq end (point)))
+    (verilog-ext-indent-region beg end)
+    (message "Indented %s" current-module)))
 
 (defun verilog-ext-beautify--module-at-point-align (thing)
   "Align THING of current module at point (ports/parameters)."
@@ -74,32 +91,11 @@
 
 (defun verilog-ext-beautify--module-at-point-align-ports ()
   "Align ports of current module."
-  (interactive)
   (verilog-ext-beautify--module-at-point-align 'ports))
 
 (defun verilog-ext-beautify--module-at-point-align-params ()
   "Align parameters of current module."
-  (interactive)
   (verilog-ext-beautify--module-at-point-align 'parameters))
-
-(defun verilog-ext-beautify-module-at-point-indent ()
-  "Indent current module."
-  (interactive)
-  (let ((case-fold-search nil)
-        (current-ids (verilog-ext-instance-at-point))
-        current-module beg end)
-    (unless current-ids
-      (user-error "Not inside an instance!"))
-    (setq current-module (car current-ids))
-    (save-excursion
-      (goto-char (match-beginning 0))
-      (beginning-of-line)
-      (setq beg (point))
-      (goto-char (match-end 0))
-      (end-of-line)
-      (setq end (point)))
-    (verilog-ext-indent-region beg end)
-    (message "Indented %s" current-module)))
 
 (defun verilog-ext-beautify-module-at-point ()
   "Beautify current module:
@@ -108,9 +104,25 @@
 - Align parameters"
   (interactive)
   (save-excursion
-    (verilog-ext-beautify-module-at-point-indent)
+    (verilog-ext-beautify--module-at-point-indent)
     (verilog-ext-beautify--module-at-point-align-ports)
     (verilog-ext-beautify--module-at-point-align-params)))
+
+(defun verilog-ext-beautify-block-at-point ()
+  "Beautify/indent block at point.
+
+If block is an instance, also align parameters and ports."
+  (interactive)
+  ;; Precedence is relevant in the subsequent conditional clause
+  (cond (;; Tree-sitter implementation
+         (eq major-mode 'verilog-ts-mode)
+         (verilog-ts-beautify-block-at-point))
+        (;; Module instance
+         (and verilog-ext-file-allows-instances
+              (verilog-ext-instance-at-point))
+         (verilog-ext-beautify-module-at-point))
+        (t
+         (verilog-ext-beautify-block-at-point-indent))))
 
 (defun verilog-ext-beautify-current-buffer ()
   "Beautify current buffer:
@@ -118,17 +130,25 @@
 - Beautify every instantiated module
 - Untabify and delete trailing whitespace"
   (interactive)
-  (verilog-ext-indent-region (point-min) (point-max))
-  (save-excursion
-    (goto-char (point-min))
-    (while (verilog-ext-find-module-instance-fwd)
-      (verilog-ext-beautify-module-at-point)))
-  (untabify (point-min) (point-max))
-  (delete-trailing-whitespace (point-min) (point-max)))
+  (if (eq major-mode 'verilog-ts-mode)
+      ;; `verilog-ts-mode' based beautifying
+      (verilog-ts-beautify-current-buffer)
+    ;; `verilog-mode' based beautifying
+    (verilog-ext-indent-region (point-min) (point-max))
+    (save-excursion
+      (goto-char (point-min))
+      (while (verilog-ext-find-module-instance-fwd)
+        (verilog-ext-beautify-module-at-point)))
+    (untabify (point-min) (point-max))
+    (delete-trailing-whitespace (point-min) (point-max))))
 
-(defun verilog-ext-beautify-files (files)
+(defun verilog-ext-beautify-files (files ts-mode)
   "Beautify Verilog FILES.
-FILES is a list of strings containing the filepaths."
+
+FILES is a list of strings containing the filepaths.
+
+If TS-MODE is non-nil use tree-sitter implementation if `verilog-ts-mode' is
+available."
   (dolist (file files)
     (unless (file-exists-p file)
       (error "File %s does not exist! Aborting!" file)))
@@ -137,17 +157,24 @@ FILES is a list of strings containing the filepaths."
       (message "Processing %s..." file)
       (with-temp-file file
         (insert-file-contents file)
-        (verilog-ext-with-no-hooks
-          (verilog-mode))
-        (verilog-ext-beautify-current-buffer)))))
+        (if ts-mode
+            (progn
+              (verilog-ts-mode)
+              (verilog-ts-beautify-current-buffer))
+          (verilog-ext-with-no-hooks
+            (verilog-mode))
+          (verilog-ext-beautify-current-buffer))))))
 
-(defun verilog-ext-beautify-dir-files (dir)
+(defun verilog-ext-beautify-dir-files (dir &optional ts-mode)
   "Beautify Verilog files on DIR.
 
-Include subdirectory files recursively."
-  (interactive "DDirectory: ")
+Include subdirectory files recursively.
+
+With prefix arg, or if TS-MODE is non-nil, use `verilog-ts-mode' beautifying
+implementation."
+  (interactive "DDirectory: \nP")
   (let ((files (verilog-ext-dir-files dir :recursive)))
-    (verilog-ext-beautify-files files)))
+    (verilog-ext-beautify-files files ts-mode)))
 
 
 (provide 'verilog-ext-beautify)

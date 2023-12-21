@@ -136,8 +136,8 @@ Enabling of `verilog-ext-mode` minor-mode creates the following keybindings:
   * <kbd>C-\<tab\></kbd> `verilog-ext-hs-toggle-hiding`
 
 * Code beautifying
-  * <kbd>C-M-i</kbd> `verilog-ext-beautify-block-at-point-indent`
-  * <kbd>C-c C-b</kbd> `verilog-ext-beautify-module-at-point`
+  * <kbd>C-M-i</kbd> `verilog-ext-beautify-block-at-point`
+  * <kbd>C-c C-b</kbd> `verilog-ext-beautify-current-buffer`
 
 * Dwim navigation
   * <kbd>C-M-a</kbd> `verilog-ext-nav-beg-of-defun-dwim`
@@ -268,19 +268,19 @@ For configuration and usage instructions, see the [wiki](https://github.com/gmla
 
 
 ## Beautify instances ##
-Indent and align parameters and ports of RTL instances.
+Indent blocks and align parameters and ports of RTL instances.
 
 <img src="https://user-images.githubusercontent.com/51021955/208781782-dbf45c3e-df3f-405a-aacc-1d190ab87ae9.gif" width=80%>
 
 Interactive functions:
 
-* `verilog-ext-beautify-module-at-point`: <kbd>C-c C-b</kbd>
-* `verilog-ext-beautify-current-buffer`
+* `verilog-ext-beautify-block-at-point`: <kbd>C-M-i</kbd>
+* `verilog-ext-beautify-current-buffer`: <kbd>C-c C-b</kbd>
 
 Batch-mode functions:
 
 * `verilog-ext-beautify-files`
-* `verilog-ext-beautify-dir-files`
+* `verilog-ext-beautify-dir-files`: uses tree-sitter if run with prefix arg <kbd>C-u</kbd>
 
 ## Navigation ##
 

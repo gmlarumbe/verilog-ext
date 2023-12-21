@@ -168,8 +168,8 @@ FEATURES can be a single feature or a list of features."
     (verilog-ext-when-feature 'formatter
       (define-key map (kbd "C-c C-l") 'verilog-ext-formatter-run))
     (verilog-ext-when-feature 'beautify
-      (define-key map (kbd "C-M-i") 'verilog-ext-beautify-block-at-point-indent)
-      (define-key map (kbd "C-c C-b") 'verilog-ext-beautify-module-at-point))
+      (define-key map (kbd "C-M-i") 'verilog-ext-beautify-block-at-point)
+      (define-key map (kbd "C-c C-b") 'verilog-ext-beautify-current-buffer))
     (verilog-ext-when-feature 'navigation
       (define-key map (kbd "C-M-.") 'verilog-ext-jump-to-parent-module)
       (define-key map (kbd "C-c M-.") 'verilog-ext-jump-to-module-at-point-def)
