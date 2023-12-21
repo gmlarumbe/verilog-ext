@@ -500,7 +500,14 @@ Use inst INST-TEMPLATE or prompt to choose one if nil."
     (setq end-instance (point))
     (verilog-ext-replace-string "<module>" module-name start-instance end-instance)
     (verilog-ext-replace-string "<instance_name>" instance-name start-instance end-instance)
-    (verilog-auto) ; Might change positions of some variables!
+    (if (eq major-mode 'verilog-ts-mode)
+        ;; INFO: Workaround to run `verilog-auto' in `verilog-ts-mode' avoiding `syntax-ppss' errors:
+        ;;  - https://github.com/gmlarumbe/verilog-ext/issues/12
+        (progn
+          (verilog-mode)
+          (verilog-auto)
+          (verilog-ts-mode))
+      (verilog-auto)) ; Might change positions of some variables!
     ;; Postprocess instantiation
     (goto-char (point-min))
     (search-forward verilog-ext-template-inst-auto-footer)
@@ -514,7 +521,7 @@ Use inst INST-TEMPLATE or prompt to choose one if nil."
     (delete-region start-template (1+ start-instance))
     ;; Beautify (indent and align) instantiation
     (search-forward instance-name)
-    (verilog-ext-beautify-module-at-point)))
+    (verilog-ext-beautify-block-at-point)))
 
 (defun verilog-ext-template-inst-auto-from-file-simple (file)
   "Instantiate from FILE with simple template: connected ports and no parameters."

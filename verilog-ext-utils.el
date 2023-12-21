@@ -349,20 +349,28 @@ module was found.
 
 Update the value of buffer-local variable `verilog-ext-file-allows-instances' to
 be used in optimization of font-lock and imenu."
-  (let (modules)
-    (save-excursion
-      (goto-char (point-min))
-      (while (verilog-re-search-forward verilog-ext-top-instantiable-re nil t)
-        (push `(,(match-string-no-properties 3) ; Name
-                ,(match-beginning 1)            ; Start pos
-                ,(save-excursion                ; End pos
-                   (goto-char (match-beginning 1))
-                   (verilog-ext-pos-at-forward-sexp)))
-              modules)))
-    (if modules
-        (setq verilog-ext-file-allows-instances t)
-      (setq verilog-ext-file-allows-instances nil))
-    (nreverse (delete-dups modules))))
+  (if (eq major-mode 'verilog-ts-mode)
+      ;; `verilog-ts-mode'
+      (mapcar (lambda (node)
+                `(,(verilog-ts--node-identifier-name node)
+                  ,(treesit-node-start node)
+                  ,(treesit-node-end node)))
+              (verilog-ts-module-declarations-nodes-current-buffer))
+    ;; `verilog-mode'
+    (let (modules)
+      (save-excursion
+        (goto-char (point-min))
+        (while (verilog-re-search-forward verilog-ext-top-instantiable-re nil t)
+          (push `(,(match-string-no-properties 3) ; Name
+                  ,(match-beginning 1)            ; Start pos
+                  ,(save-excursion                ; End pos
+                     (goto-char (match-beginning 1))
+                     (verilog-ext-pos-at-forward-sexp)))
+                modules)))
+      (if modules
+          (setq verilog-ext-file-allows-instances t)
+        (setq verilog-ext-file-allows-instances nil))
+      (nreverse (delete-dups modules)))))
 
 (defun verilog-ext-read-file-modules (&optional file)
   "Find modules in current buffer.
