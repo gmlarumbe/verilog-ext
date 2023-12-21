@@ -261,8 +261,6 @@ FEATURES can be a single feature or a list of features."
                      (setq verilog-ext-flycheck-files verilog-ext-file-list))
             (setq verilog-ext-flycheck-dirs nil)
             (setq verilog-ext-flycheck-files nil)))
-        (verilog-ext-when-feature 'which-func
-          (verilog-ext-which-func))
         (verilog-ext-when-feature 'block-end-comments
           (verilog-ext-block-end-comments-to-names-mode))
         (verilog-ext-when-feature 'time-stamp
@@ -285,7 +283,10 @@ FEATURES can be a single feature or a list of features."
             (setq-local font-lock-multiline nil))
           ;; Imenu
           (verilog-ext-when-feature 'imenu
-            (setq-local imenu-create-index-function #'verilog-ext-imenu-index))))
+            (setq-local imenu-create-index-function #'verilog-ext-imenu-index))
+          ;; Which-func
+          (verilog-ext-when-feature 'which-func
+            (verilog-ext-which-func))))
     ;; Cleanup
     (remove-hook 'kill-buffer-hook #'verilog-ext-kill-buffer-hook :local)
     (verilog-ext-when-feature 'xref
