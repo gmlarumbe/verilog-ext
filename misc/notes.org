@@ -365,7 +365,7 @@ DANGER: Still very inefficient, removed funcall in
 ** TODO Dev: Check ox-hugo to generate blog with short tutorial
 ** TODO Dev: Rebase/rewrite tree-sitter-verilog
 ** TODO Pending before release 0.5.0
-*** TODO Dev: vhdl-ts-mode: 'symbols in regexp-opts
+*** TODO Dev: vhdl-ext: enable hideshow by default, similar to verilog-ext
 *** TODO Dev: verilog-ext
 - [-] Check functionality: last 1 checked was navigation (still the fix for the define-key-map), continue on template
   - [X] navigation: all except `verilog-ext-forward-word', `verilog-ext-backward-word' and `verilog-ext-jump-to-parent-module'
@@ -393,6 +393,8 @@ the proper one depending on if verilog-mode or verilog-ts-mode
     - Use tree-sitter parsing to get the ports, their type, and their names and save them in some variable
     - Use this variable to generate the instantiation
 
+*** DONE Dev: vhdl-ts-mode: 'symbols in regexp-opts
+CLOSED: [2024-01-10 Wed 00:28]
 *** DONE Dev: vhdl-ext
 CLOSED: [2023-12-22 Fri 14:08]
 - [X] Missing vhdl-ts-mode integration:
