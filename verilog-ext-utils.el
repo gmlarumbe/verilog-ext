@@ -589,89 +589,98 @@ at point.
 
 Do not reuse `verilog-ext-point-inside-block' implementation to improve
 efficiency and be able to use it for features such as `which-func'."
-  (let ((start-pos (point))
-        block block-type block-name block-boundaries block-beg-point block-end-point)
-    (save-match-data
-      (save-excursion
-        (when (verilog-re-search-backward verilog-ext-block-at-point-all-re nil :no-error)
-          (setq block (match-string-no-properties 0))
-          ;; Try to set block-type and block-name depending on the context
-          (cond (;; Class/top block containing task/function
-                 (string-match "\\<end\\(function\\|task\\)\\>" block)
-                 (when (and (not (verilog-ext-point-inside-extern-tf-definition)) ; Extern method definition...
-                            (verilog-re-search-backward verilog-ext-block-at-point-top-and-class-re nil :no-error)) ; ... will be inside a class/module/program/interface
-                   (setq block-type (match-string-no-properties 0))
-                   (or (looking-at verilog-ext-class-re)
-                       (looking-at verilog-ext-top-re))
-                   (setq block-name (match-string-no-properties 3))))
-                ;; Defun
-                ((string-match "\\<end\\(class\\|generate\\)\\>" block)
-                 (when (and (verilog-re-search-backward verilog-ext-block-at-point-top-re nil :no-error)
-                            (setq block (match-string-no-properties 0))
-                            (string-match verilog-ext-block-at-point-top-re block))
+  (if (eq major-mode 'verilog-ts-mode)
+      ;; `verilog-ts-mode'
+      (let ((node (verilog-ts-block-at-point)))
+        (when node
+          `((type      . ,(verilog-ts--node-identifier-type node))
+            (name      . ,(verilog-ts--node-identifier-name node))
+            (beg-point . ,(treesit-node-start node))
+            (end-point . ,(treesit-node-end node)))))
+    ;; `verilog-mode'
+    (let ((start-pos (point))
+          block block-type block-name block-boundaries block-beg-point block-end-point)
+      (save-match-data
+        (save-excursion
+          (when (verilog-re-search-backward verilog-ext-block-at-point-all-re nil :no-error)
+            (setq block (match-string-no-properties 0))
+            ;; Try to set block-type and block-name depending on the context
+            (cond (;; Class/top block containing task/function
+                   (string-match "\\<end\\(function\\|task\\)\\>" block)
+                   (when (and (not (verilog-ext-point-inside-extern-tf-definition)) ; Extern method definition...
+                              (verilog-re-search-backward verilog-ext-block-at-point-top-and-class-re nil :no-error)) ; ... will be inside a class/module/program/interface
+                     (setq block-type (match-string-no-properties 0))
+                     (or (looking-at verilog-ext-class-re)
+                         (looking-at verilog-ext-top-re))
+                     (setq block-name (match-string-no-properties 3))))
+                  ;; Defun
+                  ((string-match "\\<end\\(class\\|generate\\)\\>" block)
+                   (when (and (verilog-re-search-backward verilog-ext-block-at-point-top-re nil :no-error)
+                              (setq block (match-string-no-properties 0))
+                              (string-match verilog-ext-block-at-point-top-re block))
+                     (setq block-type block)
+                     (looking-at verilog-ext-top-re)
+                     (setq block-name (match-string-no-properties 3))))
+                  ;; Function/task
+                  ((string-match "\\<\\(function\\|task\\)\\>" block)
+                   (if (save-excursion (verilog-re-search-backward "\\<extern\\>" (line-beginning-position) :no-error))
+                       (progn ; If extern it must be a class method
+                         (verilog-re-search-backward "\\<class\\>" nil :no-error)
+                         (when (verilog-ext-looking-at-class-declaration)
+                           (setq block-type "class")
+                           (setq block-name (match-string-no-properties 3))))
+                     ;; Else, non-extern function/task
+                     (or (looking-at verilog-ext-function-re)
+                         (looking-at verilog-ext-task-re))
+                     (setq block-type block)
+                     (setq block-name (match-string-no-properties 3))))
+                  ;; Class
+                  ((string= block "class")
+                   (unless (verilog-ext-class-declaration-is-typedef-p)
+                     (setq block-type block)
+                     (looking-at verilog-ext-class-re)
+                     (setq block-name (match-string-no-properties 3))))
+                  ;; Package/module/interface/program
+                  ((string-match verilog-ext-block-at-point-top-re block)
                    (setq block-type block)
                    (looking-at verilog-ext-top-re)
-                   (setq block-name (match-string-no-properties 3))))
-                ;; Function/task
-                ((string-match "\\<\\(function\\|task\\)\\>" block)
-                 (if (save-excursion (verilog-re-search-backward "\\<extern\\>" (line-beginning-position) :no-error))
-                     (progn ; If extern it must be a class method
-                       (verilog-re-search-backward "\\<class\\>" nil :no-error)
-                       (when (verilog-ext-looking-at-class-declaration)
-                         (setq block-type "class")
-                         (setq block-name (match-string-no-properties 3))))
-                   ;; Else, non-extern function/task
-                   (or (looking-at verilog-ext-function-re)
-                       (looking-at verilog-ext-task-re))
-                   (setq block-type block)
-                   (setq block-name (match-string-no-properties 3))))
-                ;; Class
-                ((string= block "class")
-                 (unless (verilog-ext-class-declaration-is-typedef-p)
-                   (setq block-type block)
-                   (looking-at verilog-ext-class-re)
-                   (setq block-name (match-string-no-properties 3))))
-                ;; Package/module/interface/program
-                ((string-match verilog-ext-block-at-point-top-re block)
-                 (setq block-type block)
-                 (looking-at verilog-ext-top-re)
-                 (setq block-name (match-string-no-properties 3)))
-                ;; Generate/always/initial/final
-                ((string-match "\\<\\(generate\\|always\\|initial\\|final\\)\\>" block)
-                 (let (temp-pos)
-                   (setq block-type block)
-                   (save-excursion
-                     (verilog-re-search-forward "begin" nil :no-error)
-                     (if (looking-at (concat "\\s-*:\\s-*\\(?1:" verilog-identifier-re "\\)"))
-                         (setq block-name (match-string-no-properties 1))
-                       (setq block-name "unnamed"))
-                     (when (string-match "\\<\\(always\\|initial\\|final\\)\\>" block) ; Handle subcase for always/initial/final
-                       (verilog-ext-forward-sexp)
-                       (when (and (>= start-pos (point)) ; If not inside the procedural block...
-                                  ;; ... it's assumed that these will be inside a module/interface/program block
-                                  (verilog-re-search-backward verilog-ext-block-at-point-top-re nil :no-error))
-                         (setq block-type (match-string-no-properties 0))
-                         (looking-at verilog-ext-top-re)
-                         (setq block-name (match-string-no-properties 3))
-                         (setq temp-pos (point)))))
-                   ;; If it was first detected as a procedural/generate but it turned out to be a top/defun block...
-                   (when (string-match verilog-ext-block-at-point-top-re block-type)
-                     (goto-char temp-pos))))
-                ;; Top blocks (might have found "endmodule/endinterface/endprogram/endpackage" or nothing)
-                (t
-                 (setq block-type nil)
-                 (setq block-name nil))))
-        ;; Return values and boundaries
-        (when (and block-type block-name)
-          (when return-pos
-            (setq block (intern block-type))
-            (setq block-boundaries (verilog-ext-get-block-boundaries block))
-            (setq block-beg-point (car block-boundaries))
-            (setq block-end-point (cdr block-boundaries)))
-          `((type      . ,block-type)
-            (name      . ,block-name)
-            (beg-point . ,block-beg-point)
-            (end-point . ,block-end-point)))))))
+                   (setq block-name (match-string-no-properties 3)))
+                  ;; Generate/always/initial/final
+                  ((string-match "\\<\\(generate\\|always\\|initial\\|final\\)\\>" block)
+                   (let (temp-pos)
+                     (setq block-type block)
+                     (save-excursion
+                       (verilog-re-search-forward "begin" nil :no-error)
+                       (if (looking-at (concat "\\s-*:\\s-*\\(?1:" verilog-identifier-re "\\)"))
+                           (setq block-name (match-string-no-properties 1))
+                         (setq block-name "unnamed"))
+                       (when (string-match "\\<\\(always\\|initial\\|final\\)\\>" block) ; Handle subcase for always/initial/final
+                         (verilog-ext-forward-sexp)
+                         (when (and (>= start-pos (point)) ; If not inside the procedural block...
+                                    ;; ... it's assumed that these will be inside a module/interface/program block
+                                    (verilog-re-search-backward verilog-ext-block-at-point-top-re nil :no-error))
+                           (setq block-type (match-string-no-properties 0))
+                           (looking-at verilog-ext-top-re)
+                           (setq block-name (match-string-no-properties 3))
+                           (setq temp-pos (point)))))
+                     ;; If it was first detected as a procedural/generate but it turned out to be a top/defun block...
+                     (when (string-match verilog-ext-block-at-point-top-re block-type)
+                       (goto-char temp-pos))))
+                  ;; Top blocks (might have found "endmodule/endinterface/endprogram/endpackage" or nothing)
+                  (t
+                   (setq block-type nil)
+                   (setq block-name nil))))
+          ;; Return values and boundaries
+          (when (and block-type block-name)
+            (when return-pos
+              (setq block (intern block-type))
+              (setq block-boundaries (verilog-ext-get-block-boundaries block))
+              (setq block-beg-point (car block-boundaries))
+              (setq block-end-point (cdr block-boundaries)))
+            `((type      . ,block-type)
+              (name      . ,block-name)
+              (beg-point . ,block-beg-point)
+              (end-point . ,block-end-point))))))))
 
 ;;;; Buffers/hooks
 (defun verilog-ext-update-buffer-file-and-dir-list ()

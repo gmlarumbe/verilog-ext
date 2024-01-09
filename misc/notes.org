@@ -364,28 +364,62 @@ DANGER: Still very inefficient, removed funcall in
 * Dev
 ** TODO Dev: Check ox-hugo to generate blog with short tutorial
 ** TODO Dev: Rebase/rewrite tree-sitter-verilog
-** TODO Dev: Implement vhdl-ts-mode and verilog-ts-mode features
 ** TODO Pending before release 0.5.0
-*** TODO Dev: vhdl-ext
-- [ ] Missing vhdl-ts-mode integration:
- - beautify: all (create vhdl-ext-beautify funcs that wrap vhdl-beautify/vhdl-ts-beautify depending on current mode)
- - navigation: all except `vhdl-ext-jump-to-parent-entity'
- - template: the beautify afterwards for vhdl-ts-mode
- - which-func
+*** TODO Dev: vhdl-ts-mode: 'symbols in regexp-opts
+*** TODO Dev: verilog-ext
+- [-] Check functionality: last 1 checked was navigation (still the fix for the define-key-map), continue on template
+  - [X] navigation: all except `verilog-ext-forward-word', `verilog-ext-backward-word' and `verilog-ext-jump-to-parent-module'
+  - [ ] template: syntax-ppss error with instance from file in `verilog-ts-mode', with `verilog-mode' works fine
+    - This is because `verilog-auto' changes mode to `verilog-mode' and the `syntax-ppss' changes, and is somehow wrong...
+    - [ ] It would be needed to use a replacement of Verilog_AUTO approach with tree-sitter:
+      - Use tree-sitter parsing to get the ports, their type, and their names and save them in some variable
+      - Use this variable to generate the instantiation
+    - the rest of templates seem mode agnostic and seem to work fine (these are very old)
+  - [X] beautify: all
+  - [X] which-func
+Respect to the keybindings, they cannot be set conditionally on major mode in the defvar keymao as this code
+is executed only once when the package is loaded. Therefore, the verilog-ext will wrap functions and execute
+the proper one depending on if verilog-mode or verilog-ts-mode
+
+*** TODO Dev: Update Git tags in verilog-ts-mode and vhdl-ts-mode to and update them in Package-Requires header of verilog-ext and vhdl-ext
+- Otherwise the flows associated with MELPA-Stable will fail!
+
+*** TODO Dev: Do equivalent to AUTOs to be able to do instantiations
+- [ ] Worked around by switching temporarily to `verilog-mode` before running `verilog-auto`, then switching back to `verilog-ts-mode`
+- Check code on TerosHDL and their API to see how they get info about the ports
+- [ ] template: syntax-ppss error with instance from file in `verilog-ts-mode', with `verilog-mode' works fine
+  - This is because `verilog-auto' changes mode to `verilog-mode' and the `syntax-ppss' changes, and is somehow wrong...
+  - [ ] It would be needed to use a replacement of Verilog_AUTO approach with tree-sitter:
+    - Use tree-sitter parsing to get the ports, their type, and their names and save them in some variable
+    - Use this variable to generate the instantiation
+
+*** DONE Dev: vhdl-ext
+CLOSED: [2023-12-22 Fri 14:08]
+- [X] Missing vhdl-ts-mode integration:
+  - [X] navigation: all except `vhdl-ext-jump-to-parent-entity'
+  - [X] beautify: all (create vhdl-ext-beautify funcs that wrap vhdl-beautify/vhdl-ts-beautify depending on current mode)
+  - [X] template: the beautify afterwards for vhdl-ts-mode
+  - [X] which-func
 Respect to the keybindings, they cannot be set conditionally on major mode in the defvar keymao as this code
 is executed only once when the package is loaded. Therefore, the vhdl-ext will wrap functions and execute
 the proper one depending on if vhdl-mode or vhdl-ts-mode
 
-*** TODO Dev: verilog-ext
-- [ ] Check functionality: last 1 checked was navigation (still the fix for the define-key-map), continue on template
- - beautify: all
- - navigation: all except `verilog-ext-forward-word', `verilog-ext-backward-word' and `verilog-ext-jump-to-parent-module'
- - template: syntax-ppss error with instance from file in `verilog-ts-mode', with `verilog-mode' works fine
-   - the rest of templates seem mode agnostic and seem to work fine (these are very old)
- - which-func
-Respect to the keybindings, they cannot be set conditionally on major mode in the defvar keymao as this code
-is executed only once when the package is loaded. Therefore, the verilog-ext will wrap functions and execute
-the proper one depending on if verilog-mode or verilog-ts-mode
+- Below there is an attempt in `vhdl-ext-find-entity-instance' to make it work similar to non-tree-sitter version, placing cursor over entity name
+  - But there is an endless loop when moving backwards...
+#+begin_src elisp
+              (progn
+                ;; Try to place cursor at entity name for simpler tags navigation
+                ;; - Copied from implementation of `vhdl-ts--node-identifier-name'
+                (cond ((save-excursion
+                         (setq temp-node (treesit-search-subtree node "\\_<component_instantiation\\_>" bwd)))
+                       (goto-char (treesit-node-start (treesit-node-child-by-field-name temp-node "component"))))
+                      ((save-excursion
+                         (setq temp-node (treesit-search-subtree node "entity_instantiation" bwd)))
+                       (treesit-search-subtree node "entity_instantiation" bwd)
+                       (goto-char (treesit-node-start (treesit-node-child-by-field-name (treesit-node-child temp-node 1) "suffix"))))
+                      (t
+                       (error "Unexpected component_instantiation_statement subnode!")))
+#+end_src
 
 ** TODO Use a :vhier-files that overrides :files for cases where there are TB files decoupled from the RTL!?
 - Or something like that
