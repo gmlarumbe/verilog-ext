@@ -70,7 +70,7 @@
                                            ,verilog-ext-hs-block-end-keywords-re
                                            nil
                                            ,(cdr mode))))
-  (add-hook verilog-mode-hook hs-minor-mode))
+  (add-hook 'verilog-mode-hook 'hs-minor-mode))
 
 (defun verilog-ext-hs-toggle-hiding (&optional e)
   "Wrapper for `hs-toggle-hiding' depending on current Verilog `major-mode'.
