@@ -69,7 +69,13 @@
                                            ,verilog-ext-hs-block-start-keywords-re
                                            ,verilog-ext-hs-block-end-keywords-re
                                            nil
-                                           ,(cdr mode)))))
+                                           ,(cdr mode))))
+  (dolist (hook '(verilog-mode-hook verilog-ts-mode-hook))
+    (add-hook hook #'hs-minor-mode))
+  ;; Workaround to enable `hideshow' on first file visit with lazy loading using
+  ;; :config section with `use-package'
+  (when (member major-mode '(verilog-mode verilog-ts-mode))
+    (hs-minor-mode 1)))
 
 (defun verilog-ext-hs-toggle-hiding (&optional e)
   "Wrapper for `hs-toggle-hiding' depending on current Verilog `major-mode'.
