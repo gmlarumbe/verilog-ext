@@ -332,13 +332,69 @@ search."
   (with-temp-file out-file
     (insert (mapconcat #'identity filelist "\n"))))
 
-(defun verilog-ext-expand-file-list (file-list &optional rel-dir)
-  "Expand files in FILE-LIST.
+(defun verilog-ext-is-globstar-dir (globstar-dir)
+  "Return non-nil if GLOBSTAR-DIR is a supported globstar string.
 
-Expand with respect to REL-DIR if non-nil."
-  (mapcar (lambda (file)
-            (expand-file-name file rel-dir))
-          file-list))
+Perform some checks to ensure that if there is a globstar pattern it is
+supported."
+  (let* ((globstar-re "/\\*\\*/.+")
+         (glob-re "\\*")
+         (globstar-pos (string-match globstar-re globstar-dir)))
+    (when globstar-pos
+      (cond (;; Search for simple glob after latest dir slash /))
+             (string-match glob-re globstar-dir (+ 3 globstar-pos))
+             (error "Unsupported globstar/glob expression: %s" globstar-dir))
+            (t ; Valid pattern
+             globstar-pos)))))
+
+(defun verilog-ext-globstar-dirs (globstar-dir)
+  "Return list of directories that match GLOBSTAR-DIR expression.
+
+Globstar expressions are of the form: /home/user/dir/**/src
+
+This function returns subdirectories recursively."
+  (let* ((recursive t)
+         (globstar-re "\\*\\*")
+         (globstar-pos (string-match globstar-re globstar-dir))
+         (subdirs-substring-start (1+ (string-match "/" globstar-dir globstar-pos)))
+         (base-dir (substring-no-properties globstar-dir 0 globstar-pos))
+         (predicate-dirs (when subdirs-substring-start
+                           (string-trim-right (substring-no-properties globstar-dir subdirs-substring-start) "/+")))
+         (filter-re (when predicate-dirs
+                      (concat base-dir ".+" "\\<" predicate-dirs "\\>" (unless recursive "\\'"))))
+         all-dirs)
+    (when (and globstar-pos filter-re)
+      ;; Keep only directories, discard files
+      (setq all-dirs (seq-remove (lambda (x) (not (file-directory-p x)))
+                                 (directory-files-recursively base-dir "." t)))
+      ;; Return directories that match path after globstar
+      (seq-filter (lambda (dir) (string-match-p filter-re dir)) all-dirs))))
+
+(defun verilog-ext-expand-file-list (file-list &optional rel-dir dir-list-p)
+  "Expand files/directories in FILE-LIST.
+
+Expand with respect to REL-DIR if non-nil.
+
+Expand glob patterns if present in the filename.
+
+If optional arg DIR-LIST-P is non-nil, assume FILE-LIST is a list of directories
+and return a list of expanded directories excluding files."
+  (let ((exp-file-list (mapcar (lambda (file)
+                                 (expand-file-name file rel-dir))
+                               file-list))
+        glob-exp-file-list)
+    ;; Seq is a list of files/directories after relative path pattern expansion
+    (dolist (exp-file exp-file-list (nreverse glob-exp-file-list))
+      ;; If it is a globstar dir, expand its directories and add them to the ones to be returned
+      (if (and dir-list-p (verilog-ext-is-globstar-dir exp-file))
+          (dolist (globstar-dir (verilog-ext-globstar-dirs exp-file))
+            (push globstar-dir glob-exp-file-list))
+        ;; Else process glob/regular files/dirs
+        (dolist (glob-exp-file (file-expand-wildcards (directory-file-name exp-file))) ; `file-expand-wildcards' needs a filename, not a dirname (withouth / at the end)
+          (unless (and dir-list-p
+                       (not (file-directory-p glob-exp-file)))
+            (push glob-exp-file glob-exp-file-list)))))))
+
 
 ;;;; File modules
 (defun verilog-ext-scan-buffer-modules ()
@@ -827,13 +883,22 @@ These depend on the value of property list of `verilog-ext-project-alist'.
          (proj-ignore-dirs (plist-get proj-plist :ignore-dirs))
          (proj-files (plist-get proj-plist :files))
          (proj-ignore-files (plist-get proj-plist :ignore-files))
-         files-dirs files-all)
+         files-dirs files-all proj-dirs-all)
     ;; Basic checks
     (unless proj
       (user-error "Not in a Verilog project buffer, check `verilog-ext-project-alist'"))
     (unless proj-root
       (user-error "Project root not set for project %s" proj))
-    ;; Expand filenames (except for proj-dirs since they need to parse the -r recursive flag)
+    ;; Expand filenames (relative path and glob patterns)
+    (when proj-dirs
+      (setq proj-dirs (dolist (dir proj-dirs (nreverse proj-dirs-all))
+                        (if (string= "-r" (car (split-string dir)))
+                            (dolist (elm (mapcar (lambda (recursive-dir)
+                                                   (concat "-r " recursive-dir))
+                                                 (verilog-ext-expand-file-list (cdr (split-string dir)) proj-root :dir-list-p)))
+                              (push elm proj-dirs-all))
+                          (dolist (elm (verilog-ext-expand-file-list `(,dir) proj-root :dir-list-p))
+                            (push elm proj-dirs-all))))))
     (when proj-ignore-dirs
       (setq proj-ignore-dirs (verilog-ext-expand-file-list proj-ignore-dirs proj-root)))
     (when proj-files
@@ -844,8 +909,8 @@ These depend on the value of property list of `verilog-ext-project-alist'.
     (when proj-dirs
       (mapc (lambda (dir)
               (if (string= "-r" (car (split-string dir)))
-                  (setq files-dirs (append files-dirs (verilog-ext-dir-files (expand-file-name (cadr (split-string dir)) proj-root) :recursive :follow-symlinks proj-ignore-dirs)))
-                (setq files-dirs (append files-dirs (verilog-ext-dir-files (expand-file-name dir proj-root) nil :follow-symlinks proj-ignore-dirs)))))
+                  (setq files-dirs (append files-dirs (verilog-ext-dir-files (cadr (split-string dir)) :recursive :follow-symlinks proj-ignore-dirs)))
+                (setq files-dirs (append files-dirs (verilog-ext-dir-files dir nil :follow-symlinks proj-ignore-dirs)))))
             proj-dirs))
     ;; If no dirs or files are specified get recursively all files in root
     (if (and (not proj-files)
