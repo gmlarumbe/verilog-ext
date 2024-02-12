@@ -501,12 +501,7 @@ Use inst INST-TEMPLATE or prompt to choose one if nil."
     (verilog-ext-replace-string "<module>" module-name start-instance end-instance)
     (verilog-ext-replace-string "<instance_name>" instance-name start-instance end-instance)
     (if (eq major-mode 'verilog-ts-mode)
-        ;; INFO: Workaround to run `verilog-auto' in `verilog-ts-mode' avoiding `syntax-ppss' errors:
-        ;;  - https://github.com/gmlarumbe/verilog-ext/issues/12
-        (progn
-          (verilog-mode)
-          (verilog-auto)
-          (verilog-ts-mode))
+        (verilog-ts-auto)
       (verilog-auto)) ; Might change positions of some variables!
     ;; Postprocess instantiation
     (goto-char (point-min))

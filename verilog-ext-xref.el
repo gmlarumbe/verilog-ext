@@ -71,8 +71,14 @@
 
 (defun verilog-ext-xref-backend ()
   "Verilog-ext backend for Xref."
-  (when (verilog-ext-buffer-proj)
-    'verilog-ext))
+  (let (proj symbol proj-table)
+    (and (setq proj (verilog-ext-buffer-proj))
+         (setq symbol (thing-at-point 'symbol :no-props))
+         (or (and (setq proj-table (verilog-ext-aget verilog-ext-tags-defs-table proj))
+                  (gethash symbol proj-table))
+             (and (setq proj-table (verilog-ext-aget verilog-ext-tags-refs-table proj))
+                  (gethash symbol proj-table)))
+         'verilog-ext)))
 
 (cl-defmethod xref-backend-identifier-at-point ((_backend (eql verilog-ext)))
   "Implementation of `xref-backend-identifier-at-point' for verilog-ext-xref."
