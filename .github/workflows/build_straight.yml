@@ -15,6 +15,7 @@ jobs:
       matrix:
         emacs_version:
           - 29.1
+          - 29.2
           - release-snapshot
           # INFO: At some point, in Emacs 30 the 'pp' function, which all
           # tests rely on to generate the ref file, changed how objects are
