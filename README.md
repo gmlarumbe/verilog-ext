@@ -192,13 +192,13 @@ select which files belong to a specific project:
   ```elisp
   (setq verilog-ext-project-alist
         `(("ucontroller" ; Project name
-           :root "/home/gonz/Repos/larumbe/ucontroller"
+           :root "/home/gonz/Repos/larumbe/ucontroller" ; supports remote dirs via Tramp
            :files ("src/my_block.sv"
                    "src/*.v") ; Multiple files can be specified through the glob pattern
            :dirs ("src/tb"
                   "-r src/rtl" ; -r to add directories recursively
                   "src/syn/*_block"
-                  "src/**/netlists") ; globstar supported to add all directories that begin with "src" and end with "netlists"
+                  "src/**/netlists") ; add all dirs that begin with "src" and end with "netlists"
            :ignore-dirs ("src/ignored_ip")
            :ignore-files ("src/some_ip/ignored_sim_netlist.v")
            :compile-cmd "make tb_top" ; command used to compile current project
