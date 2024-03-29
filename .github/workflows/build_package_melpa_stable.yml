@@ -14,6 +14,7 @@ jobs:
         emacs_version:
           - 29.1
           - 29.2
+          - 29.3
     steps:
       - name: Set up Emacs
         uses: purcell/setup-emacs@master
