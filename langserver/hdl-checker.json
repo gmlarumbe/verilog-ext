@@ -1,0 +1,9 @@
+{
+  "name": "hdl-checker",
+  "languageId": "verilog",
+  "command": [
+    "hdl_checker",
+    "--lsp"
+  ],
+  "settings": {}
+}

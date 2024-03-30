@@ -1,0 +1,9 @@
+{
+  "name": "veridian",
+  "languageId": "verilog",
+  "command": [
+    "veridian"
+  ],
+
+  "settings": {}
+}

@@ -1,0 +1,9 @@
+{
+  "name": "svls",
+  "languageId": "verilog",
+  "command": [
+    "svls"
+  ],
+
+  "settings": {}
+}
