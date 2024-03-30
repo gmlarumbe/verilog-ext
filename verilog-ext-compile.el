@@ -263,7 +263,7 @@ ARGS is a property list."
       (makefile-pickup-targets)
       (setq target (completing-read "Target: " makefile-target-table)))
     (setq cmd (mapconcat #'identity `("cd" ,(verilog-ext-buffer-proj-root) "&&" "make" ,target) " "))
-    (compile cmd)))
+    (verilog-ext-compile cmd)))
 
 (defun verilog-ext-compile-project ()
   "Compile using :compile-cmd of `verilog-ext-project-alist' project.
