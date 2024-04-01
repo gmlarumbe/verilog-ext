@@ -15,7 +15,7 @@ and [`verilog-ts-mode`](https://github.com/gmlarumbe/verilog-ts-mode).
 * [Find definitions and references](#find-definitions-and-references)
 * [Auto-completion with dot and scope completion](#auto-completion)
 * [Hierarchy extraction and navigation](#hierarchy-extraction)
-* [LSP configuration for `lsp-mode` and `eglot`](#language-server-protocol)
+* [LSP configuration for `lsp-bridge`, `lsp-mode` and `eglot`](#language-server-protocol)
 * [Support for many linters via `flycheck`](#linting)
 * [Beautify modules and instances](#beautify-instances)
 * [Code navigation functions for RTL and Verification environments](#navigation)
@@ -72,6 +72,7 @@ By default all features are enabled:
         hierarchy
         eglot
         lsp
+        lsp-bridge
         flycheck
         beautify
         navigation
@@ -105,6 +106,7 @@ If installed and loaded via `use-package`:
           hierarchy
           eglot
           lsp
+          lsp-bridge
           flycheck
           beautify
           navigation
@@ -247,7 +249,7 @@ For configuration information, see the [wiki](https://github.com/gmlarumbe/veril
 
 ## Language Server Protocol ##
 
-Auto-configure various SystemVerilog language servers for `lsp-mode` and `eglot`:
+Auto-configure various SystemVerilog language servers for `lsp-bridge`, `lsp-mode` and `eglot`:
 
 - [hdl_checker](https://github.com/suoto/hdl_checker)
 - [svlangserver](https://github.com/imc-trading/svlangserver)

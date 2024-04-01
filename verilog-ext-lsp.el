@@ -49,7 +49,7 @@ Register additional clients."
     ;; Register clients
     (dolist (server verilog-ext-lsp-available-servers)
       (setq server-id (car server))
-      (setq server-bin (cdr server))
+      (setq server-bin (cadr server))
       (cond ((eq server-id 've-svlangserver)
              (lsp-register-client
               (make-lsp-client :new-connection (lsp-stdio-connection 'lsp-clients-svlangserver-command)
@@ -68,7 +68,7 @@ Register additional clients."
 Disable the rest to avoid handling priorities.
 Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
   (interactive (list (intern (completing-read "Server-id: " verilog-ext-lsp-server-ids nil t))))
-  (let ((cmd (cdr (assoc server-id verilog-ext-lsp-available-servers))))
+  (let ((cmd (cadr (assoc server-id verilog-ext-lsp-available-servers))))
     (if (not (executable-find (if (listp cmd)
                                   (car cmd)
                                 cmd)))
@@ -77,7 +77,7 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
       (dolist (mode '(verilog-mode verilog-ts-mode))
         (setq lsp-disabled-clients (assq-delete-all mode lsp-disabled-clients))
         (push (cons mode (remove server-id verilog-ext-lsp-server-ids)) lsp-disabled-clients))
-      (message "[Verilog LSP]: %s" server-id))))
+      (message "[verilog-ext lsp]: %s" server-id))))
 
 
 (provide 'verilog-ext-lsp)
