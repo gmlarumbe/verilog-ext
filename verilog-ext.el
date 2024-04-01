@@ -6,7 +6,7 @@
 ;; URL: https://github.com/gmlarumbe/verilog-ext
 ;; Version: 0.4.1
 ;; Keywords: Verilog, IDE, Tools
-;; Package-Requires: ((emacs "29.1") (verilog-mode "2023.6.6.141322628") (verilog-ts-mode "0.1.2") (lsp-mode "8.0.0") (ag "0.48") (ripgrep "0.4.0") (hydra "0.15.0") (apheleia "3.1") (yasnippet "0.14.0") (flycheck "32") (outshine "3.0.1") (async "1.9.7"))
+;; Package-Requires: ((emacs "29.1") (verilog-mode "2024.3.1.121933719") (verilog-ts-mode "0.1.2") (lsp-mode "8.0.0") (ag "0.48") (ripgrep "0.4.0") (hydra "0.15.0") (apheleia "3.1") (yasnippet "0.14.0") (flycheck "32") (outshine "3.0.1") (async "1.9.7"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
