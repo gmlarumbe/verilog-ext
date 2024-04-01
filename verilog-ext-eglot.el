@@ -21,10 +21,8 @@
 ;;; Commentary:
 
 ;; Support for various SystemVerilog language servers
-;;  - Builtin:
 ;;     - hdl_checker: https://github.com/suoto/hdl_checker
 ;;     - svlangserver: https://github.com/imc-trading/svlangserver
-;;  - Additional:
 ;;     - verible: https://github.com/chipsalliance/verible/tree/master/verilog/tools/ls
 ;;     - svls: https://github.com/dalance/svls
 ;;     - veridian: https://github.com/vivekmalneedi/veridian
@@ -149,7 +147,7 @@ Configure in the same way as for `lsp-verilog'."
   "Configure Verilog for `eglot' with SERVER-ID server.
 Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
   (interactive (list (intern (completing-read "Server-id: " verilog-ext-lsp-server-ids nil t))))
-  (let ((cmd (alist-get server-id verilog-ext-lsp-available-servers)))
+  (let ((cmd (car (alist-get server-id verilog-ext-lsp-available-servers))))
     (unless cmd
       (error "%s not recognized as a supported server" server-id))
     (if (not (executable-find (if (listp cmd)
@@ -167,7 +165,7 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
         (dolist (hook '(verilog-mode-hook verilog-ts-mode-hook))
           (add-hook hook #'verilog-ext-eglot-svlangserver-configuration)))
       ;; Some reporting
-      (message "Set eglot SV server: %s" server-id))))
+      (message "[verilog-ext eglot]: %s" server-id))))
 
 
 (provide 'verilog-ext-eglot)

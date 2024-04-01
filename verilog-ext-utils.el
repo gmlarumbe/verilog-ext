@@ -129,11 +129,11 @@ type_t foo1, foo2 , foo4, foo6[], foo7 [25], foo8 ;")
                                                  "\\s-*\\(?2:\\<" verilog-identifier-re "\\>\\)"))
 ;;;;; LSP
 (defconst verilog-ext-lsp-available-servers
-  '((ve-hdl-checker  . ("hdl_checker" "--lsp"))
-    (ve-svlangserver . "svlangserver")
-    (ve-verible-ls   . "verible-verilog-ls")
-    (ve-svls         . "svls")
-    (ve-veridian     . "veridian"))
+  '((ve-hdl-checker  ("hdl_checker" "--lsp")  "hdl-checker.json")
+    (ve-svlangserver "svlangserver"           "svlangserver.json")
+    (ve-verible-ls   "verible-verilog-ls"     "verible.json")
+    (ve-svls         "svls"                   "svls.json")
+    (ve-veridian     "veridian"               "veridian.json"))
   "Verilog-ext available LSP servers.")
 (defconst verilog-ext-lsp-server-ids (mapcar #'car verilog-ext-lsp-available-servers))
 
