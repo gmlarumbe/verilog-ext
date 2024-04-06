@@ -31,7 +31,7 @@
 ;;  - Find definitions and references with builtin `xref' backend
 ;;  - Auto-completion with dot and scope completion
 ;;  - Hierarchy extraction and navigation
-;;  - LSP configuration for `lsp-bridge', `lsp-mode' and `eglot'
+;;  - LSP configuration for `lsp-bridge', `lsp-mode', `eglot' and `lspce'
 ;;  - Support for many linters via `flycheck'
 ;;  - Beautify modules and instances
 ;;  - Code navigation functions for RTL and Verification environments
@@ -61,6 +61,7 @@
                                       eglot
                                       lsp
                                       lsp-bridge
+                                      lspce
                                       flycheck
                                       beautify
                                       navigation
@@ -89,6 +90,8 @@
                 lsp)
               (const :tag "Setup LSP servers for `lsp-bridge'."
                 lsp-bridge)
+              (const :tag "Setup LSP servers for `lspce'."
+                lspce)
               (const :tag "Setup linters for `flycheck'."
                 flycheck)
               (const :tag "Code beautifying functions."
@@ -156,6 +159,7 @@ FEATURES can be a single feature or a list of features."
 (require 'verilog-ext-eglot)
 (require 'verilog-ext-lsp)
 (require 'verilog-ext-lsp-bridge)
+(require 'verilog-ext-lspce)
 
 ;;; Major-mode
 (defvar verilog-ext-mode-map
@@ -221,6 +225,8 @@ FEATURES can be a single feature or a list of features."
     (verilog-ext-lsp-set-server verilog-ext-lsp-mode-default-server))
   (verilog-ext-when-feature 'lsp-bridge
     (verilog-ext-lsp-bridge-set-server verilog-ext-lsp-bridge-default-server))
+  (verilog-ext-when-feature 'lspce
+    (verilog-ext-lspce-set-server verilog-ext-lspce-default-server))
   (verilog-ext-when-feature 'flycheck
     (verilog-ext-flycheck-setup))
   (verilog-ext-when-feature 'template
