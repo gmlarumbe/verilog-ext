@@ -155,7 +155,7 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
       (setq lspce-server-programs (assoc-delete-all "verilog" lspce-server-programs))
       (if (listp cmd)
           (push `("verilog" ,(car cmd) ,(cadr cmd) ,settings) lspce-server-programs)
-        (push `("verilog" ,cmd nil ,settings) lspce-server-programs))
+        (push `("verilog" ,cmd "" ,settings) lspce-server-programs))
       ;; Some reporting
       (message "[verilog-ext lspce]: %s" server-id))))
 

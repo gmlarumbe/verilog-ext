@@ -260,7 +260,9 @@ See URL `https://github.com/dalance/svlint'"
             source)
   :error-patterns
   ((warning line-start "Fail"  (zero-or-more blank) (file-name) ":" line ":" column (zero-or-more blank) (zero-or-more not-newline) "hint: " (message) line-end)
-   (error   line-start "Error" (zero-or-more blank) (file-name) ":" line ":" column (zero-or-more blank) (zero-or-more not-newline) "hint: " (message) line-end))
+   (warning line-start "Warning: " (message) line-end)
+   (error   line-start "Error" (zero-or-more blank) (file-name) ":" line ":" column (zero-or-more blank) (zero-or-more not-newline) "hint: " (message) line-end)
+   (error   "Error: " (message) line-end))
   :modes (verilog-mode verilog-ts-mode))
 
 

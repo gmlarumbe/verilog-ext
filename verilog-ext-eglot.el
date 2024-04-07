@@ -39,8 +39,7 @@
 (defgroup verilog-ext-eglot nil
   "Verilog-ext eglot."
   :group 'verilog-ext
-  :link '(url-link "https://github.com/imc-trading/svlangserver")
-  :package-version '(lsp-mode . "8.0.0"))
+  :link '(url-link "https://github.com/imc-trading/svlangserver"))
 
 (defcustom verilog-ext-eglot-svlangserver-includeIndexing '["**/*.{sv,svh}"]
   "Files included for indexing (glob pattern)."
