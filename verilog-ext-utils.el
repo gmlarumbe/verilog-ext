@@ -25,6 +25,7 @@
 ;;; Code:
 
 (require 'verilog-mode)
+(require 'verilog-ts-mode)
 
 ;;;; Custom
 (defcustom verilog-ext-file-extension-re "\\.s?vh?\\'"
@@ -540,81 +541,101 @@ Assumes that point is looking at a BLOCK type."
 (defun verilog-ext-point-inside-block (block)
   "Return non-nil if cursor is inside specified BLOCK type.
 Return alist with block type, name and boundaries."
-  (let ((pos (point))
-        (re (cond ((eq block 'function)  "\\<\\(function\\)\\>")
-                  ((eq block 'task)      "\\<\\(task\\)\\>")
-                  ((eq block 'class)     "\\<\\(class\\)\\>")
-                  ((eq block 'module)    "\\<\\(module\\)\\>")
-                  ((eq block 'interface) "\\<\\(interface\\)\\>")
-                  ((eq block 'package)   "\\<\\(package\\)\\>")
-                  ((eq block 'program)   "\\<\\(program\\)\\>")
-                  ((eq block 'always)    "\\<\\(always\\(_ff\\|_comb\\|_latch\\)?\\)\\>")
-                  ((eq block 'initial)   "\\<\\(initial\\)\\>")
-                  ((eq block 'final)     "\\<\\(final\\)\\>")
-                  ((eq block 'generate)  "\\<\\(generate\\)\\>")
-                  ((eq block 'begin-end) "\\<\\(begin\\|end\\)\\>")
-                  (t (error "Incorrect block argument"))))
-        block-boundaries block-beg-point block-end-point block-type block-name)
-    (save-match-data
-      (save-excursion
-        (when (and (verilog-re-search-backward re nil t)
-                   (cond (;; Classes
-                          (equal block 'class)
-                          (if (verilog-ext-class-declaration-is-typedef-p)
-                              ;; Try again if looking at a typedef class declaration
-                              (verilog-ext-point-inside-block 'class)
-                            ;; Else do the same as for function/tasks and top blocks
-                            (setq block-type (match-string-no-properties 1))
-                            (looking-at verilog-ext-class-re)
-                            (setq block-name (match-string-no-properties 3))))
-                         ;; Function/tasks and top blocks
-                         ((member block '(function task module interface package program))
-                          (and (save-excursion ; Exclude external func/tasks declarations
-                                 (save-match-data
-                                   (verilog-beg-of-statement)
-                                   (not (looking-at "\\<extern\\>"))))
-                               (setq block-type (match-string-no-properties 1))
-                               (or (looking-at verilog-ext-function-re)
-                                   (looking-at verilog-ext-task-re)
-                                   (looking-at verilog-ext-top-re))
-                               (setq block-name (match-string-no-properties 3))))
-                         ;; Procedural: always, initial and final
-                         ((member block '(always initial final))
-                          (if (equal block 'always)
-                              (setq block-type "always")
-                            (setq block-type (match-string-no-properties 1)))
-                          (save-excursion ; Get block name
-                            (verilog-ext-skip-identifier-forward)
-                            (verilog-ext-forward-syntactic-ws)
-                            (setq block-name (buffer-substring-no-properties (point) (line-end-position)))))
-                         ;; Generate
-                         ((equal block 'generate)
-                          (and (setq block-type (match-string-no-properties 1))
-                               (save-excursion ; Get block name
-                                 (verilog-ext-skip-identifier-forward)
-                                 (verilog-ext-forward-syntactic-ws)
-                                 (setq block-name (buffer-substring-no-properties (point) (line-end-position))))))
-                         ;; Procedural block (begin-end)
-                         ((equal block 'begin-end)
-                          (verilog-ext-while-t (string= (match-string-no-properties 0) "end")
-                            (verilog-ext-backward-sexp)
-                            (verilog-re-search-backward re nil t))
-                          (setq block-type "begin-end")
-                          (setq block-name "")) ; Return non-nil for and condition
-                         ;; Default invalid condition
-                         (t
-                          (error "Invalid condition"))))
-          ;; Set boundaries and return value
-          (setq block-boundaries (verilog-ext-get-block-boundaries block))
-          (setq block-beg-point (car block-boundaries))
-          (setq block-end-point (cdr block-boundaries)))
-        (when (and block-beg-point block-end-point
-                   (>= pos block-beg-point)
-                   (< pos block-end-point))
-          `((type      . ,block-type)
-            (name      . ,block-name)
-            (beg-point . ,block-beg-point)
-            (end-point . ,block-end-point)))))))
+  (if (eq major-mode 'verilog-ts-mode)
+      ;; `verilog-ts-mode' based search
+      (let* ((re (cond ((eq block 'function)  "\\<\\(function_declaration\\)\\>")
+                       ((eq block 'task)      "\\<\\(task_declaration\\)\\>")
+                       ((eq block 'class)     "\\<\\(class_declaration\\)\\>")
+                       ((eq block 'module)    "\\<\\(module_declaration\\)\\>")
+                       ((eq block 'interface) "\\<\\(interface_declaration\\)\\>")
+                       ((eq block 'package)   "\\<\\(package_declaration\\)\\>")
+                       ((eq block 'program)   "\\<\\(program_declaration\\)\\>")
+                       ((eq block 'always)    "\\<\\(always_construct\\)\\>")
+                       ((eq block 'initial)   "\\<\\(initial_construct\\)\\>")
+                       ((eq block 'final)     "\\<\\(final_construct\\)\\>")
+                       ((eq block 'generate)  "\\<\\(generate_region\\)\\>")))
+             (node (verilog-ts--node-has-parent-recursive (verilog-ts--node-at-point) re)))
+        (when node
+          `((type      . ,(verilog-ts--node-identifier-type node))
+            (name      . ,(verilog-ts--node-identifier-name node))
+            (beg-point . ,(treesit-node-start node))
+            (end-point . ,(treesit-node-end node)))))
+    ;; `verilog-mode' based search
+    (let ((pos (point))
+          (re (cond ((eq block 'function)  "\\<\\(function\\)\\>")
+                    ((eq block 'task)      "\\<\\(task\\)\\>")
+                    ((eq block 'class)     "\\<\\(class\\)\\>")
+                    ((eq block 'module)    "\\<\\(module\\)\\>")
+                    ((eq block 'interface) "\\<\\(interface\\)\\>")
+                    ((eq block 'package)   "\\<\\(package\\)\\>")
+                    ((eq block 'program)   "\\<\\(program\\)\\>")
+                    ((eq block 'always)    "\\<\\(always\\(_ff\\|_comb\\|_latch\\)?\\)\\>")
+                    ((eq block 'initial)   "\\<\\(initial\\)\\>")
+                    ((eq block 'final)     "\\<\\(final\\)\\>")
+                    ((eq block 'generate)  "\\<\\(generate\\)\\>")
+                    ((eq block 'begin-end) "\\<\\(begin\\|end\\)\\>")
+                    (t (error "Incorrect block argument"))))
+          block-boundaries block-beg-point block-end-point block-type block-name)
+      (save-match-data
+        (save-excursion
+          (when (and (verilog-re-search-backward re nil t)
+                     (cond (;; Classes
+                            (equal block 'class)
+                            (if (verilog-ext-class-declaration-is-typedef-p)
+                                ;; Try again if looking at a typedef class declaration
+                                (verilog-ext-point-inside-block 'class)
+                              ;; Else do the same as for function/tasks and top blocks
+                              (setq block-type (match-string-no-properties 1))
+                              (looking-at verilog-ext-class-re)
+                              (setq block-name (match-string-no-properties 3))))
+                           ;; Function/tasks and top blocks
+                           ((member block '(function task module interface package program))
+                            (and (save-excursion ; Exclude external func/tasks declarations
+                                   (save-match-data
+                                     (verilog-beg-of-statement)
+                                     (not (looking-at "\\<extern\\>"))))
+                                 (setq block-type (match-string-no-properties 1))
+                                 (or (looking-at verilog-ext-function-re)
+                                     (looking-at verilog-ext-task-re)
+                                     (looking-at verilog-ext-top-re))
+                                 (setq block-name (match-string-no-properties 3))))
+                           ;; Procedural: always, initial and final
+                           ((member block '(always initial final))
+                            (if (equal block 'always)
+                                (setq block-type "always")
+                              (setq block-type (match-string-no-properties 1)))
+                            (save-excursion ; Get block name
+                              (verilog-ext-skip-identifier-forward)
+                              (verilog-ext-forward-syntactic-ws)
+                              (setq block-name (buffer-substring-no-properties (point) (line-end-position)))))
+                           ;; Generate
+                           ((equal block 'generate)
+                            (and (setq block-type (match-string-no-properties 1))
+                                 (save-excursion ; Get block name
+                                   (verilog-ext-skip-identifier-forward)
+                                   (verilog-ext-forward-syntactic-ws)
+                                   (setq block-name (buffer-substring-no-properties (point) (line-end-position))))))
+                           ;; Procedural block (begin-end)
+                           ((equal block 'begin-end)
+                            (verilog-ext-while-t (string= (match-string-no-properties 0) "end")
+                              (verilog-ext-backward-sexp)
+                              (verilog-re-search-backward re nil t))
+                            (setq block-type "begin-end")
+                            (setq block-name "")) ; Return non-nil for and condition
+                           ;; Default invalid condition
+                           (t
+                            (error "Invalid condition"))))
+            ;; Set boundaries and return value
+            (setq block-boundaries (verilog-ext-get-block-boundaries block))
+            (setq block-beg-point (car block-boundaries))
+            (setq block-end-point (cdr block-boundaries)))
+          (when (and block-beg-point block-end-point
+                     (>= pos block-beg-point)
+                     (< pos block-end-point))
+            `((type      . ,block-type)
+              (name      . ,block-name)
+              (beg-point . ,block-beg-point)
+              (end-point . ,block-end-point))))))))
 
 (defconst verilog-ext-block-at-point-all-re
   (eval-when-compile

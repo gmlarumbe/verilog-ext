@@ -43,7 +43,6 @@
 (require 'async)
 (require 'map)
 (require 'verilog-ext-nav)
-(require 'verilog-ts-mode)
 
 
 (defgroup verilog-ext-tags nil

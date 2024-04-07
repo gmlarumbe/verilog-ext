@@ -29,7 +29,6 @@
 (require 'tree-widget)
 (require 'async)
 (require 'verilog-ext-nav)
-(require 'verilog-ts-mode)
 
 (defgroup verilog-ext-hierarchy nil
   "Verilog-ext hierarchy."

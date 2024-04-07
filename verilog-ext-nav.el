@@ -28,7 +28,6 @@
 (require 'ripgrep)
 (require 'xref)
 (require 'verilog-ext-utils)
-(require 'verilog-ts-mode)
 
 
 ;;;; Custom
@@ -646,9 +645,11 @@ moves the cursor to current instance if pointing at one."
 (defun verilog-ext-instance-at-point ()
   "Return list with module and instance names if point is at an instance."
   (if (eq major-mode 'verilog-ts-mode)
+      ;; `verilog-ts-mode' based search
       (let ((node (verilog-ts-instance-at-point)))
         (when node
           `(,(verilog-ts--node-identifier-name node) ,(verilog-ts--node-instance-name node))))
+    ;; `verilog-mode' based search
     (let ((point-cur (point))
           point-instance-begin point-instance-end instance-type instance-name)
       (save-excursion
