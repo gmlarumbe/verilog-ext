@@ -300,6 +300,8 @@ FEATURES can be a single feature or a list of features."
           (verilog-ext-when-feature 'which-func
             (verilog-ext-which-func))))
     ;; Cleanup
+    (when (eq major-mode 'verilog-mode)
+      (modify-syntax-entry ?` "w")) ; Set back original syntax-table
     (remove-hook 'kill-buffer-hook #'verilog-ext-kill-buffer-hook :local)
     (verilog-ext-when-feature 'xref
       (verilog-ext-xref-set :disable))
