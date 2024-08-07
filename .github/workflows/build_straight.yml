@@ -19,10 +19,7 @@ jobs:
           - 29.3
           - 29.4
           - release-snapshot
-          # INFO: At some point, in Emacs 30 the 'pp' function, which all
-          # tests rely on to generate the ref file, changed how objects are
-          # displayed, making many tests fail.
-          # Therefore, moved the snapshot to its own workflow out of regular CI
+          - snapshot
     steps:
       - name: Set up Emacs
         uses: purcell/setup-emacs@master
