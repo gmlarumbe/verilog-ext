@@ -32,8 +32,15 @@
   "Verilog-ext templates."
   :group 'verilog-ext)
 
-(defcustom verilog-ext-template-resetn "Rst_n"
-  "Name of active low reset for templates."
+(defcustom verilog-ext-template-reset-active-low t
+  "Active low polarity of reset for templates.
+Use together with `verilog-ext-template-reset'."
+  :type 'string
+  :group 'verilog-ext-template)
+
+(defcustom verilog-ext-template-reset "Rst_n"
+  "Name of reset for templates.
+Use together with `verilog-ext-template-reset-active-low'."
   :type 'string
   :group 'verilog-ext-template)
 
@@ -59,6 +66,12 @@
      (when (marker-position pos-end)
        (goto-char (marker-position pos-end)))
      (electric-verilog-tab)))
+
+(defun verilog-ext-template-reset-condition ()
+  "Return reset string condition depending on selected polarity and name."
+  (if verilog-ext-template-reset-active-low
+      (concat "!" verilog-ext-template-reset)
+    verilog-ext-template-reset))
 
 (defun verilog-ext-template-begin-end ()
   "Insert begin/end block."
@@ -284,9 +297,12 @@ If ASYNC is non-nil create an asynchronous reset."
       (insert "// State FF for " state-var "\n")
       (insert "always_ff @ (posedge " verilog-ext-template-clock)
       (when async
-        (insert " or negedge " verilog-ext-template-resetn))
+        (if verilog-ext-template-reset-active-low
+            (insert " or negedge ")
+          (insert " or posedge " ))
+        (insert verilog-ext-template-reset))
       (insert ") begin\n")
-      (insert "if (!" verilog-ext-template-resetn ")\n")
+      (insert "if (" (verilog-ext-template-reset-condition) ")\n")
       (insert state-var " <= " (car enum-labels) ";\n")
       (insert "else\n")
       (insert  state-var " <= " next-state-var ";\n")
@@ -554,10 +570,11 @@ Use inst INST-TEMPLATE or prompt to choose one if nil."
   (when (file-exists-p outfile)
     (error "File %s exists" outfile))
   (let ((module-name (verilog-ext-select-file-module file))
+        (tb-module-name (file-name-nondirectory (file-name-sans-extension outfile)))
         beg end)
     (find-file outfile)
     (insert "\
-module tb_<module_name> () ;
+module <tb_module_name> () ;
 
     // Simulation parameters
     timeprecision 1ps;
@@ -572,7 +589,7 @@ module tb_<module_name> () ;
 
     // Non-auto signals
     logic <clock> = 1'b0;
-    logic <resetn> = 1'b1;
+    logic <reset> = <reset_init_value>;
 
     // TODO: Init during declaration (before simulation time 0) to avoid race conditions
     /* DUT Inputs */
@@ -588,7 +605,7 @@ module tb_<module_name> () ;
     end
 
     // TODO: Declare/Connect interfaces
-    // axi4_lite_if axil_if_<module_name> (.Clk(<clock>), .Rst_n(<resetn>));
+    // axi4_lite_if axil_if_<module_name> (.<clock>(<clock>), .<reset>(<reset>));
     // ...
 
     // TODO: Ensure SV interfaces connections
@@ -604,7 +621,7 @@ module tb_<module_name> () ;
     initial begin
         // bfm = new(axil_if_<module_name>);
         //
-        // #10 Rst_n = 0;
+        // #10 <reset> = <reset_active_value>;
         //
         // bfm.read();
         // bfm.write();
@@ -614,13 +631,16 @@ module tb_<module_name> () ;
         $finish;
     end
 
-endmodule // tb_<module_name>
+endmodule // <tb_module_name>
 ")
     (setq verilog-ext-file-allows-instances t)
     ;; Replace template parameters, instantiate DUT and create header
+    (verilog-ext-replace-string "<tb_module_name>" tb-module-name (point-min) (point-max))
     (verilog-ext-replace-string "<module_name>" module-name (point-min) (point-max))
     (verilog-ext-replace-string "<clock>" verilog-ext-template-clock (point-min) (point-max))
-    (verilog-ext-replace-string "<resetn>" verilog-ext-template-resetn (point-min) (point-max))
+    (verilog-ext-replace-string "<reset>" verilog-ext-template-reset (point-min) (point-max))
+    (verilog-ext-replace-string "<reset_init_value>" (concat "1'b" (if verilog-ext-template-reset-active-low "1" "0")) (point-min) (point-max))
+    (verilog-ext-replace-string "<reset_active_value>" (concat "1'b" (if verilog-ext-template-reset-active-low "0" "1")) (point-min) (point-max))
     (goto-char (point-min))
     (search-forward "// DUT Instantiation")
     (verilog-ext-template-inst-auto-from-file-tb-dut file)
@@ -730,7 +750,7 @@ Create it only if in a project and the Makefile does not already exist."
   ("ai"  (verilog-ext-template-insert-yasnippet "ai")  "assert immediate")
   ("ap"  (verilog-ext-template-insert-yasnippet "ap")  "assert property")
   ("as"  (verilog-ext-template-insert-yasnippet "as")  "assign")
-  ("beg" (verilog-ext-template-insert-yasnippet "beg") "begin/end")
+  ("b"   (verilog-ext-template-insert-yasnippet "b")   "begin/end")
   ("cc"  (verilog-ext-template-case)                   "case")
   ("cls" (verilog-ext-template-insert-yasnippet "cls") "class")
   ("cb"  (verilog-ext-template-insert-yasnippet "cb")  "clocking block")

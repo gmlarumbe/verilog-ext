@@ -2,4 +2,4 @@
 # key: @
 # --
 
-@(${1:posedge Clk})$0
+@(${1:posedge `verilog-ext-template-clock`})$0

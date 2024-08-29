@@ -2,7 +2,7 @@
 # key: itf
 # --
 
-interface ${1:name} ${2:# (parameter WIDTH = 0)} (${3:input logic Clk, input logic Rst_n});
+interface ${1:name} ${2:# (parameter WIDTH = 0)} (${3:input logic `verilog-ext-template-clock`, input logic `verilog-ext-template-reset`});
 
     // Itf signals
     // logic Request;

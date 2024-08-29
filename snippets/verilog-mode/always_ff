@@ -2,9 +2,9 @@
 # key: af
 # --
 
-always${4:_ff} @(posedge ${1:Clk}) begin${3: : label}
-    if (!${2:Rst_n}) begin
-        /*AUTORESET*/
+always${4:_ff} @(posedge ${1:`verilog-ext-template-clock`}) begin${3: : label}
+    if (${2:`(verilog-ext-template-reset-condition)`}) begin
+
     end
     else begin
         $0
