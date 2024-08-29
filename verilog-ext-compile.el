@@ -168,8 +168,9 @@ ARGS is a property list."
          (if (y-or-n-p (format "Buffer %s is in use, kill its process and start new compilation?" ,buf))
              (kill-buffer ,buf)
            (user-error "Aborted")))
-       (compile command)
-       (,comp-mode))))
+       (pop-to-buffer (compile command))
+       (,comp-mode)
+       (setq-local compile-command command))))
 
 (verilog-ext-compile-define-mode verilog-ext-compile-verilator-mode
   :desc "Verilator"
@@ -177,6 +178,7 @@ ARGS is a property list."
   :compile-re verilog-ext-compile-verilator-re
   :buf-name verilog-ext-compile-verilator-buf)
 
+;;;###autoload (autoload 'verilog-ext-compile-verilator "verilog-ext.el")
 (verilog-ext-compile-define-fn verilog-ext-compile-verilator
   :docstring "Compile Verilator COMMAND with error regexp highlighting."
   :buf verilog-ext-compile-verilator-buf
@@ -188,6 +190,7 @@ ARGS is a property list."
   :compile-re verilog-ext-compile-iverilog-re
   :buf-name verilog-ext-compile-iverilog-buf)
 
+;;;###autoload (autoload 'verilog-ext-compile-iverilog "verilog-ext.el")
 (verilog-ext-compile-define-fn verilog-ext-compile-iverilog
   :docstring "Compile Iverilog COMMAND with error regexp highlighting."
   :buf verilog-ext-compile-iverilog-buf
@@ -199,6 +202,7 @@ ARGS is a property list."
   :compile-re verilog-ext-compile-verible-re
   :buf-name verilog-ext-compile-verible-buf)
 
+;;;###autoload (autoload 'verilog-ext-compile-verible "verilog-ext.el")
 (verilog-ext-compile-define-fn verilog-ext-compile-verible
   :docstring "Compile Verible COMMAND with error regexp highlighting."
   :buf verilog-ext-compile-verible-buf
@@ -210,6 +214,7 @@ ARGS is a property list."
   :compile-re verilog-ext-compile-slang-re
   :buf-name verilog-ext-compile-slang-buf)
 
+;;;###autoload (autoload 'verilog-ext-compile-slang "verilog-ext.el")
 (verilog-ext-compile-define-fn verilog-ext-compile-slang
   :docstring "Compile Slang COMMAND with error regexp highlighting."
   :buf verilog-ext-compile-slang-buf
@@ -221,6 +226,7 @@ ARGS is a property list."
   :compile-re verilog-ext-compile-svlint-re
   :buf-name verilog-ext-compile-svlint-buf)
 
+;;;###autoload (autoload 'verilog-ext-compile-svlint "verilog-ext.el")
 (verilog-ext-compile-define-fn verilog-ext-compile-svlint
   :docstring "Compile Svlint COMMAND with error regexp highlighting."
   :buf verilog-ext-compile-svlint-buf
@@ -232,6 +238,7 @@ ARGS is a property list."
   :compile-re verilog-ext-compile-surelog-re
   :buf-name verilog-ext-compile-surelog-buf)
 
+;;;###autoload (autoload 'verilog-ext-compile-surelog "verilog-ext.el")
 (verilog-ext-compile-define-fn verilog-ext-compile-surelog
   :docstring "Compile Surelog COMMAND with error regexp highlighting."
   :buf verilog-ext-compile-surelog-buf
@@ -243,6 +250,7 @@ ARGS is a property list."
   :compile-re verilog-ext-compile-all-re
   :buf-name verilog-ext-compile-all-buf)
 
+;;;###autoload (autoload 'verilog-ext-compile "verilog-ext.el")
 (verilog-ext-compile-define-fn verilog-ext-compile
   :docstring "Compile Verilog COMMAND with error regexp highlighting."
   :buf verilog-ext-compile-all-buf
