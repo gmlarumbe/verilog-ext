@@ -724,7 +724,13 @@ Files will be created at {BASE-DIR}/{NAME} directory."
 (defun verilog-ext-template-add-snippets ()
   "Add snippets and reload Yasnippet to make them available."
   (add-to-list 'yas-snippet-dirs verilog-ext-template-snippets-dir)
-  (yas-reload-all))
+  (yas-reload-all)
+  ;; Workaround to load snippets on first visited Verilog file if using
+  ;; :config section with `use-package'
+  (when (and (or (eq major-mode 'verilog-mode)
+                 (eq major-mode 'verilog-ts-mode))
+             yas-minor-mode)
+    (yas-minor-mode-on)))
 
 ;;;; Makefile
 (defun verilog-ext-template-makefile ()
