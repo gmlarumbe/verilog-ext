@@ -384,7 +384,7 @@ temp-buffer."
        "constraint_declaration"
        ;; Ports/arguments
        "ansi_port_declaration"
-       "tf_port_item1"
+       "tf_port_item"
        ;; Variable/net/parameter/type declarations
        "variable_decl_assignment"
        "net_decl_assignment"
@@ -397,7 +397,11 @@ temp-buffer."
        "enum_name_declaration"
        ;; Instances
        "module_instantiation"
-       "interface_instantiation")
+       "interface_instantiation"
+       "program_instantiation"
+       "checker_instantiation"
+       "gate_instantiation"
+       "udp_instantiation")
      'symbols))
   "Regexp of tree-sitter node types to be used for tags definitions.
 
@@ -417,7 +421,28 @@ completion.")
 
 (defconst verilog-ext-tags-method-declaration-ts-re
   (eval-when-compile
-    (regexp-opt '("task_declaration" "function_declaration" "class_constructor_declaration") 'symbols)))
+    (regexp-opt
+     '("task_declaration"
+       "function_declaration"
+       "class_constructor_declaration")
+     'symbols)))
+
+(defconst verilog-ext-tags-ts-ref-nodes-re
+  (eval-when-compile
+    (regexp-opt
+     '("simple_identifier"
+       "system_tf_identifier"
+       "escaped_identifier"
+       "array_method_name"
+       "string_method_name"
+       "enum_method_name"
+       "associative_array_method_name"
+       "queue_method_name"
+       "array_or_queue_method_name"
+       "enum_or_associative_array_method_name"
+       "new")
+     'symbols)))
+
 
 (defun verilog-ext-tags-table-push-defs-ts (file)
   "Push current FILE definitions using tree-sitter.
@@ -442,9 +467,10 @@ TS-TYPE is provided to avoid an additional call to `treesit-node-type' since
 this function is synctactic sugar for
 `verilog-ext-tags-table-push-defs-ts--recurse'."
   (cond (;; Externally defined methods
-         (and (string-match verilog-ext-tags-method-declaration-ts-re ts-type)
-              (verilog-ts--node-has-child-recursive ts-node "class_type"))
-         (verilog-ts--node-identifier-name (verilog-ts--node-has-child-recursive ts-node "class_identifier")))
+         (let (class-type-node)
+           (and (string-match verilog-ext-tags-method-declaration-ts-re ts-type)
+                (setq class-type-node (verilog-ts--node-has-child-recursive ts-node "class_type")))
+           (verilog-ts--node-identifier-name class-type-node)))
         (t ;; Default
          (verilog-ts--node-identifier-name parent-node))))
 
@@ -491,7 +517,7 @@ PARENT is passed as an argument to build the :items prop list of
 
 Update hash table `verilog-ext-tags-refs-current-file'."
   (let (tag pos line)
-    (dolist (node (verilog-ts-nodes "simple_identifier"))
+    (dolist (node (verilog-ts-nodes verilog-ext-tags-ts-ref-nodes-re))
       (setq tag (treesit-node-text node :no-prop))
       (setq pos (treesit-node-start node))
       (setq line (line-number-at-pos pos))
