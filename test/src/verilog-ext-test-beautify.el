@@ -32,10 +32,10 @@
 (defconst verilog-ext-test-dump-dir-beautify (file-name-concat verilog-ext-test-dump-dir "beautify"))
 
 
-(defun verilog-ext-test-beautify-file (mode fn)
+(defun verilog-ext-test-beautify-file (mode)
   ;; Set mode or ts-mode
   (funcall mode)
-  (let* ((identifier-re "[a-zA-Z_][a-zA-Z_0-9]*")
+  (let* ((identifier-re verilog-identifier-re)
          (beautify-re (concat "\\(?1:^\\s-*\\." identifier-re "\\)\\(?2:\\s-*\\)("))
          (verilog-ext-time-stamp-pattern nil)) ; Prevent auto-update of timestamp for `verilog-ext'
     ;; Clean blanks in ports (similar to `verilog-ext-replace-regexp-whole-buffer')
@@ -45,26 +45,26 @@
         (replace-match "\\1(")))
     ;; Run beautify function
     (test-hdl-no-messages
-      (funcall fn))))
+      (verilog-ext-beautify-current-buffer))))
 
 
 (defun verilog-ext-test-beautify-gen-expected-files ()
   (test-hdl-gen-expected-files :file-list verilog-ext-test-beautify-file-list
                                :dest-dir verilog-ext-test-ref-dir-beautify
                                :fn #'verilog-ext-test-beautify-file
-                               :args '(verilog-mode verilog-ext-beautify-current-buffer))
+                               :args '(verilog-mode))
   (test-hdl-gen-expected-files :file-list verilog-ext-test-beautify-file-list
                                :dest-dir verilog-ext-test-ref-dir-beautify
                                :out-file-ext "ts.sv"
                                :fn #'verilog-ext-test-beautify-file
-                               :args '(verilog-ts-mode verilog-ext-beautify-current-buffer)))
+                               :args '(verilog-ts-mode)))
 
 (ert-deftest beautify ()
   (dolist (file verilog-ext-test-beautify-file-list)
     (should (test-hdl-files-equal (test-hdl-process-file :test-file file
                                                          :dump-file (file-name-concat verilog-ext-test-dump-dir-beautify (test-hdl-basename file))
                                                          :fn #'verilog-ext-test-beautify-file
-                                                         :args '(verilog-mode verilog-ext-beautify-current-buffer))
+                                                         :args '(verilog-mode))
                                   (file-name-concat verilog-ext-test-ref-dir-beautify (test-hdl-basename file))))))
 
 (ert-deftest beautify-ts-mode ()
@@ -72,7 +72,7 @@
     (should (test-hdl-files-equal (test-hdl-process-file :test-file file
                                                          :dump-file (file-name-concat verilog-ext-test-dump-dir-beautify (test-hdl-basename file "ts.sv"))
                                                          :fn #'verilog-ext-test-beautify-file
-                                                         :args '(verilog-ts-mode verilog-ext-beautify-current-buffer))
+                                                         :args '(verilog-ts-mode))
                                   (file-name-concat verilog-ext-test-ref-dir-beautify (test-hdl-basename file "ts.sv"))))))
 
 

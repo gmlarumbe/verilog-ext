@@ -84,14 +84,6 @@
                                                                     (82960 . initial)
                                                                     (86883 . module)))))
 
-(defconst verilog-ext-test-utils-module-at-point-file-and-pos
-  `((,(file-name-concat verilog-ext-test-files-common-dir "ucontroller.sv") 335 833 834 856 857 1345 2331 2608 3129 3483 3939 4169 4639 4863 4865 4887)
-    (,(file-name-concat verilog-ext-test-files-common-dir "instances.sv") 1 690 819 820 837 838 1182 1355 1636 1692 1911 1999 2809 2811)
-    (,(file-name-concat verilog-ext-test-files-common-dir "tb_program.sv") 465 855 856 885 1219 4607 4635 4657 4658)
-    (,(file-name-concat verilog-ext-test-files-common-dir "uvm_component.svh") 526 1128 1790 3025 28721 86490 93485 98428 100752)
-    (,(file-name-concat verilog-ext-test-files-common-dir "axi_test.sv") 62 882 883 936 1074 2597 5924 7945 9876 14175 18417 25888 32247 38877 41513 77708 77812 78095 78401 78941 79881 85928 86861 86884 86893 86894)
-    (,(file-name-concat verilog-ext-test-files-common-dir "axi_demux.sv") 1833 1869 1888 2231 3066 4183 5183 13228 27844 28709 28710 28838 29284 29879 31415 32706 32814 32820 32829 32830 32878 32905 32930 34046 34562 36282 36664)))
-
 (defconst verilog-ext-test-utils-instance-at-point-file-and-pos
   `((,(file-name-concat verilog-ext-test-files-common-dir "instances.sv") 819 838 906 960 1076 1130 1208 1300 1355 1462 1552 1607 1692 1692 1705 1955 1956 2017 2021 2065 2066 2103 2254 2314 2368 2405 2515 2516 2602 2730 2808 2821)
     (,(file-name-concat verilog-ext-test-files-common-dir "ucontroller.sv") 833 1072 1530 2334 2335 2346 2539 2975 2999 3000 3112 3204 3337 3768 3939 4122 4399 4592 4722 4862 4888)))
