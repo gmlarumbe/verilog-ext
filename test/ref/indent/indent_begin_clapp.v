@@ -2,40 +2,40 @@
 module x;
 
     always @*
-	begin
-	end
+        begin
+        end
 
     initial
-	begin
-	end
+        begin
+        end
 
     final
-	begin
-	end
+        begin
+        end
 
     initial forever
-	begin
-	end
+        begin
+        end
 
     foreach(1)
-	begin
-	end
+        begin
+        end
 
     do
-	begin
-	end while (i);
+        begin
+        end while (i);
 
     initial @a.b
-	begin
-	end
+        begin
+        end
 
     always @E
-	begin
-	end
+        begin
+        end
 
     forever @E
-	begin
-	end
+        begin
+        end
 
 endmodule
 

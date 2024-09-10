@@ -5,9 +5,9 @@ module foo;
     reg [7:0]  index;
 
     always @ (b) begin
-	foreach (1) begin
-	    @(router.cb);
-	end // foreach (1)
+        foreach (1) begin
+            @(router.cb);
+        end // foreach (1)
     end // always @ (b)
 endmodule // foo
 `else // !`ifndef FOO

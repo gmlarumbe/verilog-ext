@@ -33,35 +33,35 @@ module foo;
     reg   a,b;
 `ifdef A
     always @(a) begin
-	b = a; // asfSDfsdfsasa
-	b = a; // asfSDfsdfsasa
-	b = a; // asfSDfsdfsasa      //
-	b = a; // asfSDfsdfsasa      //
-	b = a; // asfSDfsdfsasa      //
-	b = a; // asfSDfsdfsasa      //
-	b = a; // asfSDfsdfsasa      //
-	b = a; // asfSDfsdfsasa      //
-	b = a; // asfSDfsdfsasa      //
+        b = a; // asfSDfsdfsasa
+        b = a; // asfSDfsdfsasa
+        b = a; // asfSDfsdfsasa      //
+        b = a; // asfSDfsdfsasa      //
+        b = a; // asfSDfsdfsasa      //
+        b = a; // asfSDfsdfsasa      //
+        b = a; // asfSDfsdfsasa      //
+        b = a; // asfSDfsdfsasa      //
+        b = a; // asfSDfsdfsasa      //
     end
 `elsif B
     always @(b) begin
-	a = b; // asfSDfsdfsasa
-	a = b; // asfSDfsdfsasa
-	a = b; // asfSDfsdfsasa      //
-	a = b; // asfSDfsdfsasa
-	a = b; // asfSDfsdfsasa
-	a = b; // asfSDfsdfsasa      //
-	a = b; // asfSDfsdfsasa
-	a = b; // asfSDfsdfsasa
-	a = b; // asfSDfsdfsasa      //
-	a = b; // asfSDfsdfsasa
-	a = b; // asfSDfsdfsasa
-	a = b; // asfSDfsdfsasa      //
+        a = b; // asfSDfsdfsasa
+        a = b; // asfSDfsdfsasa
+        a = b; // asfSDfsdfsasa      //
+        a = b; // asfSDfsdfsasa
+        a = b; // asfSDfsdfsasa
+        a = b; // asfSDfsdfsasa      //
+        a = b; // asfSDfsdfsasa
+        a = b; // asfSDfsdfsasa
+        a = b; // asfSDfsdfsasa      //
+        a = b; // asfSDfsdfsasa
+        a = b; // asfSDfsdfsasa
+        a = b; // asfSDfsdfsasa      //
     end
 `else // !`elsif B
     always @(a or b) begin
-	a <= b;
-	b <= a;
+        a <= b;
+        b <= a;
     end
 `endif // !`elsif B
 

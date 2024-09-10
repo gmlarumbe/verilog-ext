@@ -1,17 +1,17 @@
 module param_port_list # (parameter integer PARAMETER_0 = 0, // Some comment
-			  parameter integer PARAMETER_1 = 0,
-			  parameter integer PARAMETER_2 = 1,
-			  parameter integer PARAMETER_3 = 2,
-			  parameter integer PARAMETER_4 = 3,
-			  parameter integer PARAMETER_5 = 4, // Some other comment
-			  parameter integer PARAM_6 = 5,
-			  parameter integer PARAMETER7 = 6,
-			  parameter integer PARAM_LONGER = 7,
-			  parameter integer PARAM_EVEN_LONGER = 8, // Maybe more comments
-			  parameter integer PARAMETER_10 = 9,
-			  parameter integer PARAMETER_11 = 10,
-			  parameter integer PARAMETER_12 = 11,
-			  parameter integer PARAMETER_13 = 12)
+                          parameter integer PARAMETER_1 = 0,
+                          parameter integer PARAMETER_2 = 1,
+                          parameter integer PARAMETER_3 = 2,
+                          parameter integer PARAMETER_4 = 3,
+                          parameter integer PARAMETER_5 = 4, // Some other comment
+                          parameter integer PARAM_6 = 5,
+                          parameter integer PARAMETER7 = 6,
+                          parameter integer PARAM_LONGER = 7,
+                          parameter integer PARAM_EVEN_LONGER = 8, // Maybe more comments
+                          parameter integer PARAMETER_10 = 9,
+                          parameter integer PARAMETER_11 = 10,
+                          parameter integer PARAMETER_12 = 11,
+                          parameter integer PARAMETER_13 = 12)
     (
     input logic clk,
     input logic rst_n,
@@ -30,10 +30,10 @@ module param_port_list # (parameter integer PARAMETER_0 = 0, // Some comment
 );
 
     typedef struct packed{
-	logic name1;
-	logic [1:0] name2;
-	logic name_3;
-	logic name_4;
+        logic name1;
+        logic [1:0] name2;
+        logic name_3;
+        logic name_4;
     } some_type_t;
 
 
@@ -73,8 +73,8 @@ endclass
 
 
 class parameterized_class2 #(type T1=int,
-			     type T22=int,
-			     type T333=int) extends base_class;
+                             type T22=int,
+                             type T333=int) extends base_class;
 
     T1 val;
     T22 val2;

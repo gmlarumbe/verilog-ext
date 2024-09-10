@@ -6,7 +6,7 @@ class temp;
     extern function test();
     extern function test2();
     function foo();
-	foo = 1;
+        foo = 1;
     endfunction // foo
     extern function test3();
     reg [31:0] b;
@@ -24,7 +24,7 @@ module foo;
     reg [1:0] b;
 
     initial begin
-	b = `vmm_channel(a);
+        b = `vmm_channel(a);
     end // initial begin
 endmodule // foo
 
@@ -39,15 +39,15 @@ class A;
     extern static function automatic int f11(int mcid);
     extern function automatic int f13(int mcid);
     static function int s1();
-	int i = 0;
+        int i = 0;
     endfunction
     static function int s2();
-	int i = 0;
+        int i = 0;
     endfunction
     function int f1();
-	int i = 0;
+        int i = 0;
     endfunction
     function int f2();
-	int i = 0;
+        int i = 0;
     endfunction
 endclass

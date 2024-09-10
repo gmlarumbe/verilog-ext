@@ -2,25 +2,25 @@ module indent_gen_case #(parameter P = 0)
     (input d, output reg q);
 
     generate
-	case (P)
-	    0: always @(*)
-		q = d;
+        case (P)
+            0: always @(*)
+                q = d;
 
-	    1: begin
-		always @(*)
-		    q = d;
-	    end
+            1: begin
+                always @(*)
+                    q = d;
+            end
 
-	    2: always @(*) begin
-		q = d;
-	    end
+            2: always @(*) begin
+                q = d;
+            end
 
-	    3: begin
-		always @(*) begin
-		    q = d;
-		end
-	    end
-	endcase
+            3: begin
+                always @(*) begin
+                    q = d;
+                end
+            end
+        endcase
     endgenerate
 
 endmodule
@@ -34,23 +34,23 @@ module indent_gen_case #(parameter P = 0)
 
 
     case (P)
-	0: always @(*)
-	    q = d;
+        0: always @(*)
+            q = d;
 
-	1: begin
-	    always @(*)
-		q = d;
-	end
+        1: begin
+            always @(*)
+                q = d;
+        end
 
-	2: always @(*) begin
-	    q = d;
-	end
+        2: always @(*) begin
+            q = d;
+        end
 
-	3: begin
-	    always @(*) begin
-		q = d;
-	    end
-	end
+        3: begin
+            always @(*) begin
+                q = d;
+            end
+        end
     endcase
 
 

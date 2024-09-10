@@ -1,8 +1,8 @@
 module top;
     initial begin
-	// Test
-	$display("Hello world");
-	void'(std::randomize(foo) with {foo < 10;}; );
+        // Test
+        $display("Hello world");
+        void'(std::randomize(foo) with {foo < 10;}; );
     end
 endmodule // top
 /*
@@ -15,10 +15,10 @@ endmodule // top
 module top;
 
     initial begin
-	// Test
-	$display("Hello world");
-	assert(std::randomize(foo) with {foo < 10;}; )
-	    else $error("ERROR randomizing foo");
+        // Test
+        $display("Hello world");
+        assert(std::randomize(foo) with {foo < 10;}; )
+            else $error("ERROR randomizing foo");
     end
 endmodule // top
 /*
@@ -31,8 +31,8 @@ endmodule // top
 module top;
 
     initial begin
-	// Test
-	$display("Hello world");
-	void'(std::randomize(foo) with {foo < 10;} );
+        // Test
+        $display("Hello world");
+        void'(std::randomize(foo) with {foo < 10;} );
     end
 endmodule // top

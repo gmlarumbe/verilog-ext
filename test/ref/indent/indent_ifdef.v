@@ -8,11 +8,11 @@ module test(out);
     initial $display("wow is defined");
     `ifdef nest_one
     initial $display("nest_one is defined");
-	`ifdef nest_two
+        `ifdef nest_two
     initial $display("nest_two is defined");
-	`else
+        `else
     initial $display("nest_two is not defined");
-	`endif
+        `endif
     `else
     initial $display("nest_one is not defined");
     `endif

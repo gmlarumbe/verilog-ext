@@ -2,7 +2,7 @@ class mipsbfm_trans extends vmm_data;
     static vmm_log log = new ("mipsbfm_trans", "class") ;
     logic [31:0] addr, data, mask, op;
     function new();
-	super.new(this.log);
+        super.new(this.log);
     endfunction: new
 endclass // mipsbfm_trans
 
@@ -14,11 +14,11 @@ interface mipsbfm_if(input clk);
     logic   valid;
 
     clocking cb @(posedge clk);
-	output  data;
-	output  addr;
-	output  mask;
-	output  op;
-	output  valid;
+        output  data;
+        output  addr;
+        output  mask;
+        output  op;
+        output  valid;
     endclocking // cb
 
 endinterface // mipsbfm_if

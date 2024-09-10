@@ -4,12 +4,12 @@ module test();
 
     genvar    i;
     generate
-	for(i=0; i<4; i=i+1) begin:a
-	    always @(*) begin
-		x[i] = 1;
-	    end
-	    wire y = 0;
-	end
+        for(i=0; i<4; i=i+1) begin:a
+            always @(*) begin
+                x[i] = 1;
+            end
+            wire y = 0;
+        end
     endgenerate
 endmodule // test
 
@@ -21,10 +21,10 @@ module test();
     genvar    i;
 
     for(i=0; i<4; i=i+1) begin:a
-	always @(*) begin
-	    x[i] = 1;
-	end
-	wire y = 0;
+        always @(*) begin
+            x[i] = 1;
+        end
+        wire y = 0;
     end
 
 endmodule // test

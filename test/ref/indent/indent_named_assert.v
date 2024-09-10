@@ -1,6 +1,6 @@
 module test;
     property p_test;
-	a |-> b;
+        a |-> b;
     endproperty : p_test
     assert property (p_test);
     a_test : assert property (p_test);

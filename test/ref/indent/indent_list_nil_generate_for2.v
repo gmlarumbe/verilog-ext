@@ -7,12 +7,12 @@ module foo (
     localparam CONST=1;
 
     generate
-	for (genvar i=0; i<CONST; i++)
-	    inst inst(
-	    .a(a[i]),
-	    .b(b[i]),
-	    .z(z[i])
-	);
+        for (genvar i=0; i<CONST; i++)
+            inst inst(
+            .a(a[i]),
+            .b(b[i]),
+            .z(z[i])
+        );
     endgenerate
 
 endmodule

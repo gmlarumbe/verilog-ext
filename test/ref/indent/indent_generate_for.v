@@ -3,16 +3,16 @@ module indent_gen_for #(parameter P = 1)
 
     genvar i;
     generate
-	for (i = 0; i < P; i += 1) begin
-	    always @(*) begin
-		q = d;
-	    end
-	end
+        for (i = 0; i < P; i += 1) begin
+            always @(*) begin
+                q = d;
+            end
+        end
 
-	for (i = 0; i < P; i += 1) begin
-	    always @(*)
-		q = d;
-	end
+        for (i = 0; i < P; i += 1) begin
+            always @(*)
+                q = d;
+        end
     endgenerate
 
 endmodule
@@ -27,14 +27,14 @@ module indent_gen_for #(parameter P = 1)
     genvar i;
 
     for (i = 0; i < P; i += 1) begin
-	always @(*) begin
-	    q = d;
-	end
+        always @(*) begin
+            q = d;
+        end
     end
 
     for (i = 0; i < P; i += 1) begin
-	always @(*)
-	    q = d;
+        always @(*)
+            q = d;
     end
 
 

@@ -21,18 +21,18 @@
 module ram_controller ();
 
     ram_sp_sr_sw #(
-	.DATA_WIDTH(16),
-	.ADDR_WIDTH(8),
-	.RAM_DEPTH(256)
+        .DATA_WIDTH(16),
+        .ADDR_WIDTH(8),
+        .RAM_DEPTH(256)
     ) ram (
-	clk,
-	address,
-	data,
-	cs,
-	we,
-	oe
+        clk,
+        address,
+        data,
+        cs,
+        we,
+        oe
     )
-	;
+        ;
 
 endmodule
 

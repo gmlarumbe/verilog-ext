@@ -5,28 +5,28 @@ module test (pci_ack, reg_wr, reg_sel, clk,  rst);
     input clk;
     input rst;
     initial begin
-	foo;
-	bar;
-	x <= y;
-	longish <= alsolongish;
+        foo;
+        bar;
+        x <= y;
+        longish <= alsolongish;
     end
     // Only blocking assignments
     initial begin
-	lorem = 0;
-	ip = 1;
-	sum = 2;
+        lorem = 0;
+        ip = 1;
+        sum = 2;
     end
     // Only non-blocking assignments
     initial begin
-	dolor <= 0;
-	sit <= 1;
-	amet <= 2;
+        dolor <= 0;
+        sit <= 1;
+        amet <= 2;
     end
     // Mix of blocking and non-blocking assignments
     initial begin
-	consectetur = 0;
-	adipiscing <= 1;
-	elit <= 2;
+        consectetur = 0;
+        adipiscing <= 1;
+        elit <= 2;
     end
 
 endmodule

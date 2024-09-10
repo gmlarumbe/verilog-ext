@@ -9,7 +9,7 @@ module testmodule(
     output reg [1:0]   pin8
 );
     initial begin
-	$display("alls well that ends well");
+        $display("alls well that ends well");
     end
 endmodule // testmodule
 

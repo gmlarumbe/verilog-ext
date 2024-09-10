@@ -5,10 +5,10 @@ module test (pci_ack, reg_wr, reg_sel, clk,  rst);
     input clk;
     input rst;
     initial begin
-	foo;
-	bar;
-	x <= y;
-	longish <= alsolongish;
+        foo;
+        bar;
+        x <= y;
+        longish <= alsolongish;
     end
 
 endmodule

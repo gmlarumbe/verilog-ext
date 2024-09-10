@@ -6,100 +6,100 @@ module typedef_enum_indent;
     logic signed [1:0] variable4;
 
     typedef enum logic [1:0] {STATE_0,
-			      STATE_1,
-			      STATE_2,
-			      STATE_3} enum_t;
+                              STATE_1,
+                              STATE_2,
+                              STATE_3} enum_t;
 
     typedef enum logic [1:0] {STATE_0,
-			      STATE_1,
-			      STATE_2,
-			      STATE_3
+                              STATE_1,
+                              STATE_2,
+                              STATE_3
     } enum_t;
 
     typedef enum logic [1:0] {
-	STATE_0,
-	STATE_1,
-	STATE_2,
-	STATE_3
+        STATE_0,
+        STATE_1,
+        STATE_2,
+        STATE_3
     } enum_t;
 
     typedef enum logic [1:0] {
-	STATE_0,
-	STATE_1,
-	STATE_2,
-	STATE_3} enum_t;
+        STATE_0,
+        STATE_1,
+        STATE_2,
+        STATE_3} enum_t;
 
     typedef enum logic [1:0]
-	{STATE_0,
-	 STATE_1,
-	 STATE_2,
-	 STATE_3
+        {STATE_0,
+         STATE_1,
+         STATE_2,
+         STATE_3
     } enum_t;
 
     typedef enum logic [1:0]
-	{
-	STATE_0,
-	STATE_1,
-	STATE_2,
-	STATE_3
+        {
+        STATE_0,
+        STATE_1,
+        STATE_2,
+        STATE_3
     } enum_t;
 
     typedef enum logic [1:0]
-	{
-	STATE_0,
-	STATE_1,
-	STATE_2,
-	STATE_3
+        {
+        STATE_0,
+        STATE_1,
+        STATE_2,
+        STATE_3
     }
-	    enum_t;
+            enum_t;
 
     typedef enum {STATE_0,
-		  STATE_1,
-		  STATE_2,
-		  STATE_3} enum_t;
+                  STATE_1,
+                  STATE_2,
+                  STATE_3} enum_t;
 
     typedef enum {STATE_0,
-		  STATE_1,
-		  STATE_2,
-		  STATE_3
+                  STATE_1,
+                  STATE_2,
+                  STATE_3
     } enum_t;
 
     typedef enum {
-	STATE_0,
-	STATE_1,
-	STATE_2,
-	STATE_3
+        STATE_0,
+        STATE_1,
+        STATE_2,
+        STATE_3
     } enum_t;
 
     typedef enum {
-	STATE_0,
-	STATE_1,
-	STATE_2,
-	STATE_3} enum_t;
+        STATE_0,
+        STATE_1,
+        STATE_2,
+        STATE_3} enum_t;
 
     typedef enum
-	{STATE_0,
-	 STATE_1,
-	 STATE_2,
-	 STATE_3
+        {STATE_0,
+         STATE_1,
+         STATE_2,
+         STATE_3
     } enum_t;
 
     typedef enum
-	{
-	STATE_0,
-	STATE_1,
-	STATE_2,
-	STATE_3
+        {
+        STATE_0,
+        STATE_1,
+        STATE_2,
+        STATE_3
     } enum_t;
 
     typedef enum
-	{
-	STATE_0,
-	STATE_1,
-	STATE_2,
-	STATE_3
+        {
+        STATE_0,
+        STATE_1,
+        STATE_2,
+        STATE_3
     }
-	    enum_t;
+            enum_t;
 
 
 endmodule

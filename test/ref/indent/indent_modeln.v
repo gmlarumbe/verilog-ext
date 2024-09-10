@@ -9,8 +9,8 @@ class i_sb_c extends base_sb_c;
     //------------
 
     typedef struct {
-	pem_intf_defs::pem_ncb_err_rsp_t  err_rsp;
-	int         rcv_time;
+        pem_intf_defs::pem_ncb_err_rsp_t  err_rsp;
+        int         rcv_time;
     } ncbi_err_rsp_t;
 
     //------------

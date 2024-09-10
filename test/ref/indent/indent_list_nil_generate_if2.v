@@ -7,18 +7,18 @@ module foo (
     parameter VAR = 0;
 
     generate
-	if (VAR)
-	    inst inst(
-		.a(a),
-		.b(b),
-		.z(z)
-	    );
-	else
-	    inst2 inst2 (
-		.a(a),
-		.b(b),
-		.z(z)
-	    );
+        if (VAR)
+            inst inst(
+                .a(a),
+                .b(b),
+                .z(z)
+            );
+        else
+            inst2 inst2 (
+                .a(a),
+                .b(b),
+                .z(z)
+            );
     endgenerate
 
 endmodule

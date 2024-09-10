@@ -12,7 +12,7 @@ module memMod(
     // When memMod is instantiated in module top, a.req is the req
     // signal in the sb_intf instance of the simple_bus interface
     always @(posedge clk)
-	a.gnt <= a.req & avail;
+        a.gnt <= a.req & avail;
 endmodule
 module cpuMod(simple_bus b, input bit clk);
     always @(b) begin

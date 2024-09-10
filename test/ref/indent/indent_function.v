@@ -3,11 +3,11 @@ module t;
 endmodule
 class C;
     function int f();
-	f  = 17;
+        f  = 17;
     endfunction
     extern function int g();
     virtual function int f();
-	a;
+        a;
     endfunction // int
     // pure virtual functions have no endfunction.
     C a;
@@ -20,7 +20,7 @@ class C;
     // TS: Commented out initial inside class
 
     function int C::g();
-	g  = 18;
+        g  = 18;
     endfunction // g
     // pure virtual functions have no endfunction.
 endclass // C
@@ -32,10 +32,10 @@ class pure_virt_func_class;
     extern pure virtual task t();
     pure virtual task t();
     virtual task t();
-	/* body */
+        /* body */
     endtask // t
     virtual function f();
-	/* body */
+        /* body */
     endfunction // f
 endclass // pure_virt_func_class
 
@@ -49,6 +49,6 @@ class base_test extends uvm_test;
     //   In other words, the "function" in "virtual function" below must not be
     // aligned with "my_if" in the "typedef virtual my_if.." line above.
     virtual function void start_of_simulation_phase(uvm_phase phase);
-	super.start_of_simulation_phase(phase);
+        super.start_of_simulation_phase(phase);
     endfunction : start_of_simulation_phase
 endclass : base_test

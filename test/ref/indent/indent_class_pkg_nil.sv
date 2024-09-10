@@ -5,11 +5,11 @@ package foo;
     localparam byte_t [3:0] ALL_ZEROS = 32'h0;
 
     function foo3 (input int a);
-	$display(a);
+        $display(a);
     endfunction
 
     class A;
-	byte_t foo2 = ALL_ONES;
+        byte_t foo2 = ALL_ONES;
     endclass
 
 endpackage

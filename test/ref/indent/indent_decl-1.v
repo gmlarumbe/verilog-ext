@@ -20,8 +20,8 @@ module soft_rst
     reg [1:0]    state;
 
     reg [1:0] IDLE = 2'h0,
-	      HALT  = 2'h1,
-	      RST   = 2'h2,
-	      DONE  = 2'h3;
+              HALT  = 2'h1,
+              RST   = 2'h2,
+              DONE  = 2'h3;
 
 endmodule // soft_rst
