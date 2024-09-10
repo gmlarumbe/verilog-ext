@@ -1,0 +1,23 @@
+ucontroller
+  ucontroller.cpu:I_CPU
+  ucontroller.alu:I_ALU
+  ucontroller.dma:I_DMA
+    ucontroller.dma:I_DMA.dma_tx:I_DMA_TX
+    ucontroller.dma:I_DMA.dma_rx:I_DMA_RX
+    ucontroller.dma:I_DMA.dma_arbiter:I_DMA_ARBITER
+  ucontroller.uart:I_UART
+    ucontroller.uart:I_UART.uart_tx:I_UART_TX
+    ucontroller.uart:I_UART.uart_rx:I_UART_RX
+    ucontroller.uart:I_UART.sreg:I_SREG
+    ucontroller.uart:I_UART.fifo_wrapper:I_FIFO
+      ucontroller.uart:I_UART.fifo_wrapper:I_FIFO.fifo_generator_0:I_FIFO_GENERATOR_0
+        ucontroller.uart:I_UART.fifo_wrapper:I_FIFO.fifo_generator_0:I_FIFO_GENERATOR_0.fifo_generator_0_fifo_generator_v13_2_3:U0
+          ucontroller.uart:I_UART.fifo_wrapper:I_FIFO.fifo_generator_0:I_FIFO_GENERATOR_0.fifo_generator_0_fifo_generator_v13_2_3:U0.GND:GND
+          ucontroller.uart:I_UART.fifo_wrapper:I_FIFO.fifo_generator_0:I_FIFO_GENERATOR_0.fifo_generator_0_fifo_generator_v13_2_3:U0.VCC:VCC
+          ucontroller.uart:I_UART.fifo_wrapper:I_FIFO.fifo_generator_0:I_FIFO_GENERATOR_0.fifo_generator_0_fifo_generator_v13_2_3:U0.fifo_generator_0_fifo_generator_v13_2_3_synth:inst_fifo_gen
+            ucontroller.uart:I_UART.fifo_wrapper:I_FIFO.fifo_generator_0:I_FIFO_GENERATOR_0.fifo_generator_0_fifo_generator_v13_2_3:U0.fifo_generator_0_fifo_generator_v13_2_3_synth:inst_fifo_gen.fifo_generator_0_fifo_generator_top:\gconvfifo.rf
+  ucontroller.ram_arbiter:I_RAM_ARBITER
+  ucontroller.ram:I_RAM
+    ucontroller.ram:I_RAM.gp_ram:I_GP_RAM
+    ucontroller.ram:I_RAM.regs_ram:I_REGS_RAM
+      ucontroller.ram:I_RAM.regs_ram:I_REGS_RAM.bin2bcd:I_BIN2BCD

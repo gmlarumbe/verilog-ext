@@ -1,3 +1,3 @@
 [submodule "test-hdl"]
-	path = test-hdl
+	path = test/test-hdl
 	url = https://github.com/gmlarumbe/test-hdl.git

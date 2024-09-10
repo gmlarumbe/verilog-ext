@@ -1,0 +1,1 @@
+("./instances.sv:81:5:    test_if_params_array # (.param1(param1), .param2(param2)) ITEST_IF_PARAMS_ARRAY[5:0] (.clk(clk), .rst_n(rst_n));" "" "1 matches" "1 matched lines" "1 files contained matches" "7 files searched" "137 bytes printed")

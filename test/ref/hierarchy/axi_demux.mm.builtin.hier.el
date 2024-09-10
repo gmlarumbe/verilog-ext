@@ -1,0 +1,18 @@
+axi_demux_intf
+  axi_demux_intf.axi_demux:i_axi_demux
+    axi_demux_intf.axi_demux:i_axi_demux.spill_register:i_aw_spill_reg
+    axi_demux_intf.axi_demux:i_axi_demux.spill_register:i_w_spill_reg
+    axi_demux_intf.axi_demux:i_axi_demux.spill_register:i_b_spill_reg
+    axi_demux_intf.axi_demux:i_axi_demux.spill_register:i_ar_spill_reg
+    axi_demux_intf.axi_demux:i_axi_demux.spill_register:i_r_spill_reg
+    axi_demux_intf.axi_demux:i_axi_demux.spill_register:i_aw_channel_spill_reg
+    axi_demux_intf.axi_demux:i_axi_demux.spill_register:i_aw_select_spill_reg
+    axi_demux_intf.axi_demux:i_axi_demux.axi_demux_id_counters:i_aw_id_counter
+      axi_demux_intf.axi_demux:i_axi_demux.axi_demux_id_counters:i_aw_id_counter.delta_counter:i_in_flight_cnt
+    axi_demux_intf.axi_demux:i_axi_demux.counter:i_counter_open_w
+    axi_demux_intf.axi_demux:i_axi_demux.rr_arb_tree:i_b_mux
+    axi_demux_intf.axi_demux:i_axi_demux.spill_register:i_ar_chan_spill_reg
+    axi_demux_intf.axi_demux:i_axi_demux.spill_register:i_ar_sel_spill_reg
+    axi_demux_intf.axi_demux:i_axi_demux.axi_demux_id_counters:i_ar_id_counter
+      axi_demux_intf.axi_demux:i_axi_demux.axi_demux_id_counters:i_ar_id_counter.delta_counter:i_in_flight_cnt
+    axi_demux_intf.axi_demux:i_axi_demux.rr_arb_tree:i_r_mux

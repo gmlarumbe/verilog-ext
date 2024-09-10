@@ -1,0 +1,151 @@
+«m://»«x:-----------------------------------------------------------------------------
+»«m:// »«x:Title         : Testbench program routines
+»«m:// »«x:Project       : 
+»«m://»«x:-----------------------------------------------------------------------------
+»«m:// »«x:File          : tb_program.sv
+»«m:// »«x:Author        : Gonzalo Martinez Larumbe
+»«m:// »«x:Created       : 2020/02/16
+»«m:// »«x:Last modified : 2020/02/16
+»«m://»«x:-----------------------------------------------------------------------------
+»«m:// »«x:Description :
+»«m:// »«x:
+»«m://»«x:-----------------------------------------------------------------------------
+»«m:// »«x:Copyright (c) Gonzalo Martinez Larumbe  <gonzalomlarumbe@gmail.com> 
+»«m://»«x:
+»«m://»«x:------------------------------------------------------------------------------
+»«m:// »«x:Modification history :
+»«m:// »«x:2020/02/16 : created
+»«m://»«x:-----------------------------------------------------------------------------
+»
+
+«k:import» global_pkg«:verilog-ext-font-lock-punctuation-face:::*;»
+
+«k:module» «k:automatic» «f:tb_program» «:verilog-ext-font-lock-parenthesis-face:(»
+    «:verilog-ext-font-lock-direction-face:input» «t:logic»         Clk«:verilog-ext-font-lock-punctuation-face:,»
+    «:verilog-ext-font-lock-direction-face:output» «t:logic»        Rst_n«:verilog-ext-font-lock-punctuation-face:,»
+    «:verilog-ext-font-lock-direction-face:output» «t:logic»        RXD«:verilog-ext-font-lock-punctuation-face:,»
+    «:verilog-ext-font-lock-direction-face:input» «t:logic»         TXD«:verilog-ext-font-lock-punctuation-face:,»
+    «:verilog-ext-font-lock-direction-face:input» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]»   Temp«:verilog-ext-font-lock-punctuation-face:,»
+    «:verilog-ext-font-lock-direction-face:input» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]»   Switches«:verilog-ext-font-lock-punctuation-face:,»
+    «:verilog-ext-font-lock-direction-face:output» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:11:0»«:verilog-ext-font-lock-brackets-face:]» ROM_Data«:verilog-ext-font-lock-punctuation-face:,»
+    «:verilog-ext-font-lock-direction-face:input» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:11:0»«:verilog-ext-font-lock-brackets-face:]»  ROM_Addr
+    «:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+
+    «k:timeprecision» 1«:verilog-ext-font-lock-time-unit-face:ps»«:verilog-ext-font-lock-punctuation-face:;»
+    «k:timeunit»      1«:verilog-ext-font-lock-time-unit-face:ns»«:verilog-ext-font-lock-punctuation-face:;»
+
+    «t:localparam» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:31:0»«:verilog-ext-font-lock-brackets-face:]» FREQ_CLK «:verilog-ext-font-lock-punctuation-face:=» 100000000«:verilog-ext-font-lock-punctuation-face:;»
+    «t:localparam» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:31:0»«:verilog-ext-font-lock-brackets-face:]» TX_SPEED «:verilog-ext-font-lock-punctuation-face:=» 115200«:verilog-ext-font-lock-punctuation-face:;»
+    «t:localparam» «t:integer» BIT_CYCLES «:verilog-ext-font-lock-punctuation-face:=» FREQ_CLK «:verilog-ext-font-lock-operator-face:/» TX_SPEED«:verilog-ext-font-lock-punctuation-face:;»
+
+    «m:// »«x:=== TB Setup === \\
+»    «m://»«x:$timeformat params:
+»    «m://»«x:1) Scaling factor (–9 for nanoseconds, –12 for picoseconds)
+»    «m://»«x:2) Number of digits to the right of the decimal point
+»    «m://»«x:3) A string to print after the time value
+»    «m://»«x:4) Minimum field width
+»    «k:initial» «:verilog-ext-font-lock-grouping-keywords-face:begin»
+        «b:$dumpfile»«:verilog-ext-font-lock-parenthesis-face:(»«s:"tb_top.lx2"»«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»  «m:// »«x:iverilog, vpp & gtkwave
+»        «b:$dumpvars»«:verilog-ext-font-lock-parenthesis-face:(»0«:verilog-ext-font-lock-punctuation-face:,» tb_top«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»     «m:// »«x:Module Output file
+»        «b:$timeformat»«:verilog-ext-font-lock-parenthesis-face:(»«:verilog-ext-font-lock-operator-face:-»9«:verilog-ext-font-lock-punctuation-face:,» 3«:verilog-ext-font-lock-punctuation-face:,» «s:"ns"»«:verilog-ext-font-lock-punctuation-face:,» 8«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+    «:verilog-ext-font-lock-grouping-keywords-face:end»
+
+
+    «m:// »«x:ROM Model
+»    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:11:0»«:verilog-ext-font-lock-brackets-face:]» ROM «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:4096»«:verilog-ext-font-lock-brackets-face:]»«:verilog-ext-font-lock-punctuation-face:;»
+    «k:assign» ROM_Data «:verilog-ext-font-lock-punctuation-face:=» ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:ROM_Addr»«:verilog-ext-font-lock-brackets-face:]»«:verilog-ext-font-lock-punctuation-face:;»
+
+    «k:task» «f:init_rom» «:verilog-ext-font-lock-parenthesis-face:()»«:verilog-ext-font-lock-punctuation-face:;»
+        «b:$display»«:verilog-ext-font-lock-parenthesis-face:(»«s:"@%0d: Initializing ROM"»«:verilog-ext-font-lock-punctuation-face:,» «b:$time»«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+        «m:// »«x:Sum 2 and 3
+»        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h0»«:verilog-ext-font-lock-brackets-face:]»  «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-curly-braces-face:{»TYPE_3«:verilog-ext-font-lock-punctuation-face:,» LD_SRC_CONSTANT«:verilog-ext-font-lock-punctuation-face:,» DST_A«:verilog-ext-font-lock-curly-braces-face:}»«:verilog-ext-font-lock-punctuation-face:;» «m:// »«x:LD #2 Ra
+»        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h1»«:verilog-ext-font-lock-brackets-face:]»  «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-width-num-face:8»«:verilog-ext-font-lock-punctuation-face:'»«:verilog-ext-font-lock-width-type-face:h»2«:verilog-ext-font-lock-punctuation-face:;»
+        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h2»«:verilog-ext-font-lock-brackets-face:]»  «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-curly-braces-face:{»TYPE_3«:verilog-ext-font-lock-punctuation-face:,» LD_SRC_CONSTANT«:verilog-ext-font-lock-punctuation-face:,» DST_B«:verilog-ext-font-lock-curly-braces-face:}»«:verilog-ext-font-lock-punctuation-face:;» «m:// »«x:LD #3 Rb
+»        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h3»«:verilog-ext-font-lock-brackets-face:]»  «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-width-num-face:8»«:verilog-ext-font-lock-punctuation-face:'»«:verilog-ext-font-lock-width-type-face:h»3«:verilog-ext-font-lock-punctuation-face:;»
+        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h4»«:verilog-ext-font-lock-brackets-face:]»  «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-curly-braces-face:{»TYPE_1«:verilog-ext-font-lock-punctuation-face:,» ALU_ADD«:verilog-ext-font-lock-curly-braces-face:}»«:verilog-ext-font-lock-punctuation-face:;»
+        «m:// »«x:And store result in memory addres 0x40
+»        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h5»«:verilog-ext-font-lock-brackets-face:]»  «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-curly-braces-face:{»TYPE_3«:verilog-ext-font-lock-punctuation-face:,» WR_SRC_ACC«:verilog-ext-font-lock-punctuation-face:,» DST_MEM«:verilog-ext-font-lock-curly-braces-face:}»«:verilog-ext-font-lock-punctuation-face:;» «m:// »«x:MV Acc #40
+»        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h6»«:verilog-ext-font-lock-brackets-face:]»  «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-width-num-face:8»«:verilog-ext-font-lock-punctuation-face:'»«:verilog-ext-font-lock-width-type-face:h»40«:verilog-ext-font-lock-punctuation-face:;»
+        «m:// »«x:Readback from address 0x40
+»        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h7»«:verilog-ext-font-lock-brackets-face:]»  «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-curly-braces-face:{»TYPE_3«:verilog-ext-font-lock-punctuation-face:,» LD_SRC_MEM«:verilog-ext-font-lock-punctuation-face:,» DST_A«:verilog-ext-font-lock-curly-braces-face:}»«:verilog-ext-font-lock-punctuation-face:;» «m:// »«x:LD  0x40 Ra
+»        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h8»«:verilog-ext-font-lock-brackets-face:]»  «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-width-num-face:8»«:verilog-ext-font-lock-punctuation-face:'»«:verilog-ext-font-lock-width-type-face:h»40«:verilog-ext-font-lock-punctuation-face:;»
+        «m:// »«x:Shift operations (acc)
+»        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h9»«:verilog-ext-font-lock-brackets-face:]»  «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-curly-braces-face:{»TYPE_1«:verilog-ext-font-lock-punctuation-face:,» ALU_SHIFTL«:verilog-ext-font-lock-curly-braces-face:}»«:verilog-ext-font-lock-punctuation-face:;» «m:// »«x:SHL
+»        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'hA»«:verilog-ext-font-lock-brackets-face:]»  «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-curly-braces-face:{»TYPE_1«:verilog-ext-font-lock-punctuation-face:,» ALU_SHIFTR«:verilog-ext-font-lock-curly-braces-face:}»«:verilog-ext-font-lock-punctuation-face:;» «m:// »«x:SHR
+»        «m:// »«x:Jump to address 0x30
+»        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'hB»«:verilog-ext-font-lock-brackets-face:]»  «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-curly-braces-face:{»TYPE_1«:verilog-ext-font-lock-punctuation-face:,» ALU_ASCII2BIN«:verilog-ext-font-lock-curly-braces-face:}»«:verilog-ext-font-lock-punctuation-face:;»
+        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'hC»«:verilog-ext-font-lock-brackets-face:]»  «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-curly-braces-face:{»TYPE_1«:verilog-ext-font-lock-punctuation-face:,» ALU_BIN2ASCII«:verilog-ext-font-lock-curly-braces-face:}»«:verilog-ext-font-lock-punctuation-face:;»
+        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'hD»«:verilog-ext-font-lock-brackets-face:]»  «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-curly-braces-face:{»TYPE_1«:verilog-ext-font-lock-punctuation-face:,» ALU_AND«:verilog-ext-font-lock-curly-braces-face:}»«:verilog-ext-font-lock-punctuation-face:;»
+        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'hE»«:verilog-ext-font-lock-brackets-face:]»  «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-curly-braces-face:{»TYPE_2«:verilog-ext-font-lock-punctuation-face:,» JMP_UNCOND«:verilog-ext-font-lock-curly-braces-face:}»«:verilog-ext-font-lock-punctuation-face:;»
+        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'hF»«:verilog-ext-font-lock-brackets-face:]»  «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-width-num-face:8»«:verilog-ext-font-lock-punctuation-face:'»«:verilog-ext-font-lock-width-type-face:h»20«:verilog-ext-font-lock-punctuation-face:;»
+	«m:// »«x:DMA TX
+»        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h20»«:verilog-ext-font-lock-brackets-face:]» «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-curly-braces-face:{»TYPE_3«:verilog-ext-font-lock-punctuation-face:,» LD_SRC_CONSTANT«:verilog-ext-font-lock-punctuation-face:,» DST_ACC«:verilog-ext-font-lock-curly-braces-face:}»«:verilog-ext-font-lock-punctuation-face:;» «m:// »«x:Load DMA TX registers:
+»        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h21»«:verilog-ext-font-lock-brackets-face:]» «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-punctuation-face:'»«:verilog-ext-font-lock-width-type-face:h»AB«:verilog-ext-font-lock-punctuation-face:;»				«m:// »«x:Requires write to acc and 
+»        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h22»«:verilog-ext-font-lock-brackets-face:]» «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-curly-braces-face:{»TYPE_3«:verilog-ext-font-lock-punctuation-face:,» WR_SRC_ACC«:verilog-ext-font-lock-punctuation-face:,» DST_MEM«:verilog-ext-font-lock-curly-braces-face:}»«:verilog-ext-font-lock-punctuation-face:;»	«m:// »«x:from acc to mem.
+»        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h23»«:verilog-ext-font-lock-brackets-face:]» «:verilog-ext-font-lock-punctuation-face:=» DMA_TX_BUFFER_MSB«:verilog-ext-font-lock-punctuation-face:;»			«m:// »«x:One for MSB and other
+»        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h24»«:verilog-ext-font-lock-brackets-face:]» «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-curly-braces-face:{»TYPE_3«:verilog-ext-font-lock-punctuation-face:,» LD_SRC_CONSTANT«:verilog-ext-font-lock-punctuation-face:,» DST_ACC«:verilog-ext-font-lock-curly-braces-face:}»«:verilog-ext-font-lock-punctuation-face:;» «m:// »«x:for LSB
+»        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h25»«:verilog-ext-font-lock-brackets-face:]» «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-punctuation-face:'»«:verilog-ext-font-lock-width-type-face:h»CD«:verilog-ext-font-lock-punctuation-face:;»				
+        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h26»«:verilog-ext-font-lock-brackets-face:]» «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-curly-braces-face:{»TYPE_3«:verilog-ext-font-lock-punctuation-face:,» WR_SRC_ACC«:verilog-ext-font-lock-punctuation-face:,» DST_MEM«:verilog-ext-font-lock-curly-braces-face:}»«:verilog-ext-font-lock-punctuation-face:;»	
+        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h27»«:verilog-ext-font-lock-brackets-face:]» «:verilog-ext-font-lock-punctuation-face:=» DMA_TX_BUFFER_LSB«:verilog-ext-font-lock-punctuation-face:;»			
+	«m:// »«x:TX Enable
+»        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h28»«:verilog-ext-font-lock-brackets-face:]» «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-curly-braces-face:{»TYPE_4«:verilog-ext-font-lock-punctuation-face:,» «:verilog-ext-font-lock-width-num-face:6»«:verilog-ext-font-lock-punctuation-face:'»«:verilog-ext-font-lock-width-type-face:h»0«:verilog-ext-font-lock-curly-braces-face:}»«:verilog-ext-font-lock-punctuation-face:;»
+	«m:// »«x:Infinite loop
+»        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h29»«:verilog-ext-font-lock-brackets-face:]» «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-curly-braces-face:{»TYPE_2«:verilog-ext-font-lock-punctuation-face:,» JMP_UNCOND«:verilog-ext-font-lock-curly-braces-face:}»«:verilog-ext-font-lock-punctuation-face:;»
+        ROM«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:'h2A»«:verilog-ext-font-lock-brackets-face:]» «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-width-num-face:8»«:verilog-ext-font-lock-punctuation-face:'»«:verilog-ext-font-lock-width-type-face:h»20«:verilog-ext-font-lock-punctuation-face:;»
+    «k:endtask»«:verilog-ext-font-lock-punctuation-face::» init_rom
+
+
+    «m:// »«x:Tasks
+»    «k:task» «f:init_values»«:verilog-ext-font-lock-punctuation-face:;»
+        RXD «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-width-num-face:1»«:verilog-ext-font-lock-punctuation-face:'»«:verilog-ext-font-lock-width-type-face:b»1«:verilog-ext-font-lock-punctuation-face:;»
+    «k:endtask» «:verilog-ext-font-lock-punctuation-face::» init_values
+
+
+    «k:task» «f:reset_system»«:verilog-ext-font-lock-punctuation-face:;»
+        init_values«:verilog-ext-font-lock-punctuation-face:;»
+        «k:repeat» «:verilog-ext-font-lock-parenthesis-face:(»10«:verilog-ext-font-lock-parenthesis-face:)» «:verilog-ext-font-lock-time-event-face:@»«:verilog-ext-font-lock-parenthesis-face:(»«k:posedge» Clk«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+        Rst_n «:verilog-ext-font-lock-punctuation-face:<=» 0«:verilog-ext-font-lock-punctuation-face:;»
+        «k:repeat» «:verilog-ext-font-lock-parenthesis-face:(»10«:verilog-ext-font-lock-parenthesis-face:)» «:verilog-ext-font-lock-time-event-face:@»«:verilog-ext-font-lock-parenthesis-face:(»«k:posedge» Clk«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+        Rst_n «:verilog-ext-font-lock-punctuation-face:<=» 1«:verilog-ext-font-lock-punctuation-face:;»
+        «k:repeat» «:verilog-ext-font-lock-parenthesis-face:(»10«:verilog-ext-font-lock-parenthesis-face:)» «:verilog-ext-font-lock-time-event-face:@»«:verilog-ext-font-lock-parenthesis-face:(»«k:posedge» Clk«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+    «k:endtask» «:verilog-ext-font-lock-punctuation-face::» reset_system
+
+
+    «m:// »«x:RX DMA - UART to Memory
+»    «k:task» «f:serial_rx» «:verilog-ext-font-lock-parenthesis-face:(»«:verilog-ext-font-lock-direction-face:input» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» Data«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+        «:verilog-ext-font-lock-time-event-face:@»«:verilog-ext-font-lock-parenthesis-face:(»«k:posedge» Clk«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+        «m:// »«x:Start bit
+»        RXD «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-width-num-face:1»«:verilog-ext-font-lock-punctuation-face:'»«:verilog-ext-font-lock-width-type-face:b»0«:verilog-ext-font-lock-punctuation-face:;»
+        «k:repeat» «:verilog-ext-font-lock-parenthesis-face:(»BIT_CYCLES«:verilog-ext-font-lock-parenthesis-face:)» «:verilog-ext-font-lock-time-event-face:@»«:verilog-ext-font-lock-parenthesis-face:(»«k:posedge» Clk«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+        «m:// »«x:Data bits
+»        «k:for» «:verilog-ext-font-lock-parenthesis-face:(»«t:int» i«:verilog-ext-font-lock-punctuation-face:=»0«:verilog-ext-font-lock-punctuation-face:;» i«:verilog-ext-font-lock-punctuation-face:<»8«:verilog-ext-font-lock-punctuation-face:;» «:verilog-ext-font-lock-operator-face:++»i«:verilog-ext-font-lock-parenthesis-face:)» «:verilog-ext-font-lock-grouping-keywords-face:begin»
+            RXD «:verilog-ext-font-lock-punctuation-face:=» Data«:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:i»«:verilog-ext-font-lock-brackets-face:]»«:verilog-ext-font-lock-punctuation-face:;»
+            «k:repeat» «:verilog-ext-font-lock-parenthesis-face:(»BIT_CYCLES«:verilog-ext-font-lock-parenthesis-face:)» «:verilog-ext-font-lock-time-event-face:@»«:verilog-ext-font-lock-parenthesis-face:(»«k:posedge» Clk«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+        «:verilog-ext-font-lock-grouping-keywords-face:end»
+        «m:// »«x:Stop bit
+»        RXD «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-width-num-face:1»«:verilog-ext-font-lock-punctuation-face:'»«:verilog-ext-font-lock-width-type-face:b»1«:verilog-ext-font-lock-punctuation-face:;»
+        «k:repeat» «:verilog-ext-font-lock-parenthesis-face:(»BIT_CYCLES«:verilog-ext-font-lock-parenthesis-face:)» «:verilog-ext-font-lock-time-event-face:@»«:verilog-ext-font-lock-parenthesis-face:(»«k:posedge» Clk«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+        «m:// »«x:Wrapup
+»        «b:$display»«:verilog-ext-font-lock-parenthesis-face:(»«s:"@%0d: End of Serial RX"»«:verilog-ext-font-lock-punctuation-face:,» «b:$time»«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+        «:verilog-ext-font-lock-time-event-face:@»«:verilog-ext-font-lock-parenthesis-face:(»«k:posedge» Clk«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;» «m:// »«x:Resync
+»    «k:endtask»«:verilog-ext-font-lock-punctuation-face::» serial_rx
+
+
+    «k:initial» «:verilog-ext-font-lock-grouping-keywords-face:begin»
+        init_rom«:verilog-ext-font-lock-punctuation-face:;»
+        reset_system«:verilog-ext-font-lock-punctuation-face:;»
+        «b:$display»«:verilog-ext-font-lock-parenthesis-face:(»«s:"Starting simulation..."»«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+        serial_rx«:verilog-ext-font-lock-parenthesis-face:(»«:verilog-ext-font-lock-punctuation-face:'»«:verilog-ext-font-lock-width-type-face:h»AB«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+        serial_rx«:verilog-ext-font-lock-parenthesis-face:(»«:verilog-ext-font-lock-punctuation-face:'»«:verilog-ext-font-lock-width-type-face:h»CD«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+        «k:repeat» «:verilog-ext-font-lock-parenthesis-face:(»1000«:verilog-ext-font-lock-parenthesis-face:)» «:verilog-ext-font-lock-time-event-face:@»«:verilog-ext-font-lock-parenthesis-face:(»«k:posedge» Clk«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+        «b:$finish»«:verilog-ext-font-lock-punctuation-face:;»
+    «:verilog-ext-font-lock-grouping-keywords-face:end»
+
+    «k:initial» «:verilog-ext-font-lock-grouping-keywords-face:begin»
+        «:verilog-ext-font-lock-time-event-face:#»10«:verilog-ext-font-lock-time-unit-face:ms»«:verilog-ext-font-lock-punctuation-face:;»
+        «b:$display»«:verilog-ext-font-lock-parenthesis-face:(»«s:"@%0d: Timeout occurred"»«:verilog-ext-font-lock-punctuation-face:,» «b:$time»«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+        «b:$finish»«:verilog-ext-font-lock-parenthesis-face:()»«:verilog-ext-font-lock-punctuation-face:;»
+    «:verilog-ext-font-lock-grouping-keywords-face:end»
+
+
+«k:endmodule»«:verilog-ext-font-lock-punctuation-face::» tb_program

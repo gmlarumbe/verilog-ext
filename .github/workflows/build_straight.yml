@@ -34,8 +34,8 @@ jobs:
 
       - name: Install binaries
         run: |
-          test-hdl/verilog/scripts/setup-env.sh
-          test-hdl/verilog/scripts/install-ts-grammar.sh
+          test/test-hdl/scripts/verilog/setup-env.sh
+          test/test-hdl/scripts/verilog/install-ts-grammar.sh
 
       - name: Run ERT tests
         run: |
