@@ -52,7 +52,6 @@
 (defconst verilog-ext-test-ref-dir-tags (file-name-concat verilog-ext-test-ref-dir "tags"))
 (defconst verilog-ext-test-dump-dir-tags (file-name-concat verilog-ext-test-dump-dir "tags"))
 
-
 (defconst verilog-ext-test-tags-file-and-tag-type-list
   `((,(file-name-concat verilog-ext-test-files-common-dir "axi_demux.sv")      . top-items)
     (,(file-name-concat verilog-ext-test-files-common-dir "axi_test.sv")       . top-items)

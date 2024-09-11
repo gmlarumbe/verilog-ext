@@ -35,9 +35,8 @@
 (defun verilog-ext-test-beautify-file (mode)
   ;; Set mode or ts-mode
   (funcall mode)
-  (let* ((identifier-re verilog-identifier-re)
-         (beautify-re (concat "\\(?1:^\\s-*\\." identifier-re "\\)\\(?2:\\s-*\\)("))
-         (verilog-ext-time-stamp-pattern nil)) ; Prevent auto-update of timestamp for `verilog-ext'
+  (let ((beautify-re (concat "\\(?1:^\\s-*\\." verilog-identifier-re "\\)\\(?2:\\s-*\\)("))
+        (verilog-ext-time-stamp-pattern nil)) ; Prevent auto-update of timestamp for `verilog-ext'
     ;; Clean blanks in ports (similar to `verilog-ext-replace-regexp-whole-buffer')
     (save-excursion
       (goto-char (point-min))
