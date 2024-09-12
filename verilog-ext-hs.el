@@ -24,7 +24,7 @@
 
 ;;; Code:
 
-(require 'verilog-mode)
+(require 'verilog-ext-utils)
 (require 'hideshow)
 
 (defconst verilog-ext-hs-block-start-keywords-re
@@ -88,10 +88,8 @@ See `hs-hide-block' and `hs-show-block'.
 Argument E should be the event that triggered this action."
   (interactive (list last-nonmenu-event))
   (cond ((eq major-mode 'verilog-mode)
-         (let ((table (make-syntax-table verilog-mode-syntax-table)))
-           (modify-syntax-entry ?` "w" table)
-           (with-syntax-table table
-             (hs-toggle-hiding e))))
+         (verilog-ext-with-syntax-table-tick-word
+           (hs-toggle-hiding e)))
         ((eq major-mode 'verilog-ts-mode)
          (hs-toggle-hiding e))
         (t

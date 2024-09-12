@@ -137,10 +137,10 @@ FEATURES can be a single feature or a list of features."
 
 
 ;;; Features
-(require 'verilog-ext-hs)
 (require 'verilog-ext-time-stamp)
 (require 'verilog-ext-block-end-comments)
 (require 'verilog-ext-utils)
+(require 'verilog-ext-hs)
 (require 'verilog-ext-compile)
 (require 'verilog-ext-nav)
 (require 'verilog-ext-font-lock)

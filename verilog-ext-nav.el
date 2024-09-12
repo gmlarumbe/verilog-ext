@@ -60,10 +60,8 @@ Either `rg' or `ag' are implemented."
 Move forward ARG words."
   (interactive "p")
   (cond ((eq major-mode 'verilog-mode)
-         (let ((table (make-syntax-table verilog-mode-syntax-table)))
-           (modify-syntax-entry ?_ "_" table)
-           (with-syntax-table table
-             (forward-word arg))))
+         (verilog-ext-with-syntax-table-underscore-symbol
+           (forward-word arg)))
         ((eq major-mode 'verilog-ts-mode)
          (forward-word arg))
         (t
@@ -74,10 +72,8 @@ Move forward ARG words."
 Move backward ARG words."
   (interactive "p")
   (cond ((eq major-mode 'verilog-mode)
-         (let ((table (make-syntax-table verilog-mode-syntax-table)))
-           (modify-syntax-entry ?_ "_" table)
-           (with-syntax-table table
-             (backward-word arg))))
+         (verilog-ext-with-syntax-table-underscore-symbol
+           (backward-word arg)))
         ((eq major-mode 'verilog-ts-mode)
          (backward-word arg))
         (t

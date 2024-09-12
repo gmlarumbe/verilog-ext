@@ -173,6 +173,37 @@ ALIST keys are strings that define projects in `verilog-ext-project-alist'."
   (declare (indent 0) (debug t))
   `(setf (alist-get ,proj ,alist nil 'remove 'string=) ,value))
 
+(defmacro verilog-ext-with-syntax-table (char newentry &rest body)
+  "Execute BODY with a `verilog-mode' syntax-table replacing CHAR with NEWENTRY."
+  (declare (indent 0) (debug t))
+  `(let ((table (make-syntax-table verilog-mode-syntax-table)))
+     (modify-syntax-entry ,char ,newentry table)
+     (with-syntax-table table
+       ,@body)))
+
+(defmacro verilog-ext-with-syntax-table-underscore-symbol (&rest body)
+  "Do not consider underscore part of a word boundary and execute BODY.
+Needed for compatibility with `verilog-mode' syntax table."
+  (declare (indent 0) (debug t))
+  `(verilog-ext-with-syntax-table
+     ?_ "_"
+     ,@body))
+
+(defmacro verilog-ext-with-syntax-table-underscore-word (&rest body)
+  "Do consider underscore part of a word boundary and execute BODY.
+Needed for compatibility with `verilog-mode' syntax table."
+  (declare (indent 0) (debug t))
+  `(verilog-ext-with-syntax-table
+     ?_ "w"
+     ,@body))
+
+(defmacro verilog-ext-with-syntax-table-tick-word (&rest body)
+  "Consider tick part of a word boundary and execute BODY.
+Needed for compatibility with `verilog-mode' syntax table."
+  (declare (indent 0) (debug t))
+  `(verilog-ext-with-syntax-table
+     ?` "w"
+     ,@body))
 
 ;;;; Wrappers
 (defun verilog-ext-forward-syntactic-ws ()
@@ -788,10 +819,8 @@ efficiency and be able to use it for features such as `which-func'."
 Optional ARG sets number of words to kill."
   (interactive "p")
   (cond ((eq major-mode 'verilog-mode)
-         (let ((table (make-syntax-table verilog-mode-syntax-table)))
-           (modify-syntax-entry ?_ "_" table)
-           (with-syntax-table table
-             (kill-word arg))))
+         (verilog-ext-with-syntax-table-underscore-symbol
+           (kill-word arg)))
         ((eq major-mode 'verilog-ts-mode)
          (kill-word arg))
         (t
@@ -802,10 +831,8 @@ Optional ARG sets number of words to kill."
 Optional ARG sets number of words to kill."
   (interactive "p")
   (cond ((eq major-mode 'verilog-mode)
-         (let ((table (make-syntax-table verilog-mode-syntax-table)))
-           (modify-syntax-entry ?_ "_" table)
-           (with-syntax-table table
-             (backward-kill-word arg))))
+         (verilog-ext-with-syntax-table-underscore-symbol
+           (backward-kill-word arg)))
         ((eq major-mode 'verilog-ts-mode)
          (backward-kill-word arg))
         (t
@@ -819,10 +846,8 @@ table.
 
 Pass the args START, END and optional COLUMN to `indent-region'."
   (cond ((eq major-mode 'verilog-mode)
-         (let ((table (make-syntax-table verilog-mode-syntax-table)))
-           (modify-syntax-entry ?` "w" table)
-           (with-syntax-table table
-             (indent-region start end column))))
+         (verilog-ext-with-syntax-table-tick-word
+           (indent-region start end column)))
         ((eq major-mode 'verilog-ts-mode)
          (indent-region start end column))
         (t
@@ -838,10 +863,8 @@ directives with a modified syntax table.
 If on a `verilog-ts-mode' buffer, run `indent-for-tab-command' with ARG."
   (interactive "P")
   (cond ((eq major-mode 'verilog-mode)
-         (let ((table (make-syntax-table verilog-mode-syntax-table)))
-           (modify-syntax-entry ?` "w" table)
-           (with-syntax-table table
-             (electric-verilog-tab))))
+         (verilog-ext-with-syntax-table-tick-word
+           (electric-verilog-tab)))
         ((eq major-mode 'verilog-ts-mode)
          (indent-for-tab-command arg))
         (t

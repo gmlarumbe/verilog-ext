@@ -335,7 +335,8 @@ Supports verilator, vppreproc and iverilog."
                     (setq verilog-preprocessor (concat "iverilog -E -o" iver-out-file " __FILE__ && "
                                                        "echo \"\" && " ; Add blank line between run command and first preprocessed line
                                                        "cat " iver-out-file)))))
-    (verilog-preprocess)
+    (verilog-ext-with-syntax-table-underscore-word ; Required for `verilog-ts-mode' usage of `verilog-string-replace-matches' inside `verilog-expand-command'
+      (verilog-preprocess))
     (pop-to-buffer "*Verilog-Preprocessed*")))
 
 
