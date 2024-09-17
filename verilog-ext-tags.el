@@ -485,7 +485,7 @@ PARENT is passed as an argument to build the :items prop list of
          (children (cdr node))
          (ts-type (treesit-node-type ts-node))
          (is-instance (and ts-type (string-match verilog-ts-instance-re ts-type)))
-         (is-typedef-class (verilog-ts--node-is-typedef-class-p ts-node)))
+         (is-typedef-class (verilog-ts--node-is-typedef-class ts-node)))
     ;; Iterate over all the nodes of the tree
     (mapc (lambda (child-node)
             (verilog-ext-tags-table-push-defs-ts--recurse :node child-node
