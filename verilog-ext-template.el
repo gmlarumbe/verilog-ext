@@ -820,6 +820,7 @@ Create it only if in a project and the Makefile does not already exist."
 
   ("/*"  (verilog-ext-template-insert-yasnippet "/*")       "Star comment" :column "Comments")
   ("B"   (verilog-ext-template-block-comment)               "Block comment")
+  ("H"   (verilog-ext-template-header)                      "Header (no prompt)")
   ("hd"  (call-interactively #'verilog-ext-template-header) "Header")
 
   ;;;;;;;;;;
