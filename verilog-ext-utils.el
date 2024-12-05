@@ -26,6 +26,7 @@
 
 (require 'verilog-mode)
 (require 'verilog-ts-mode)
+(require 'outline)
 
 ;;;; Custom
 (defcustom verilog-ext-file-extension-re "\\.s?vh?\\'"
@@ -856,13 +857,17 @@ Pass the args START, END and optional COLUMN to `indent-region'."
 (defun verilog-ext-tab (&optional arg)
   "Run corresponding TAB function depending on `major-mode'.
 
+If on an outline header, fold/unfold current section (`outshine' compatibility).
+
 If on a `verilog-mode' buffer, run `electric-verilog-tab' with original
 `verilog-mode' syntax table.  Prevents indentation issues with compiler
 directives with a modified syntax table.
 
 If on a `verilog-ts-mode' buffer, run `indent-for-tab-command' with ARG."
   (interactive "P")
-  (cond ((eq major-mode 'verilog-mode)
+  (cond ((outline-on-heading-p)
+         (outline-cycle))
+        ((eq major-mode 'verilog-mode)
          (verilog-ext-with-syntax-table-tick-word
            (electric-verilog-tab)))
         ((eq major-mode 'verilog-ts-mode)
