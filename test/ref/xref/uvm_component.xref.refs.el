@@ -3558,15 +3558,15 @@
 	 28 29
 	 (face verilog-ts-font-lock-brackets-face fontified nil)
 	 29 36
-	 (face verilog-ts-font-lock-dot-name-face fontified nil)
+	 (face font-lock-constant-face fontified nil)
 	 36 37
-	 (face verilog-ts-font-lock-operator-face fontified nil)
+	 (face font-lock-constant-face fontified nil)
 	 37 44
-	 (fontified nil)
+	 (face font-lock-constant-face fontified nil)
 	 44 45
-	 (face verilog-ts-font-lock-operator-face fontified nil)
+	 (face font-lock-constant-face fontified nil)
 	 45 47
-	 (fontified nil)
+	 (face font-lock-constant-face fontified nil)
 	 47 48
 	 (face verilog-ts-font-lock-brackets-face fontified nil)
 	 48 49
