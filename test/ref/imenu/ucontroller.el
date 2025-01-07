@@ -6,4 +6,4 @@
   ("ram_arbiter" . 4123)
   ("ram" . 4593))
  ("*Top*"
-  ("ucontroller" . #<marker at 834 in ucontroller.sv>)))
+  ("ucontroller" . 834)))

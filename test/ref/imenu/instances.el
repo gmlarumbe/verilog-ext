@@ -11,6 +11,6 @@
   ("block_ws_0" . 2401)
   ("block_ws_1" . 2518))
  ("*Generates*"
-  ("for (genvar i=0; i<VALUE; i++) begin : gen_test" . #<marker at 1636 in instances.sv>))
+  ("for (genvar i=0; i<VALUE; i++) begin : gen_test" . 1636))
  ("*Top*"
-  ("instances" . #<marker at 820 in instances.sv>)))
+  ("instances" . 820)))

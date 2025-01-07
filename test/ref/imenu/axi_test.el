@@ -372,14 +372,14 @@
       (face verilog-ext-imenu-class-item-face))
     . 77470)))
  ("*Initial blocks*"
-  ("automatic string       log_name;" . #<marker at 82923 in axi_test.sv>))
+  ("automatic string       log_name;" . 82923))
  ("*Always blocks*"
-  ("automatic aw_chan_t ar_beat;" . #<marker at 79692 in axi_test.sv>))
+  ("automatic aw_chan_t ar_beat;" . 79692))
  ("*Localparams*"
-  ("unsigned" . #<marker at 62767 in axi_test.sv>)
-  ("axi_pkg::size_t" . #<marker at 62889 in axi_test.sv>)
-  ("unsigned" . #<marker at 79308 in axi_test.sv>)
-  ("unsigned" . #<marker at 79365 in axi_test.sv>))
+  ("unsigned" . 62767)
+  ("axi_pkg::size_t" . 62889)
+  ("unsigned" . 79308)
+  ("unsigned" . 79365))
  ("*Top*"
-  ("axi_test" . #<marker at 936 in axi_test.sv>)
-  ("axi_chan_logger" . #<marker at 78095 in axi_test.sv>)))
+  ("axi_test" . 936)
+  ("axi_chan_logger" . 78095)))

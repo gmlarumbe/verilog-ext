@@ -4,14 +4,14 @@
   ("reset_system" . 3552)
   ("serial_rx" . 3804))
  ("*Initial blocks*"
-  ("$dumpfile(\"tb_top.lx2\");  // iverilog, vpp & gtkwave" . #<marker at 1619 in tb_program.sv>)
-  ("init_rom;" . #<marker at 4325 in tb_program.sv>)
-  ("#10ms;" . #<marker at 4541 in tb_program.sv>))
+  ("$dumpfile(\"tb_top.lx2\");  // iverilog, vpp & gtkwave" . 1619)
+  ("init_rom;" . 4325)
+  ("#10ms;" . 4541))
  ("*Assigns*"
-  ("ROM_Data" . #<marker at 1829 in tb_program.sv>))
+  ("ROM_Data" . 1829))
  ("*Localparams*"
-  ("FREQ_CLK" . #<marker at 1190 in tb_program.sv>)
-  ("TX_SPEED" . #<marker at 1240 in tb_program.sv>)
-  ("BIT_CYCLES" . #<marker at 1287 in tb_program.sv>))
+  ("FREQ_CLK" . 1190)
+  ("TX_SPEED" . 1240)
+  ("BIT_CYCLES" . 1287))
  ("*Top*"
-  ("tb_program" . #<marker at 856 in tb_program.sv>)))
+  ("tb_program" . 856)))
