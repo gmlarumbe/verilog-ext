@@ -5,14 +5,8 @@
        (fontified nil)
        7 18
        (face verilog-ext-xref-match-face)
-       18 19
-       (fontified nil)
-       19 20
-       (face verilog-ts-font-lock-time-event-face fontified nil)
-       20 21
-       (fontified nil)
-       21 22
-       (face verilog-ts-font-lock-parenthesis-face fontified nil))
+       18 22
+       (fontified nil))
      #s(xref-file-location "ucontroller.sv" 21 0)))
  (#s(xref-item
      #("    input logic         Clk," 0 4
@@ -28,7 +22,7 @@
        24 27
        (face verilog-ext-xref-match-face)
        27 28
-       (face verilog-ts-font-lock-punctuation-face fontified nil))
+       (fontified nil))
      #s(xref-file-location "tb_program.sv" 24 4))
     #s(xref-item
        #("    input logic         Clk," 0 4
@@ -44,7 +38,7 @@
 	 24 27
 	 (face verilog-ext-xref-match-face)
 	 27 28
-	 (face verilog-ts-font-lock-punctuation-face fontified nil))
+	 (fontified nil))
        #s(xref-file-location "ucontroller.sv" 25 4)))
  (#s(xref-item
      #("    output logic        RXD," 0 4
@@ -60,7 +54,7 @@
        24 27
        (face verilog-ext-xref-match-face)
        27 28
-       (face verilog-ts-font-lock-punctuation-face fontified nil))
+       (fontified nil))
      #s(xref-file-location "tb_program.sv" 26 4))
     #s(xref-item
        #("    input logic         RXD," 0 4
@@ -76,7 +70,7 @@
 	 24 27
 	 (face verilog-ext-xref-match-face)
 	 27 28
-	 (face verilog-ts-font-lock-punctuation-face fontified nil))
+	 (fontified nil))
        #s(xref-file-location "ucontroller.sv" 28 4)))
  nil nil
  (#s(xref-item
@@ -89,5 +83,5 @@
        16 23
        (face verilog-ext-xref-match-face)
        23 24
-       (face verilog-ts-font-lock-punctuation-face fontified nil))
+       (fontified nil))
      #s(xref-file-location "ucontroller.sv" 40 16))))
