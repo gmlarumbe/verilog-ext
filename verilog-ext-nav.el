@@ -878,7 +878,7 @@ Otherwise look for functions, tasks or classes."
   (interactive)
   (if (eq major-mode 'verilog-ts-mode)
       ;; `verilog-ts-mode'
-      (verilog-ts-beg-of-defun-dwim)
+      (beginning-of-defun)
     ;; `verilog-mode'
     (if (verilog-ext-scan-buffer-modules)
         (call-interactively #'verilog-ext-find-block-bwd)
@@ -892,7 +892,7 @@ Otherwise look for functions, tasks or classes."
   (interactive)
   (if (eq major-mode 'verilog-ts-mode)
       ;; `verilog-ts-mode'
-      (verilog-ts-end-of-defun-dwim)
+      (end-of-defun)
     ;; `verilog-mode'
     (if (verilog-ext-scan-buffer-modules)
         (call-interactively #'verilog-ext-find-block-fwd)
