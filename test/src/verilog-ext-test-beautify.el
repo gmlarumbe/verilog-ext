@@ -52,11 +52,23 @@
                                :dest-dir verilog-ext-test-ref-dir-beautify
                                :fn #'verilog-ext-test-beautify-file
                                :args '(verilog-mode))
+  (let ((verilog-ext-beautify-instance-extra t))
+    (test-hdl-gen-expected-files :file-list verilog-ext-test-beautify-file-list
+                                 :dest-dir verilog-ext-test-ref-dir-beautify
+                                 :out-file-ext "extra.sv"
+                                 :fn #'verilog-ext-test-beautify-file
+                                 :args '(verilog-mode)))
   (test-hdl-gen-expected-files :file-list verilog-ext-test-beautify-file-list
                                :dest-dir verilog-ext-test-ref-dir-beautify
                                :out-file-ext "ts.sv"
                                :fn #'verilog-ext-test-beautify-file
-                               :args '(verilog-ts-mode)))
+                               :args '(verilog-ts-mode))
+  (let ((verilog-ts-beautify-instance-extra t))
+    (test-hdl-gen-expected-files :file-list verilog-ext-test-beautify-file-list
+                                 :dest-dir verilog-ext-test-ref-dir-beautify
+                                 :out-file-ext "ts.extra.sv"
+                                 :fn #'verilog-ext-test-beautify-file
+                                 :args '(verilog-ts-mode))))
 
 (ert-deftest beautify ()
   (dolist (file verilog-ext-test-beautify-file-list)
@@ -66,6 +78,15 @@
                                                          :args '(verilog-mode))
                                   (file-name-concat verilog-ext-test-ref-dir-beautify (test-hdl-basename file))))))
 
+(ert-deftest beautify-instance-extra ()
+  (let ((verilog-ext-beautify-instance-extra t))
+    (dolist (file verilog-ext-test-beautify-file-list)
+      (should (test-hdl-files-equal (test-hdl-process-file :test-file file
+                                                           :dump-file (file-name-concat verilog-ext-test-dump-dir-beautify (test-hdl-basename file "extra.sv"))
+                                                           :fn #'verilog-ext-test-beautify-file
+                                                           :args '(verilog-mode))
+                                    (file-name-concat verilog-ext-test-ref-dir-beautify (test-hdl-basename file "extra.sv")))))))
+
 (ert-deftest beautify-ts-mode ()
   (dolist (file verilog-ext-test-beautify-file-list)
     (should (test-hdl-files-equal (test-hdl-process-file :test-file file
@@ -73,6 +94,15 @@
                                                          :fn #'verilog-ext-test-beautify-file
                                                          :args '(verilog-ts-mode))
                                   (file-name-concat verilog-ext-test-ref-dir-beautify (test-hdl-basename file "ts.sv"))))))
+
+(ert-deftest beautify-ts-mode-instance-extra ()
+  (let ((verilog-ts-beautify-instance-extra t))
+    (dolist (file verilog-ext-test-beautify-file-list)
+      (should (test-hdl-files-equal (test-hdl-process-file :test-file file
+                                                           :dump-file (file-name-concat verilog-ext-test-dump-dir-beautify (test-hdl-basename file "ts.extra.sv"))
+                                                           :fn #'verilog-ext-test-beautify-file
+                                                           :args '(verilog-ts-mode))
+                                    (file-name-concat verilog-ext-test-ref-dir-beautify (test-hdl-basename file "ts.extra.sv")))))))
 
 
 (provide 'verilog-ext-test-beautify)

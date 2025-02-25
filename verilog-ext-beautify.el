@@ -29,6 +29,17 @@
 
 (require 'verilog-ext-nav)
 
+
+(defgroup verilog-ext-beautify nil
+  "Verilog-ext beautify"
+  :group 'verilog-ext)
+
+(defcustom verilog-ext-beautify-instance-extra nil
+  "Set to non-nil to perform extra formatting on instances."
+  :type 'boolean
+  :group 'verilog-ext-beautify)
+
+
 (defun verilog-ext-beautify-block-at-point-indent ()
   "Indent current block at point."
   (let ((data (verilog-ext-block-at-point :return-pos))
@@ -66,12 +77,19 @@
 (defun verilog-ext-beautify--module-at-point-align (thing)
   "Align THING of current module at point (ports/parameters)."
   (let ((case-fold-search nil)
-        (re "\\(\\s-*\\)(")
+        (re-open-par          "\\(\\s-*\\)(")                 ; Port opening parenthesis
+        (re-blank-open-par    "\\(\\s-*\\)(\\(\\s-*\\)")      ; Set 1 blank after port opening parenthesis
+        (re-blank-closing-par "\\(\\s-*\\))")                 ; Set 1 blank before port closing parenthesis
+        (re-port-comma        "\\(\\s-*\\),")                 ; Remove blanks between closing parenthesis and port comma
+        (re-comment           "\\(\\(\\,\\|)\\)\\s-*\\)\/\/") ; Leave 1 blank before port inline comments
         (current-ids (verilog-ext-instance-at-point))
         (idx (cond ((eq thing 'parameters) 1)
                    ((eq thing 'ports) 2)
                    (t (error "Invalid thing to align"))))
-        current-module beg end)
+        (beg (make-marker))
+        (end (make-marker))
+        (comment-end (make-marker))
+        current-module)
     (unless current-ids
       (user-error "Not inside an instance!"))
     (setq current-module (car current-ids))
@@ -79,12 +97,18 @@
       (goto-char (match-beginning idx))
       (verilog-re-search-forward "(" nil t)
       (verilog-forward-syntactic-ws)
-      (setq beg (point))
+      (set-marker beg (point))
       (verilog-backward-up-list -1)
       (backward-char)
+      (set-marker comment-end (point))
       (verilog-backward-syntactic-ws)
-      (setq end (point)))
-    (align-regexp beg end re 1 1 nil)
+      (set-marker end (point)))
+    (align-regexp beg end re-open-par 1 1 t)
+    (when verilog-ext-beautify-instance-extra
+      (align-regexp beg end re-blank-open-par 2 1 t)
+      (align-regexp beg end re-blank-closing-par 1 1 t)
+      (align-regexp beg end re-port-comma 1 0 t)
+      (align-regexp beg comment-end re-comment 1 2 nil))
     (if (eq idx 1)
         (message "Parameters of %s aligned..." current-module)
       (message "Ports of %s aligned..." current-module))))
