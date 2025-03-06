@@ -3126,9 +3126,9 @@
  (#s(xref-item
      #("    m_children[i].m_do_pre_abort();" 0 4
        (fontified nil)
-       4 14
+       4 17
        (face verilog-ts-font-lock-dot-name-face fontified nil)
-       14 18
+       17 18
        (fontified nil)
        18 32
        (face verilog-ext-xref-match-face)
