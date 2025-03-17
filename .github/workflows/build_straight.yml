@@ -21,22 +21,16 @@ jobs:
           - release-snapshot
           - snapshot
     steps:
-      # - name: Set up Emacs
-      #   uses: purcell/setup-emacs@master
-      #   with:
-      #     version: ${{ matrix.emacs_version }}
+      - name: Set up Emacs
+        uses: purcell/setup-emacs@master
+        with:
+          version: ${{ matrix.emacs_version }}
 
       # Checks-out repository under $GITHUB_WORKSPACE
       - name: Clone verilog-ext
         uses: actions/checkout@v4
         with:
           submodules: true
-
-      # INFO: Temporary until tree-sitter 0.25 makes it into nixpkgs
-      - name: Set up Emacs 29.4
-        run: |
-          test/test-hdl/scripts/install-tree-sitter.sh
-          test/test-hdl/scripts/install-emacs.sh
 
       - name: Install binaries
         run: |
