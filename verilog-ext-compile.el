@@ -1,6 +1,6 @@
 ;;; verilog-ext-compile.el --- Verilog-ext Compilation Utils -*- lexical-binding: t -*-
 
-;; Copyright (C) 2022-2024 Gonzalo Larumbe
+;; Copyright (C) 2022-2025 Gonzalo Larumbe
 
 ;; Author: Gonzalo Larumbe <gonzalomlarumbe@gmail.com>
 ;; URL: https://github.com/gmlarumbe/verilog-ext
