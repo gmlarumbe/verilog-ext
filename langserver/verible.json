@@ -3,7 +3,7 @@
   "languageId": "verilog",
   "command": [
     "verible-verilog-ls",
-    "--rules_config_earch"
+    "--rules_config_search"
   ],
   "settings": {}
 }
