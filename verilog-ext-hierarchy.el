@@ -24,7 +24,7 @@
 
 ;;; Code:
 
-(require 'outshine)
+(require 'outline)
 (require 'hierarchy)
 (require 'tree-widget)
 (require 'async)
@@ -45,7 +45,7 @@
 
 (defcustom verilog-ext-hierarchy-frontend 'hierarchy
   "Verilog-ext hierarchy display and navigation frontend."
-  :type '(choice (const :tag "Outshine"  outshine)
+  :type '(choice (const :tag "Outline"   outline)
                  (const :tag "Hierarchy" hierarchy))
   :group 'verilog-ext-hierarchy)
 
@@ -164,7 +164,7 @@ Return populated `hierarchy' struct."
 (defun verilog-ext-hierarchy--convert-struct-to-string (hierarchy-struct)
   "Convert HIERARCHY-STRUCT to a string.
 Used to convert hierarchy formats for displaying on different frontends."
-  (let ((offset-blank-spaces 2) ; Intended to be used by outshine, which assumes that...
+  (let ((offset-blank-spaces 2) ; Intended to be used by outline, which assumes that...
         (unicode-spc 32)        ; ... vhier output adds two offset indent spaces
         (debug nil))
     (unless (hierarchy-p hierarchy-struct)
@@ -184,7 +184,7 @@ Used to convert hierarchy formats for displaying on different frontends."
   "Convert HIERARCHY-STRING to an alist.
 Used to convert hierarchy formats for displaying on different frontends.
 Alist will be of the form (module instance1:NAME1 instance2:NAME2 ...)."
-  (let ((offset-blank-spaces 2) ; Intended to be used by outshine, which assumes that...
+  (let ((offset-blank-spaces 2) ; Intended to be used by outline, which assumes that...
         (debug nil)             ; ... vhier output adds two offset indent spaces
         flat-hierarchy current-line parent current-indent cell hierarchy-alist)
     (unless (stringp hierarchy-string)
@@ -518,26 +518,8 @@ Show only module name, discard instance name after colon (mod:INST)."
   (when verilog-ext-hierarchy-twidget-init-expand
     (verilog-ext-hierarchy-twidget-nav-init-expand)))
 
-;;;;; outshine
-(defmacro verilog-ext-hierarchy-outshine-nav (verilog-ext-func outshine-func)
-  "Define function VERILOG-EXT-FUNC to call OUTSHINE-FUNC.
-Called in a buffer with `verilog-ext-hierarchy-outshine-nav-mode' enabled.
-Move through headings and point at the beginning of the tag."
-  (declare (indent 0) (debug t))
-  `(defun ,verilog-ext-func ()
-     (interactive)
-     (beginning-of-line) ; Required for `outline-hide-sublevels'
-     (call-interactively ,outshine-func)
-     (skip-chars-forward (car (car outshine-promotion-headings)))))
-
-(verilog-ext-hierarchy-outshine-nav verilog-ext-hierarchy-outshine-nav-previous-visible-heading #'outline-previous-visible-heading)
-(verilog-ext-hierarchy-outshine-nav verilog-ext-hierarchy-outshine-nav-next-visible-heading     #'outline-next-visible-heading)
-(verilog-ext-hierarchy-outshine-nav verilog-ext-hierarchy-outshine-nav-up-heading               #'outline-up-heading)
-(verilog-ext-hierarchy-outshine-nav verilog-ext-hierarchy-outshine-nav-forward-same-level       #'outline-forward-same-level)
-(verilog-ext-hierarchy-outshine-nav verilog-ext-hierarchy-outshine-nav-backward-same-level      #'outline-backward-same-level)
-(verilog-ext-hierarchy-outshine-nav verilog-ext-hierarchy-outshine-nav-hide-sublevels           #'outline-hide-sublevels)
-
-(defun verilog-ext-hierarchy-outshine-jump-to-file (&optional other-window)
+;;;;; outline
+(defun verilog-ext-hierarchy-outline-jump-to-file (&optional other-window)
   "Jump to module definition at point on navigation hierarchy file.
 If OTHER-WINDOW is non-nil, open definition in other window."
   (interactive)
@@ -545,46 +527,48 @@ If OTHER-WINDOW is non-nil, open definition in other window."
       (xref-find-definitions-other-window (thing-at-point 'symbol t))
     (xref-find-definitions (thing-at-point 'symbol t))))
 
-(defun verilog-ext-hierarchy-outshine-jump-to-file-other-window ()
+(defun verilog-ext-hierarchy-outline-jump-to-file-other-window ()
   "Jump to module definition at point on navigation hierarchy file."
   (interactive)
-  (verilog-ext-hierarchy-outshine-jump-to-file :other-window))
+  (verilog-ext-hierarchy-outline-jump-to-file :other-window))
 
-(define-minor-mode verilog-ext-hierarchy-outshine-nav-mode
-  "Instance navigation frontend with `outshine'.
-Makes use of processed output under `outline-minor-mode' and `outshine'."
+(define-minor-mode verilog-ext-hierarchy-outline-nav-mode
+  "Instance navigation frontend with `outline'.
+Makes use of processed output under `outline-minor-mode'."
   :lighter " vH"
   :keymap
   '(;; Hide/Show
     ("a"       . outline-show-all)
     ("i"       . outline-show-children)
     ("h"       . outline-show-children)
-    ("l"       . verilog-ext-hierarchy-outshine-nav-hide-sublevels)
+    ("l"       . outline-hide-sublevels)
     ("I"       . outline-show-branches)
     (";"       . outline-hide-other)
     ;; Movement
-    ("u"       . verilog-ext-hierarchy-outshine-nav-up-heading)
-    ("C-c C-u" . verilog-ext-hierarchy-outshine-nav-up-heading)
-    ("n"       . verilog-ext-hierarchy-outshine-nav-next-visible-heading)
-    ("j"       . verilog-ext-hierarchy-outshine-nav-next-visible-heading)
-    ("p"       . verilog-ext-hierarchy-outshine-nav-previous-visible-heading)
-    ("k"       . verilog-ext-hierarchy-outshine-nav-previous-visible-heading)
-    ("C-c C-n" . verilog-ext-hierarchy-outshine-nav-forward-same-level)
-    ("C-c C-p" . verilog-ext-hierarchy-outshine-nav-backward-same-level)
+    ("u"       . outline-up-heading)
+    ("C-c C-u" . outline-up-heading)
+    ("n"       . outline-next-visible-heading)
+    ("j"       . outline-next-visible-heading)
+    ("p"       . outline-previous-visible-heading)
+    ("k"       . outline-previous-visible-heading)
+    ("C-c C-n" . outline-forward-same-level)
+    ("C-c C-p" . outline-backward-same-level)
     ;; Jump
-    ("o"       . verilog-ext-hierarchy-outshine-jump-to-file-other-window)
-    ("C-o"     . verilog-ext-hierarchy-outshine-jump-to-file-other-window)
-    ("RET"     . verilog-ext-hierarchy-outshine-jump-to-file)
-    ("C-j"     . verilog-ext-hierarchy-outshine-jump-to-file))
+    ("o"       . verilog-ext-hierarchy-outline-jump-to-file-other-window)
+    ("C-o"     . verilog-ext-hierarchy-outline-jump-to-file-other-window)
+    ("RET"     . verilog-ext-hierarchy-outline-jump-to-file)
+    ("C-j"     . verilog-ext-hierarchy-outline-jump-to-file))
   ;; Minor-mode code
-  (outshine-mode 1)
+  (setq outline-regexp "// [\\*]+ ")
+  (setq outline-minor-mode-highlight 'override)
+  (outline-minor-mode 1)
   (setq buffer-read-only t)
   (view-mode -1))
 
-(defun verilog-ext-hierarchy-outshine-display (hierarchy)
-  "Display HIERARCHY using `outshine'.
+(defun verilog-ext-hierarchy-outline-display (hierarchy)
+  "Display HIERARCHY using `outline'.
 Expects HIERARCHY to be a indented string."
-  (let ((buf "*Verilog-outshine*"))
+  (let ((buf "*Verilog-outline*"))
     (with-current-buffer (get-buffer-create buf)
       (setq buffer-read-only nil)
       (erase-buffer)
@@ -606,14 +590,14 @@ Expects HIERARCHY to be a indented string."
       ;; Insert local variables at the end of the file
       (goto-char (point-max))
       (newline 1)
-      (insert "\n// * Buffer local variables\n// Local Variables:\n// eval: (verilog-ext-hierarchy-outshine-nav-mode)\n// End:\n")
+      (insert "\n// * Buffer local variables\n// Local Variables:\n// eval: (verilog-ext-hierarchy-outline-nav-mode)\n// End:\n")
       ;; Insert header to get some info of the file
       (goto-char (point-min))
       (open-line 1)
       (insert "// Hierarchy generated by `verilog-ext'\n")
       (verilog-ext-with-no-hooks
         (verilog-mode))
-      (verilog-ext-hierarchy-outshine-nav-mode))
+      (verilog-ext-hierarchy-outline-nav-mode))
     (pop-to-buffer buf)))
 
 ;;;; Core
@@ -678,11 +662,11 @@ frontend.
 E.g.: If extracted with vhier and displayed with hierarchy it is needed to
 convert between an indented string and a populated hierarchy struct."
   (let ((display-hierarchy hierarchy))
-    (cond (;; Outshine
-           (eq verilog-ext-hierarchy-frontend 'outshine)
+    (cond (;; Outline
+           (eq verilog-ext-hierarchy-frontend 'outline)
            (when (hierarchy-p hierarchy)
              (setq display-hierarchy (verilog-ext-hierarchy--convert-struct-to-string hierarchy)))
-           (verilog-ext-hierarchy-outshine-display display-hierarchy))
+           (verilog-ext-hierarchy-outline-display display-hierarchy))
           ;; Hierarchy
           ((eq verilog-ext-hierarchy-frontend 'hierarchy)
            (setq display-hierarchy hierarchy)

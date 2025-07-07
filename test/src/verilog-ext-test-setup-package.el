@@ -73,7 +73,7 @@
 (setq verilog-date-scientific-format          t)
 (setq verilog-case-fold                     nil) ; Regexps should NOT ignore case
 (setq verilog-align-ifelse                  nil)
-(setq verilog-indent-ignore-regexp      "// \\*") ; Ignore outshine headings
+(setq verilog-indent-ignore-regexp      "// \\*") ; Ignore outline/outshine headings
 ;; Verilog AUTO
 (setq verilog-auto-delete-trailing-whitespace t) ; ‘delete-trailing-whitespace’ in ‘verilog-auto’.
 (setq verilog-auto-indent-on-newline          t) ; Self-explaining

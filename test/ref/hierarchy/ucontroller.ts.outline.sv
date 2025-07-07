@@ -27,5 +27,5 @@
 
 // * Buffer local variables
 // Local Variables:
-// eval: (verilog-ext-hierarchy-outshine-nav-mode)
+// eval: (verilog-ext-hierarchy-outline-nav-mode)
 // End:

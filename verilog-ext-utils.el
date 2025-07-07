@@ -857,7 +857,7 @@ Pass the args START, END and optional COLUMN to `indent-region'."
 (defun verilog-ext-tab (&optional arg)
   "Run corresponding TAB function depending on `major-mode'.
 
-If on an outline header, fold/unfold current section (`outshine' compatibility).
+If on an outline header, fold/unfold current section (`outline' compatibility).
 
 If on a `verilog-mode' buffer, run `electric-verilog-tab' with original
 `verilog-mode' syntax table.  Prevents indentation issues with compiler
