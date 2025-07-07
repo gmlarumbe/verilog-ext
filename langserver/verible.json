@@ -2,7 +2,8 @@
   "name": "verible",
   "languageId": "verilog",
   "command": [
-    "verible-verilog-ls"
+    "verible-verilog-ls",
+    "--rules_config_search"
   ],
   "settings": {}
 }
