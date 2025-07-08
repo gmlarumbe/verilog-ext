@@ -559,11 +559,19 @@ Makes use of processed output under `outline-minor-mode'."
     ("RET"     . verilog-ext-hierarchy-outline-jump-to-file)
     ("C-j"     . verilog-ext-hierarchy-outline-jump-to-file))
   ;; Minor-mode code
-  (setq outline-regexp "// [\\*]+ ")
-  (setq outline-minor-mode-highlight 'override)
+  (setq-local outline-regexp "// [\\*]+ ")
+  (setq-local outline-heading-alist
+        '(("// * " . 1)
+          ("// ** " . 2)
+          ("// *** " . 3)
+          ("// **** " . 4)
+          ("// ***** " . 5)
+          ("// ****** " . 6)
+          ("// ******* " . 7)
+          ("// ******** " . 8)))
+  (setq-local outline-minor-mode-highlight 'override)
   (outline-minor-mode 1)
-  (setq buffer-read-only t)
-  (view-mode -1))
+  (setq buffer-read-only t))
 
 (defun verilog-ext-hierarchy-outline-display (hierarchy)
   "Display HIERARCHY using `outline'.
