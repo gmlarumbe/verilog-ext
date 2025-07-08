@@ -3,6 +3,6 @@
 # --
 
 
-task ${1:task_name} ($2);
+task ${1:${2:`(if (buffer-file-name) (file-name-nondirectory (file-name-sans-extension (buffer-file-name))) "class_name")`}::}${3:task_name} ($4);
   $0
-endtask: $1
+endtask: $3

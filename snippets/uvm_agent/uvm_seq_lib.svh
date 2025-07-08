@@ -5,7 +5,7 @@ class <uvm_name>_seq_base extends uvm_sequence #(<uvm_name>_seq_item);
     logic [31:0] data = 0;
 
     // Knobs
-    bool_t do_randomize = TRUE;
+    bit do_randomize = 1;
 
     // Methods
     function new(string name = "<uvm_name>_seq_base");
@@ -16,7 +16,7 @@ class <uvm_name>_seq_base extends uvm_sequence #(<uvm_name>_seq_item);
         req = <uvm_name>_seq_item::type_id::create("req");
         // UVM sequence_item operation
         start_item(req);
-        if (do_randomize == TRUE) begin
+        if (do_randomize) begin
             if(!req.my_randomize()) begin
                 `uvm_fatal("body", "req randomization failure")
             end

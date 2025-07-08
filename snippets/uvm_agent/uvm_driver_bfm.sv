@@ -1,4 +1,4 @@
-interface <uvm_name>_driver_bfm # (
+interface automatic <uvm_name>_driver_bfm # (
     // ...
 ) (
     input logic clk,
@@ -12,6 +12,8 @@ interface <uvm_name>_driver_bfm # (
     `include "uvm_macros.svh"
     import uvm_pkg::*;
     import <uvm_name>_agent_pkg::*;
+
+    string name = "<UVM_NAME>_DRV_BFM";
 
     // Methods
     task init_values ();

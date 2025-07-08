@@ -3,6 +3,6 @@
 # --
 
 
-function ${1:void} ${2:function_name} ($3);
+function ${1:void} ${2:${3:`(if (buffer-file-name) (file-name-nondirectory (file-name-sans-extension (buffer-file-name))) "class_name")`}::}${4:function_name} ($5);
     $0
-endfunction: $2
+endfunction: $4

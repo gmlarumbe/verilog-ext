@@ -1,4 +1,4 @@
-interface <uvm_name>_monitor_bfm # (
+interface automatic <uvm_name>_monitor_bfm # (
     // ...
 ) (
     input logic clk,
@@ -11,6 +11,7 @@ interface <uvm_name>_monitor_bfm # (
     import <uvm_name>_agent_pkg::*;
 
     // Members
+    string name = "<UVM_NAME>_MON_BFM";
     <uvm_name>_monitor proxy;
 
     // Methods

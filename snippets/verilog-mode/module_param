@@ -2,7 +2,7 @@
 # key: md
 # --
 
-module ${1:module_name} # (
+module ${1:`(if (buffer-file-name) (file-name-nondirectory (file-name-sans-extension (buffer-file-name))) "module_name")`} # (
     ${2:// parameters}
 )   (
     ${3:// ports}
