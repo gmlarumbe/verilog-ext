@@ -312,6 +312,10 @@ the replacement text (see `replace-match' for more info)."
       (while (search-forward string endpos t)
         (replace-match to-string fixedcase)))))
 
+(defun verilog-ext-remove-blanks-in-string (string)
+  "Remove blank spaces between words in STRING."
+  (mapconcat #'identity (split-string string) " "))
+
 
 ;;;; Dirs/files
 (defun verilog-ext-dir-files (dir &optional recursive follow-symlinks ignore-dirs)
@@ -481,15 +485,26 @@ Return list with found modules or nil if not found."
           (verilog-mode))
         (verilog-ext-scan-buffer-modules)))))
 
-(defun verilog-ext-select-file-module (&optional file)
+(defun verilog-ext-select-file-module (&optional file pos)
   "Select file module from FILE.
 If only one module was found return it as a string.
 If more than one module was found, select between available ones.
-Return nil if no module was found."
-  (let ((modules (mapcar #'car (verilog-ext-read-file-modules file))))
+Return nil if no module was found.
+
+If second argument POS is non-nil return a cons of the form
+(module . positions)."
+  (let* ((modules-pos (verilog-ext-read-file-modules file))
+         (modules (mapcar #'car modules-pos))
+         module)
     (if (cdr modules)
-        (completing-read "Select module: " modules)
-      (car modules))))
+        (progn
+          (setq module (completing-read "Select module: " modules))
+          (if pos
+              (assoc module modules-pos)
+            module))
+      (if pos
+          (car modules-pos)
+        (car modules)))))
 
 
 ;;;; Block at point / point inside block

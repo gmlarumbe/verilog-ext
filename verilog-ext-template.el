@@ -379,6 +379,7 @@ If ASYNC is non-nil create an asynchronous reset."
 
 
 ;;;; Instances
+;;;;; AUTOs
 (defconst verilog-ext-template-inst-auto-header "// Beginning of Verilog AUTO_TEMPLATE")
 (defconst verilog-ext-template-inst-auto-footer "// End of Verilog AUTO_TEMPLATE")
 
@@ -535,37 +536,161 @@ Use inst INST-TEMPLATE or prompt to choose one if nil."
     (verilog-ext-beautify-block-at-point)))
 
 (defun verilog-ext-template-inst-auto-from-file-simple (file)
-  "Instantiate from FILE with simple template: connected ports and no parameters."
+  "Instantiate from FILE with simple template: connected ports and no parameters.
+
+Makes use of `verilog-mode' AUTOs."
   (interactive "FSelect module from file:")
   (verilog-ext-template-inst-auto-from-file file
                                             verilog-ext-template-inst-auto-conn-ports
                                             verilog-ext-template-inst-auto-simple))
 
 (defun verilog-ext-template-inst-auto-from-file-params (file)
-  "Instantiate from FILE with params template: connected ports with parameters."
+  "Instantiate from FILE with params template: connected ports with parameters.
+
+Makes use of `verilog-mode' AUTOs."
   (interactive "FSelect module from file:")
   (verilog-ext-template-inst-auto-from-file file
                                             verilog-ext-template-inst-auto-conn-ports
                                             verilog-ext-template-inst-auto-params))
 
-(defun verilog-ext-template-inst-auto-from-file-tb-dut (file)
+(defun verilog-ext-template-inst-auto-from-file-params-ss (file)
   "Instantiate from FILE with params template:
 - Connected ports with subscripts with parameters.
-- Required by TB template instantiation to auto detect width of signals."
+- Required by TB template instantiation to auto detect width of signals.
+
+Makes use of `verilog-mode' AUTOs."
   (interactive "FSelect module from file:")
   (verilog-ext-template-inst-auto-from-file file
                                             verilog-ext-template-inst-auto-conn-ports-ss
                                             nil))
 
 (defun verilog-ext-template-inst-auto-from-file-prompt (file)
-  "Instantiate from FILE and prompt for template and parameters."
+  "Instantiate from FILE and prompt for template and parameters.
+
+Makes use of `verilog-mode' AUTOs."
   (interactive "FSelect module from file:")
   (verilog-ext-template-inst-auto-from-file file))
 
+;;;;; tree-sitter
+(defun verilog-ext-template-inst-ts-from-file (file &optional params module)
+  "Instantiate from FILE.
+
+Include parameters if PARAMS is non-nil.
+
+Instantiate MODULE from list of found modules in FILE.
+
+If called with prefix-arg prompt for instance name.
+
+Makes use of tree-sitter, valid for `verilog-ts-mode'."
+  (interactive "FSelect module from file:")
+  (unless (eq major-mode 'verilog-ts-mode)
+    (error "Only available under `verilog-ts-mode'."))
+  (let* ((module-pos (if module (assoc module (with-temp-buffer
+                                                (insert-file-contents file)
+                                                (verilog-ext-scan-buffer-modules)))
+                       (verilog-ext-select-file-module file :pos)))
+         (module-name (if module-pos
+                          (car module-pos)
+                        (error "arg module not found on `verilog-ext-template-inst-ts-from-file'")))
+         (instance-name (if current-prefix-arg
+                            (read-string "Instance-name: " (concat "I_" (upcase module-name)))
+                          (concat "I_" (upcase module-name))))
+         port-list param-list module-node butlast-params last-param butlast-ports last-port)
+    (with-temp-buffer
+      (insert-file-contents file)
+      (verilog-ts-mode)
+      (goto-char (cadr module-pos))
+      (setq module-node (verilog-ts--node-has-parent-recursive (verilog-ts--node-at-point) "\\_<module_declaration\\_>"))
+      (setq port-list (mapcar #'car (verilog-ts--node-module-ports module-node)))
+      (setq param-list (mapcar #'car (verilog-ts--node-module-parameters module-node)))
+      (setq butlast-params (butlast param-list))
+      (setq last-param (car (last param-list)))
+      (setq butlast-ports (butlast port-list))
+      (setq last-port (car (last port-list))))
+    (save-excursion
+      (insert module-name)
+      ;; Parameters
+      (when (and params param-list)
+        (insert " # (\n")
+        (when butlast-params ; Covers the case when there is only 1 param
+          (mapc (lambda (param)
+                  (insert (concat "." param "(" param "),\n")))
+                butlast-params))
+        (when last-param
+          (insert "." last-param "(" last-param ")\n)")))
+      ;; Instance name
+      (if (not port-list)
+          (insert " " instance-name " ();\n")
+        (insert " " instance-name " (\n")
+        ;; Ports
+        (when butlast-ports ; Covers the case when there is only 1 param
+          (mapc (lambda (port)
+                  (insert (concat "." port "(" port "),\n")))
+                butlast-ports))
+        (when last-port
+          (insert "." last-port "(" last-port ")\n);")))
+      ;; Beautify at the end
+      (verilog-ext-beautify-block-at-point))))
+
+(defun verilog-ext-template-inst-ts-from-file-simple (file &optional module)
+  "Instantiate from FILE with connected ports and no parameters.
+
+If MODULE is non-nil try to instantiate that module from list of available found
+modules in FILE.
+
+Makes use of tree-sitter, valid for `verilog-ts-mode'."
+  (interactive "FSelect module from file:")
+  (unless (eq major-mode 'verilog-ts-mode)
+    (error "Only available under `verilog-ts-mode'."))
+  (verilog-ext-template-inst-ts-from-file file nil module))
+
+(defun verilog-ext-template-inst-ts-from-file-params (file &optional module)
+  "Instantiate from FILE with connected ports with parameters.
+
+If MODULE is non-nil try to instantiate that module from list of available found
+modules in FILE.
+
+Makes use of tree-sitter, valid for `verilog-ts-mode'."
+  (interactive "FSelect module from file:")
+  (unless (eq major-mode 'verilog-ts-mode)
+    (error "Only available under `verilog-ts-mode'."))
+  (verilog-ext-template-inst-ts-from-file file :params module))
+
+
+;;;;; Common
+(defun verilog-ext-template-inst-from-file-simple (file &optional module)
+  "Instantiate from FILE with simple template: connected ports and no parameters.
+
+If MODULE is non-nil try to instantiate that module from list of available found
+modules in FILE."
+  (interactive "FSelect module from file:")
+  (cond ((eq major-mode 'verilog-ts-mode)
+         (verilog-ext-template-inst-ts-from-file-simple file module))
+        ((eq major-mode 'verilog-mode)
+         (verilog-ext-template-inst-auto-from-file-simple file))
+        (t
+         (error "Only compatible with `verilog-mode' or `verilog-ts-mode'."))))
+
+(defun verilog-ext-template-inst-from-file-params (file &optional module)
+  "Instantiate from FILE with connected ports with parameters.
+
+If MODULE is non-nil try to instantiate that module from list of available found
+modules in FILE."
+  (interactive "FSelect module from file:")
+  (cond ((eq major-mode 'verilog-ts-mode)
+         (verilog-ext-template-inst-ts-from-file-params file module))
+        ((eq major-mode 'verilog-mode)
+         (verilog-ext-template-inst-auto-from-file-params file))
+        (t
+         (error "Only compatible with `verilog-mode' or `verilog-ts-mode'."))))
+
 
 ;;;; Testbenches
-(defun verilog-ext-template-testbench-simple-from-file (file outfile)
-  "Instantiate basic testbench from FILE's top module into OUTFILE."
+;;;;; AUTOs
+(defun verilog-ext-template-testbench-auto-simple-from-file (file outfile)
+  "Instantiate basic testbench from FILE's top module into OUTFILE.
+
+Make use of AUTOs in `verilog-mode'."
   (interactive "FSelect DUT from file:\nFOutput file: ")
   (when (file-exists-p outfile)
     (error "File %s exists" outfile))
@@ -580,7 +705,7 @@ module <tb_module_name> () ;
     timeprecision 1ps;
     timeunit      1ns;
 
-    localparam CLKT = 10ns;  // 100 MHz
+    localparam time CLKT = 10ns;  // 100 MHz
 
     // TODO: INIT after (verilog-auto)!!
     // DUT instance parameters
@@ -643,7 +768,7 @@ endmodule // <tb_module_name>
     (verilog-ext-replace-string "<reset_active_value>" (concat "1'b" (if verilog-ext-template-reset-active-low "0" "1")) (point-min) (point-max))
     (goto-char (point-min))
     (search-forward "// DUT Instantiation")
-    (verilog-ext-template-inst-auto-from-file-tb-dut file)
+    (verilog-ext-template-inst-auto-from-file-params-ss file)
     (verilog-ext-template-header)
     ;; Postprocess /*AUTOINOUTPARAM*/
     (save-excursion
@@ -689,6 +814,220 @@ endmodule // <tb_module_name>
         (kill-line 1)))
     (search-forward "// TODO")
     (write-file outfile)))
+
+;;;;; tree-sitter
+(defun verilog-ext-template-testbench-ts--process-parameters (alist)
+  "Process parameters from ALIST for tree-sitter based testbench generation.
+
+Syntactic sugar."
+  (mapc (lambda (param)
+          (let* ((param-name (car param))
+                 (param-plist (cdr param))
+                 (param-data-type (verilog-ext-remove-blanks-in-string (or (plist-get param-plist :data-type) "")))
+                 (param-default-value (verilog-ext-remove-blanks-in-string (or (plist-get param-plist :default-value) "'0")))
+                 (param-is-parameter-type (plist-get param-plist :is-parameter-type)))
+            (verilog-ext-tab)
+            (if param-is-parameter-type
+                (insert "localparam " param-name " = " param-default-value ";\n")
+              (insert "localparam " param-data-type " " param-name " = " param-default-value  ";\n "))))
+        alist))
+
+(defun verilog-ext-template-testbench-ts--process-ports (alist)
+  "Process ports from ALIST for tree-sitter based testbench generation.
+
+Syntactic sugar."
+  (mapc (lambda (port)
+          (let* ((port-name (car port))
+                 (port-plist (cdr port))
+                 (port-data-type (verilog-ext-remove-blanks-in-string (or (plist-get port-plist :data-type) "logic"))) ; Packed dimension included in data-type
+                 (port-itf-data-type (when (cdr (split-string port-data-type "\\."))
+                                       (car (split-string port-data-type "\\.")))) ; Ignore modport type if an interface port
+                 (port-unpacked-dim (or (plist-get port-plist :unpacked-dim) ""))
+                 (default-value (if (equal (plist-get (cdr port) :direction) "input")
+                                    " = '0"
+                                  "")))
+            (verilog-ext-tab)
+            (insert (or port-itf-data-type port-data-type) " " port-name port-unpacked-dim default-value ";\n")))
+        alist))
+
+(defun verilog-ext-template-testbench-ts--process (type alist ref-string)
+  "Process ports/params depending on TYPE from ALIST.
+
+Search for REF-STRING (section) before processing ports/params.
+
+Syntactic sugar for tree-sitter based testbench generation."
+  (let (pos)
+    (save-excursion
+      (goto-char (point-min))
+      (search-forward ref-string)
+      (kill-line 0)
+      (setq pos (point))
+      (pcase type
+        ('ports (verilog-ext-template-testbench-ts--process-ports alist))
+        ('params (verilog-ext-template-testbench-ts--process-parameters alist))
+        (_ (error "Invalid type arg")))
+      (goto-char pos)
+      (verilog-ts-pretty-declarations)
+      (verilog-ts-pretty-expr))))
+
+(defun verilog-ext-template-testbench-ts--create-section (name)
+  "Create a new section named NAME after /* DUT Outputs */.
+
+Syntactic sugar for tree-sitter testbench generation."
+  (save-excursion
+    (goto-char (point-min))
+    (search-forward "/* DUT Outputs */")
+    (forward-paragraph)
+    (forward-line 1)
+    (open-line 1)
+    (verilog-ext-tab)
+    (insert "/* DUT " (capitalize name) " */")
+    (newline)
+    (verilog-ext-tab)
+    (insert "<insert_" name ">")
+    (beginning-of-line)))
+
+(defun verilog-ext-template-testbench-ts-simple-from-file (file outfile)
+  "Instantiate basic testbench from FILE's top module into OUTFILE.
+
+Make use of tree-sitter in `verilog-ts-mode'."
+  (interactive "FSelect DUT from file:\nFOutput file: ")
+  (unless (and (treesit-available-p)
+               (treesit-language-available-p 'verilog))
+    (error "Tree-sitter not available for `verilog-ts-mode'."))
+  (when (file-exists-p outfile)
+    (error "File %s exists" outfile))
+  (let* ((module-pos (verilog-ext-select-file-module file :pos))
+         (module-name (car module-pos))
+         (tb-module-name (file-name-nondirectory (file-name-sans-extension outfile)))
+         module-node param-alist port-alist
+         input-port-alist output-port-alist inout-port-alist other-port-alist)
+    (with-temp-buffer
+      (insert-file-contents file)
+      (verilog-ts-mode)
+      (goto-char (cadr module-pos))
+      (setq module-node (verilog-ts--node-has-parent-recursive (verilog-ts--node-at-point) "\\_<module_declaration\\_>"))
+      (setq param-alist (verilog-ts--node-module-parameters module-node))
+      (setq port-alist (verilog-ts--node-module-ports module-node))
+      (setq input-port-alist (seq-filter (lambda (port)
+                                           (equal (plist-get (cdr port) :direction) "input"))
+                                         port-alist))
+      (setq output-port-alist (seq-filter (lambda (port)
+                                            (equal (plist-get (cdr port) :direction) "output"))
+                                          port-alist))
+      (setq inout-port-alist (seq-filter (lambda (port)
+                                           (equal (plist-get (cdr port) :direction) "inout"))
+                                         port-alist))
+      (setq other-port-alist (seq-filter (lambda (port)
+                                           (not (member (plist-get (cdr port) :direction) '("input" "output" "inout"))))
+                                         port-alist)))
+    (find-file outfile)
+    (insert "\
+module automatic <tb_module_name> () ;
+
+    // Simulation parameters
+    timeprecision 1ps;
+    timeunit      1ns;
+
+    localparam time CLKT = 10ns;  // 100 MHz
+
+    // TODO: Set to proper values
+    // DUT instance parameters
+    // <insert_parameters>
+    /* DUT Inputs */
+    // <insert_inputs>
+    /* DUT Outputs */
+    // <insert_outputs>
+    // System Clock
+    always begin
+        #(CLKT/2) <clock> = ~<clock>; // TODO: Set proper clk variable
+    end
+
+    // TODO: Declare/Connect interfaces
+    // axi4_lite_if axil_if_<module_name> (.<clock>(<clock>), .<reset>(<reset>));
+    // ...
+
+    // TODO: Ensure SV interfaces connections
+    // DUT Instantiation
+    // <insert_dut>
+
+    // TODO: Tasks/functions (move to separat file)
+    // ...
+
+    // TODO: TB Objects
+    // axi4_lite_bfm bfm;
+
+    // TODO: Stimuli
+    initial begin
+        // bfm = new(axil_if_<module_name>);
+        //
+        // #10 <reset> = <reset_active_value>;
+        //
+        // bfm.read();
+        // bfm.write();
+        // ...
+        // ...
+        $display(\"@%0d: TEST PASSED\", $time);
+        $finish;
+    end
+
+endmodule // <tb_module_name>
+")
+    (verilog-ext-replace-string "<tb_module_name>" tb-module-name (point-min) (point-max))
+    (verilog-ext-replace-string "<module_name>" module-name (point-min) (point-max))
+    (verilog-ext-replace-string "<clock>" verilog-ext-template-clock (point-min) (point-max))
+    (verilog-ext-replace-string "<reset>" verilog-ext-template-reset (point-min) (point-max))
+    (verilog-ext-replace-string "<reset_init_value>" (concat "1'b" (if verilog-ext-template-reset-active-low "1" "0")) (point-min) (point-max))
+    (verilog-ext-replace-string "<reset_active_value>" (concat "1'b" (if verilog-ext-template-reset-active-low "0" "1")) (point-min) (point-max))
+    (goto-char (point-min))
+    (search-forward "// <insert_dut>")
+    (kill-line 0)
+    (verilog-ext-template-inst-ts-from-file-params file module-name)
+    ;; Postprocess parameters, inputs, outputs, inouts and interfaces
+    (verilog-ext-template-testbench-ts--process 'params param-alist "<insert_parameters>")
+    (verilog-ext-template-testbench-ts--process 'ports input-port-alist "<insert_inputs>")
+    (verilog-ext-template-testbench-ts--process 'ports output-port-alist "<insert_outputs>")
+    ;; Process others (refs, interfaces)
+    (when other-port-alist
+      (verilog-ext-template-testbench-ts--create-section "others")
+      (verilog-ext-template-testbench-ts--process 'ports other-port-alist "<insert_others>"))
+    ;; Process Inouts
+    (when inout-port-alist
+      (verilog-ext-template-testbench-ts--create-section "inouts")
+      (verilog-ext-template-testbench-ts--process 'ports other-port-alist "<insert_inouts>"))
+    ;; Header
+    (verilog-ext-template-header)
+    ;; Go to pending stuff
+    (goto-char (point-min))
+    (search-forward "// TODO")
+    (write-file outfile)))
+
+
+;;;;; Common
+(defun verilog-ext-template-testbench-simple-from-file (file outfile)
+  "Instantiate basic testbench from FILE's top module into OUTFILE."
+  (interactive "FSelect DUT from file:\nFOutput file: ")
+  (cond ((and (treesit-available-p)
+              (treesit-language-available-p 'verilog))
+         (verilog-ext-template-testbench-ts-simple-from-file file outfile))
+        ((eq major-mode 'verilog-mode)
+         (verilog-ext-template-testbench-auto-simple-from-file file outfile))
+        (t
+         (error "Only available with `verilog-mode' and `verilog-ts-mode'."))))
+
+(defun verilog-ext-template-testbench-simple ()
+  "Instantiate basic testbench from current buffer module."
+  (interactive)
+  (let* ((file (buffer-file-name))
+         (outfile (file-name-concat (file-name-directory file) (concat "tb_" (file-name-nondirectory file)))))
+    (cond ((and (treesit-available-p)
+                (treesit-language-available-p 'verilog))
+           (verilog-ext-template-testbench-ts-simple-from-file file outfile))
+          ((eq major-mode 'verilog-mode)
+           (verilog-ext-template-testbench-auto-simple-from-file file outfile))
+          (t
+           (error "Only compatible with `verilog-mode' or `verilog-ts-mode'.")))))
+
 
 ;;;; UVM agent
 (defun verilog-ext-template-uvm-agent (name base-dir)
@@ -805,9 +1144,9 @@ Create it only if in a project and the Makefile does not already exist."
   ("D"   (verilog-ext-template-def-logic) "Define signal")
   ("FS"  (verilog-ext-template-fsm)   "FSM Sync")
   ("FA"  (verilog-ext-template-fsm t) "FSM Async")
-  ("IS"  (call-interactively #'verilog-ext-template-inst-auto-from-file-simple) "Instance (simple)")
-  ("IP"  (call-interactively #'verilog-ext-template-inst-auto-from-file-params) "Instance (params)")
-  ("TS"  (call-interactively #'verilog-ext-template-testbench-simple-from-file) "TB from DUT (simple)")
+  ("IS"  (call-interactively #'verilog-ext-template-inst-from-file-simple) "Instance (simple)")
+  ("IP"  (call-interactively #'verilog-ext-template-inst-from-file-params) "Instance (params)")
+  ("TS"  (call-interactively #'verilog-ext-template-testbench-simple) "TB from DUT")
 
   ("uc"  (verilog-ext-template-insert-yasnippet "uc") "UVM Component" :column "UVM")
   ("uo"  (verilog-ext-template-insert-yasnippet "uo") "UVM Object")
