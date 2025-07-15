@@ -128,7 +128,7 @@ Configure in the same way as for `lsp-verilog'."
     (unless (and (string= verilog-mode-ls "svlangserver")
                  (string= verilog-ts-mode-ls "svlangserver"))
       (user-error "Ve-svlangserver not configured as current server for eglot"))
-    (eglot-execute-command (eglot-current-server) command args)
+    (eglot-execute eglot-server `(:command ,command :arguments ,args))
     (message "Ran svlangserver command: %s" command)))
 
 (defun verilog-ext-eglot-svlangserver-build-index ()
