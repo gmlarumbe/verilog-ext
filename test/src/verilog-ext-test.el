@@ -34,6 +34,11 @@
     (unless (member dir load-path)
       (add-to-list 'load-path dir))))
 
+;; Setup tree-sitter-systemverilog parser
+(when (treesit-available-p)
+  (add-to-list 'treesit-load-name-override-list '(verilog "libtree-sitter-systemverilog" "tree_sitter_systemverilog")))
+
+
 (require 'test-hdl)
 (require 'verilog-ext)
 
