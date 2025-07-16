@@ -572,12 +572,14 @@ Makes use of `verilog-mode' AUTOs."
   (verilog-ext-template-inst-auto-from-file file))
 
 ;;;;; tree-sitter
-(defun verilog-ext-template-inst-ts-from-file (file &optional params module)
+(defun verilog-ext-template-inst-ts-from-file (file &optional params module bind-sva)
   "Instantiate from FILE.
 
 Include parameters if PARAMS is non-nil.
 
 Instantiate MODULE from list of found modules in FILE.
+
+If BIND-SVA is non-nil insert a 'bind' template instead of an instance.
 
 If called with prefix-arg prompt for instance name.
 
@@ -608,7 +610,12 @@ Makes use of tree-sitter, valid for `verilog-ts-mode'."
       (setq butlast-ports (butlast port-list))
       (setq last-port (car (last port-list))))
     (save-excursion
+      ;; Module name / bind construct
+      (when bind-sva
+        (insert "bind "))
       (insert module-name)
+      (when bind-sva
+        (insert " " (read-string "Bind SVA module name: ")))
       ;; Parameters
       (when (and params param-list)
         (insert " # (\n")
@@ -655,6 +662,24 @@ Makes use of tree-sitter, valid for `verilog-ts-mode'."
   (unless (eq major-mode 'verilog-ts-mode)
     (error "Only available under `verilog-ts-mode'."))
   (verilog-ext-template-inst-ts-from-file file :params module))
+
+(defun verilog-ext-template-bind-from-file-simple (file)
+  "Insert bind construct for target dut in FILE with connected ports and no parameters.
+
+Makes use of tree-sitter, valid for `verilog-ts-mode'."
+  (interactive "FSelect DUT module from file:")
+  (unless (eq major-mode 'verilog-ts-mode)
+    (error "Only available under `verilog-ts-mode'."))
+  (verilog-ext-template-inst-ts-from-file file nil nil :bind))
+
+(defun verilog-ext-template-bind-from-file-params (file)
+  "Insert bind construct for target dut in FILE with connected with parameters.
+
+Makes use of tree-sitter, valid for `verilog-ts-mode'."
+  (interactive "FSelect DUT module from file:")
+  (unless (eq major-mode 'verilog-ts-mode)
+    (error "Only available under `verilog-ts-mode'."))
+  (verilog-ext-template-inst-ts-from-file file :params nil :bind))
 
 
 ;;;;; Common
@@ -1147,6 +1172,8 @@ Create it only if in a project and the Makefile does not already exist."
   ("IS"  (call-interactively #'verilog-ext-template-inst-from-file-simple) "Instance (simple)")
   ("IP"  (call-interactively #'verilog-ext-template-inst-from-file-params) "Instance (params)")
   ("TS"  (call-interactively #'verilog-ext-template-testbench-simple) "TB from DUT")
+  ("BS"  (call-interactively #'verilog-ext-template-bind-from-file-simple) "Bind (simple)")
+  ("BP"  (call-interactively #'verilog-ext-template-bind-from-file-params) "Bind (params)")
 
   ("uc"  (verilog-ext-template-insert-yasnippet "uc") "UVM Component" :column "UVM")
   ("uo"  (verilog-ext-template-insert-yasnippet "uo") "UVM Object")
@@ -1158,7 +1185,7 @@ Create it only if in a project and the Makefile does not already exist."
   ("ua"  (call-interactively #'verilog-ext-template-uvm-agent) "UVM Agent")
 
   ("/*"  (verilog-ext-template-insert-yasnippet "/*")       "Star comment" :column "Comments")
-  ("B"   (verilog-ext-template-block-comment)               "Block comment")
+  ("BC"  (verilog-ext-template-block-comment)               "Block comment")
   ("H"   (verilog-ext-template-header)                      "Header (no prompt)")
   ("hd"  (call-interactively #'verilog-ext-template-header) "Header")
 
