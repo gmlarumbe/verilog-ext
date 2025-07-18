@@ -80,69 +80,69 @@ module axi_demux #(
     // pass through if only one master port
     if (NoMstPorts == 32'h1) begin : gen_no_demux
         spill_register #(
-            .T      ( aw_chan_t  ),
-            .Bypass ( ~SpillAw   )
+            .T      (aw_chan_t),
+            .Bypass (~SpillAw)
         ) i_aw_spill_reg (
-            .clk_i   ( clk_i                    ),
-            .rst_ni  ( rst_ni                   ),
-            .valid_i ( slv_req_i.aw_valid       ),
-            .ready_o ( slv_resp_o.aw_ready      ),
-            .data_i  ( slv_req_i.aw             ),
-            .valid_o ( mst_reqs_o[0].aw_valid   ),
-            .ready_i ( mst_resps_i[0].aw_ready  ),
-            .data_o  ( mst_reqs_o[0].aw         )
+            .clk_i   (clk_i),
+            .rst_ni  (rst_ni),
+            .valid_i (slv_req_i.aw_valid),
+            .ready_o (slv_resp_o.aw_ready),
+            .data_i  (slv_req_i.aw),
+            .valid_o (mst_reqs_o[0].aw_valid),
+            .ready_i (mst_resps_i[0].aw_ready),
+            .data_o  (mst_reqs_o[0].aw)
         );
         spill_register #(
-            .T      ( w_chan_t  ),
-            .Bypass ( ~SpillW   )
+            .T      (w_chan_t),
+            .Bypass (~SpillW)
         ) i_w_spill_reg (
-            .clk_i   ( clk_i                   ),
-            .rst_ni  ( rst_ni                  ),
-            .valid_i ( slv_req_i.w_valid       ),
-            .ready_o ( slv_resp_o.w_ready      ),
-            .data_i  ( slv_req_i.w             ),
-            .valid_o ( mst_reqs_o[0].w_valid   ),
-            .ready_i ( mst_resps_i[0].w_ready  ),
-            .data_o  ( mst_reqs_o[0].w         )
+            .clk_i   (clk_i),
+            .rst_ni  (rst_ni),
+            .valid_i (slv_req_i.w_valid),
+            .ready_o (slv_resp_o.w_ready),
+            .data_i  (slv_req_i.w),
+            .valid_o (mst_reqs_o[0].w_valid),
+            .ready_i (mst_resps_i[0].w_ready),
+            .data_o  (mst_reqs_o[0].w)
         );
         spill_register #(
-            .T      ( b_chan_t ),
-            .Bypass ( ~SpillB      )
+            .T      (b_chan_t),
+            .Bypass (~SpillB)
         ) i_b_spill_reg (
-            .clk_i   ( clk_i                  ),
-            .rst_ni  ( rst_ni                 ),
-            .valid_i ( mst_resps_i[0].b_valid ),
-            .ready_o ( mst_reqs_o[0].b_ready  ),
-            .data_i  ( mst_resps_i[0].b       ),
-            .valid_o ( slv_resp_o.b_valid     ),
-            .ready_i ( slv_req_i.b_ready      ),
-            .data_o  ( slv_resp_o.b           )
+            .clk_i   (clk_i),
+            .rst_ni  (rst_ni),
+            .valid_i (mst_resps_i[0].b_valid),
+            .ready_o (mst_reqs_o[0].b_ready),
+            .data_i  (mst_resps_i[0].b),
+            .valid_o (slv_resp_o.b_valid),
+            .ready_i (slv_req_i.b_ready),
+            .data_o  (slv_resp_o.b)
         );
         spill_register #(
-            .T      ( ar_chan_t  ),
-            .Bypass ( ~SpillAr   )
+            .T      (ar_chan_t),
+            .Bypass (~SpillAr)
         ) i_ar_spill_reg (
-            .clk_i   ( clk_i                    ),
-            .rst_ni  ( rst_ni                   ),
-            .valid_i ( slv_req_i.ar_valid       ),
-            .ready_o ( slv_resp_o.ar_ready      ),
-            .data_i  ( slv_req_i.ar             ),
-            .valid_o ( mst_reqs_o[0].ar_valid   ),
-            .ready_i ( mst_resps_i[0].ar_ready  ),
-            .data_o  ( mst_reqs_o[0].ar         )
+            .clk_i   (clk_i),
+            .rst_ni  (rst_ni),
+            .valid_i (slv_req_i.ar_valid),
+            .ready_o (slv_resp_o.ar_ready),
+            .data_i  (slv_req_i.ar),
+            .valid_o (mst_reqs_o[0].ar_valid),
+            .ready_i (mst_resps_i[0].ar_ready),
+            .data_o  (mst_reqs_o[0].ar)
         );
         spill_register #(
-            .T      ( r_chan_t ),
-            .Bypass ( ~SpillR      )
+            .T      (r_chan_t),
+            .Bypass (~SpillR)
         ) i_r_spill_reg (
-            .clk_i   ( clk_i                  ),
-            .rst_ni  ( rst_ni                 ),
-            .valid_i ( mst_resps_i[0].r_valid ),
-            .ready_o ( mst_reqs_o[0].r_ready  ),
-            .data_i  ( mst_resps_i[0].r       ),
-            .valid_o ( slv_resp_o.r_valid     ),
-            .ready_i ( slv_req_i.r_ready      ),
-            .data_o  ( slv_resp_o.r           )
+            .clk_i   (clk_i),
+            .rst_ni  (rst_ni),
+            .valid_i (mst_resps_i[0].r_valid),
+            .ready_o (mst_reqs_o[0].r_ready),
+            .data_i  (mst_resps_i[0].r),
+            .valid_o (slv_resp_o.r_valid),
+            .ready_i (slv_req_i.r_ready),
+            .data_o  (slv_resp_o.r)
         );
 
         // other non degenerate cases
@@ -227,30 +227,30 @@ module axi_demux #(
         //--------------------------------------
         // spill register at the channel input
         spill_register #(
-            .T      ( aw_chan_t          ),
-            .Bypass ( ~SpillAw           ) // because module param indicates if we want a spill reg
+            .T      (aw_chan_t),
+            .Bypass (~SpillAw) // because module param indicates if we want a spill reg
         ) i_aw_channel_spill_reg (
-            .clk_i   ( clk_i              ),
-            .rst_ni  ( rst_ni             ),
-            .valid_i ( slv_req_i.aw_valid ),
-            .ready_o ( slv_aw_ready_chan  ),
-            .data_i  ( slv_req_i.aw       ),
-            .valid_o ( slv_aw_valid_chan  ),
-            .ready_i ( slv_aw_ready       ),
-            .data_o  ( slv_aw_chan        )
+            .clk_i   (clk_i),
+            .rst_ni  (rst_ni),
+            .valid_i (slv_req_i.aw_valid),
+            .ready_o (slv_aw_ready_chan),
+            .data_i  (slv_req_i.aw),
+            .valid_o (slv_aw_valid_chan),
+            .ready_i (slv_aw_ready),
+            .data_o  (slv_aw_chan)
         );
         spill_register #(
-            .T      ( select_t           ),
-            .Bypass ( ~SpillAw           ) // because module param indicates if we want a spill reg
+            .T      (select_t),
+            .Bypass (~SpillAw) // because module param indicates if we want a spill reg
         ) i_aw_select_spill_reg (
-            .clk_i   ( clk_i              ),
-            .rst_ni  ( rst_ni             ),
-            .valid_i ( slv_req_i.aw_valid ),
-            .ready_o ( slv_aw_ready_sel   ),
-            .data_i  ( slv_aw_select_i    ),
-            .valid_o ( slv_aw_valid_sel   ),
-            .ready_i ( slv_aw_ready       ),
-            .data_o  ( slv_aw_select      )
+            .clk_i   (clk_i),
+            .rst_ni  (rst_ni),
+            .valid_i (slv_req_i.aw_valid),
+            .ready_o (slv_aw_ready_sel),
+            .data_i  (slv_aw_select_i),
+            .valid_o (slv_aw_valid_sel),
+            .ready_i (slv_aw_ready),
+            .data_o  (slv_aw_select)
         );
         assign slv_resp_o.aw_ready = slv_aw_ready_chan & slv_aw_ready_sel;
         assign slv_aw_valid        = slv_aw_valid_chan & slv_aw_valid_sel;
@@ -329,23 +329,23 @@ module axi_demux #(
             assign aw_id_cnt_full     = 1'b0;
         end else begin : gen_aw_id_counter
             axi_demux_id_counters #(
-                .AxiIdBits         ( AxiLookBits    ),
-                .CounterWidth      ( IdCounterWidth ),
-                .mst_port_select_t ( select_t       )
+                .AxiIdBits         (AxiLookBits),
+                .CounterWidth      (IdCounterWidth),
+                .mst_port_select_t (select_t)
             ) i_aw_id_counter (
-                .clk_i                        ( clk_i                          ),
-                .rst_ni                       ( rst_ni                         ),
-                .lookup_axi_id_i              ( slv_aw_chan.id[0+:AxiLookBits] ),
-                .lookup_mst_select_o          ( lookup_aw_select               ),
-                .lookup_mst_select_occupied_o ( aw_select_occupied             ),
-                .full_o                       ( aw_id_cnt_full                 ),
-                .inject_axi_id_i              ( '0                             ),
-                .inject_i                     ( 1'b0                           ),
-                .push_axi_id_i                ( slv_aw_chan.id[0+:AxiLookBits] ),
-                .push_mst_select_i            ( slv_aw_select                  ),
-                .push_i                       ( w_cnt_up                       ),
-                .pop_axi_id_i                 ( slv_b_chan.id[0+:AxiLookBits]  ),
-                .pop_i                        ( slv_b_valid & slv_b_ready      )
+                .clk_i                        (clk_i),
+                .rst_ni                       (rst_ni),
+                .lookup_axi_id_i              (slv_aw_chan.id[0+:AxiLookBits]),
+                .lookup_mst_select_o          (lookup_aw_select),
+                .lookup_mst_select_occupied_o (aw_select_occupied),
+                .full_o                       (aw_id_cnt_full),
+                .inject_axi_id_i              ('0),
+                .inject_i                     (1'b0),
+                .push_axi_id_i                (slv_aw_chan.id[0+:AxiLookBits]),
+                .push_mst_select_i            (slv_aw_select),
+                .push_i                       (w_cnt_up),
+                .pop_axi_id_i                 (slv_b_chan.id[0+:AxiLookBits]),
+                .pop_i                        (slv_b_valid & slv_b_ready)
             );
             // pop from ID counter on outward transaction
         end
@@ -355,18 +355,18 @@ module axi_demux #(
         // AWs are only forwarded, if the counter is empty, or `w_select_q` is the same as
         // `slv_aw_select`.
         counter #(
-            .WIDTH           ( IdCounterWidth ),
-            .STICKY_OVERFLOW ( 1'b0           )
+            .WIDTH           (IdCounterWidth),
+            .STICKY_OVERFLOW (1'b0)
         ) i_counter_open_w (
             .clk_i,
             .rst_ni,
-            .clear_i    ( 1'b0                  ),
-            .en_i       ( w_cnt_up ^ w_cnt_down ),
-            .load_i     ( 1'b0                  ),
-            .down_i     ( w_cnt_down            ),
-            .d_i        ( '0                    ),
-            .q_o        ( w_open                ),
-            .overflow_o ( /*not used*/          )
+            .clear_i    (1'b0),
+            .en_i       (w_cnt_up ^ w_cnt_down),
+            .load_i     (1'b0),
+            .down_i     (w_cnt_down),
+            .d_i        ('0),
+            .q_o        (w_open),
+            .overflow_o (/*not used*/)
         );
 
         `FFLARN(w_select_q, slv_aw_select, w_cnt_up, select_t'(0), clk_i, rst_ni)
@@ -377,17 +377,17 @@ module axi_demux #(
         //  W Channel
         //--------------------------------------
         spill_register #(
-            .T      ( w_chan_t ),
-            .Bypass ( ~SpillW  )
+            .T      (w_chan_t),
+            .Bypass (~SpillW)
         ) i_w_spill_reg(
-            .clk_i   ( clk_i              ),
-            .rst_ni  ( rst_ni             ),
-            .valid_i ( slv_req_i.w_valid  ),
-            .ready_o ( slv_resp_o.w_ready ),
-            .data_i  ( slv_req_i.w        ),
-            .valid_o ( slv_w_valid        ),
-            .ready_i ( slv_w_ready        ),
-            .data_o  ( slv_w_chan         )
+            .clk_i   (clk_i),
+            .rst_ni  (rst_ni),
+            .valid_i (slv_req_i.w_valid),
+            .ready_o (slv_resp_o.w_ready),
+            .data_i  (slv_req_i.w),
+            .valid_o (slv_w_valid),
+            .ready_i (slv_w_ready),
+            .data_o  (slv_w_chan)
         );
 
         //--------------------------------------
@@ -395,37 +395,37 @@ module axi_demux #(
         //--------------------------------------
         // optional spill register
         spill_register #(
-            .T      ( b_chan_t ),
-            .Bypass ( ~SpillB  )
+            .T      (b_chan_t),
+            .Bypass (~SpillB)
         ) i_b_spill_reg (
-            .clk_i   ( clk_i              ),
-            .rst_ni  ( rst_ni             ),
-            .valid_i ( slv_b_valid        ),
-            .ready_o ( slv_b_ready        ),
-            .data_i  ( slv_b_chan         ),
-            .valid_o ( slv_resp_o.b_valid ),
-            .ready_i ( slv_req_i.b_ready  ),
-            .data_o  ( slv_resp_o.b       )
+            .clk_i   (clk_i),
+            .rst_ni  (rst_ni),
+            .valid_i (slv_b_valid),
+            .ready_o (slv_b_ready),
+            .data_i  (slv_b_chan),
+            .valid_o (slv_resp_o.b_valid),
+            .ready_i (slv_req_i.b_ready),
+            .data_o  (slv_resp_o.b)
         );
 
         // Arbitration of the different B responses
         rr_arb_tree #(
-            .NumIn     ( NoMstPorts ),
-            .DataType  ( b_chan_t   ),
-            .AxiVldRdy ( 1'b1       ),
-            .LockIn    ( 1'b1       )
+            .NumIn     (NoMstPorts),
+            .DataType  (b_chan_t),
+            .AxiVldRdy (1'b1),
+            .LockIn    (1'b1)
         ) i_b_mux (
-            .clk_i   ( clk_i         ),
-            .rst_ni  ( rst_ni        ),
-            .flush_i ( 1'b0          ),
-            .rr_i    ( '0            ),
-            .req_i   ( mst_b_valids  ),
-            .gnt_o   ( mst_b_readies ),
-            .data_i  ( mst_b_chans   ),
-            .gnt_i   ( slv_b_ready   ),
-            .req_o   ( slv_b_valid   ),
-            .data_o  ( slv_b_chan    ),
-            .idx_o   (               )
+            .clk_i   (clk_i),
+            .rst_ni  (rst_ni),
+            .flush_i (1'b0),
+            .rr_i    ('0),
+            .req_i   (mst_b_valids),
+            .gnt_o   (mst_b_readies),
+            .data_i  (mst_b_chans),
+            .gnt_i   (slv_b_ready),
+            .req_o   (slv_b_valid),
+            .data_o  (slv_b_chan),
+            .idx_o   ()
         );
 
         //--------------------------------------
@@ -434,30 +434,30 @@ module axi_demux #(
         ar_chan_t slv_ar_chan;
         select_t  slv_ar_select;
         spill_register #(
-            .T      ( ar_chan_t          ),
-            .Bypass ( ~SpillAr           )
+            .T      (ar_chan_t),
+            .Bypass (~SpillAr)
         ) i_ar_chan_spill_reg (
-            .clk_i   ( clk_i              ),
-            .rst_ni  ( rst_ni             ),
-            .valid_i ( slv_req_i.ar_valid ),
-            .ready_o ( slv_ar_ready_chan  ),
-            .data_i  ( slv_req_i.ar       ),
-            .valid_o ( ar_valid_chan      ),
-            .ready_i ( slv_ar_ready       ),
-            .data_o  ( slv_ar_chan        )
+            .clk_i   (clk_i),
+            .rst_ni  (rst_ni),
+            .valid_i (slv_req_i.ar_valid),
+            .ready_o (slv_ar_ready_chan),
+            .data_i  (slv_req_i.ar),
+            .valid_o (ar_valid_chan),
+            .ready_i (slv_ar_ready),
+            .data_o  (slv_ar_chan)
         );
         spill_register #(
-            .T      ( select_t           ),
-            .Bypass ( ~SpillAr           )
+            .T      (select_t),
+            .Bypass (~SpillAr)
         ) i_ar_sel_spill_reg (
-            .clk_i   ( clk_i              ),
-            .rst_ni  ( rst_ni             ),
-            .valid_i ( slv_req_i.ar_valid ),
-            .ready_o ( slv_ar_ready_sel   ),
-            .data_i  ( slv_ar_select_i    ),
-            .valid_o ( ar_valid_sel       ),
-            .ready_i ( slv_ar_ready       ),
-            .data_o  ( slv_ar_select      )
+            .clk_i   (clk_i),
+            .rst_ni  (rst_ni),
+            .valid_i (slv_req_i.ar_valid),
+            .ready_o (slv_ar_ready_sel),
+            .data_i  (slv_ar_select_i),
+            .valid_o (ar_valid_sel),
+            .ready_i (slv_ar_ready),
+            .data_o  (slv_ar_select)
         );
         assign slv_resp_o.ar_ready = slv_ar_ready_chan & slv_ar_ready_sel;
         assign slv_ar_valid        = ar_valid_chan & ar_valid_sel;
@@ -522,23 +522,23 @@ module axi_demux #(
             assign ar_id_cnt_full     = 1'b0;
         end else begin : gen_ar_id_counter
             axi_demux_id_counters #(
-                .AxiIdBits         ( AxiLookBits    ),
-                .CounterWidth      ( IdCounterWidth ),
-                .mst_port_select_t ( select_t       )
+                .AxiIdBits         (AxiLookBits),
+                .CounterWidth      (IdCounterWidth),
+                .mst_port_select_t (select_t)
             ) i_ar_id_counter (
-                .clk_i                        ( clk_i                                       ),
-                .rst_ni                       ( rst_ni                                      ),
-                .lookup_axi_id_i              ( slv_ar_chan.id[0+:AxiLookBits]              ),
-                .lookup_mst_select_o          ( lookup_ar_select                            ),
-                .lookup_mst_select_occupied_o ( ar_select_occupied                          ),
-                .full_o                       ( ar_id_cnt_full                              ),
-                .inject_axi_id_i              ( slv_aw_chan.id[0+:AxiLookBits]              ),
-                .inject_i                     ( atop_inject                                 ),
-                .push_axi_id_i                ( slv_ar_chan.id[0+:AxiLookBits]              ),
-                .push_mst_select_i            ( slv_ar_select                               ),
-                .push_i                       ( ar_push                                     ),
-                .pop_axi_id_i                 ( slv_r_chan.id[0+:AxiLookBits]               ),
-                .pop_i                        ( slv_r_valid & slv_r_ready & slv_r_chan.last )
+                .clk_i                        (clk_i),
+                .rst_ni                       (rst_ni),
+                .lookup_axi_id_i              (slv_ar_chan.id[0+:AxiLookBits]),
+                .lookup_mst_select_o          (lookup_ar_select),
+                .lookup_mst_select_occupied_o (ar_select_occupied),
+                .full_o                       (ar_id_cnt_full),
+                .inject_axi_id_i              (slv_aw_chan.id[0+:AxiLookBits]),
+                .inject_i                     (atop_inject),
+                .push_axi_id_i                (slv_ar_chan.id[0+:AxiLookBits]),
+                .push_mst_select_i            (slv_ar_select),
+                .push_i                       (ar_push),
+                .pop_axi_id_i                 (slv_r_chan.id[0+:AxiLookBits]),
+                .pop_i                        (slv_r_valid & slv_r_ready & slv_r_chan.last)
             );
         end
 
@@ -547,37 +547,37 @@ module axi_demux #(
         //--------------------------------------
         // optional spill register
         spill_register #(
-            .T      ( r_chan_t ),
-            .Bypass ( ~SpillR  )
+            .T      (r_chan_t),
+            .Bypass (~SpillR)
         ) i_r_spill_reg (
-            .clk_i   ( clk_i              ),
-            .rst_ni  ( rst_ni             ),
-            .valid_i ( slv_r_valid        ),
-            .ready_o ( slv_r_ready        ),
-            .data_i  ( slv_r_chan         ),
-            .valid_o ( slv_resp_o.r_valid ),
-            .ready_i ( slv_req_i.r_ready  ),
-            .data_o  ( slv_resp_o.r       )
+            .clk_i   (clk_i),
+            .rst_ni  (rst_ni),
+            .valid_i (slv_r_valid),
+            .ready_o (slv_r_ready),
+            .data_i  (slv_r_chan),
+            .valid_o (slv_resp_o.r_valid),
+            .ready_i (slv_req_i.r_ready),
+            .data_o  (slv_resp_o.r)
         );
 
         // Arbitration of the different r responses
         rr_arb_tree #(
-            .NumIn     ( NoMstPorts ),
-            .DataType  ( r_chan_t   ),
-            .AxiVldRdy ( 1'b1       ),
-            .LockIn    ( 1'b1       )
+            .NumIn     (NoMstPorts),
+            .DataType  (r_chan_t),
+            .AxiVldRdy (1'b1),
+            .LockIn    (1'b1)
         ) i_r_mux (
-            .clk_i   ( clk_i         ),
-            .rst_ni  ( rst_ni        ),
-            .flush_i ( 1'b0          ),
-            .rr_i    ( '0            ),
-            .req_i   ( mst_r_valids  ),
-            .gnt_o   ( mst_r_readies ),
-            .data_i  ( mst_r_chans   ),
-            .gnt_i   ( slv_r_ready   ),
-            .req_o   ( slv_r_valid   ),
-            .data_o  ( slv_r_chan    ),
-            .idx_o   (               )
+            .clk_i   (clk_i),
+            .rst_ni  (rst_ni),
+            .flush_i (1'b0),
+            .rr_i    ('0),
+            .req_i   (mst_r_valids),
+            .gnt_o   (mst_r_readies),
+            .data_i  (mst_r_chans),
+            .gnt_i   (slv_r_ready),
+            .req_o   (slv_r_valid),
+            .data_o  (slv_r_chan),
+            .idx_o   ()
         );
 
         assign ar_ready = ar_valid & mst_resps_i[slv_ar_select].ar_ready;
@@ -770,19 +770,19 @@ module axi_demux_id_counters #(
         end
 
         delta_counter #(
-            .WIDTH           ( CounterWidth ),
-            .STICKY_OVERFLOW ( 1'b0         )
+            .WIDTH           (CounterWidth),
+            .STICKY_OVERFLOW (1'b0)
         ) i_in_flight_cnt (
-            .clk_i      ( clk_i     ),
-            .rst_ni     ( rst_ni    ),
-            .clear_i    ( 1'b0      ),
-            .en_i       ( cnt_en    ),
-            .load_i     ( 1'b0      ),
-            .down_i     ( cnt_down  ),
-            .delta_i    ( cnt_delta ),
-            .d_i        ( '0        ),
-            .q_o        ( in_flight ),
-            .overflow_o ( overflow  )
+            .clk_i      (clk_i),
+            .rst_ni     (rst_ni),
+            .clear_i    (1'b0),
+            .en_i       (cnt_en),
+            .load_i     (1'b0),
+            .down_i     (cnt_down),
+            .delta_i    (cnt_delta),
+            .d_i        ('0),
+            .q_o        (in_flight),
+            .overflow_o (overflow)
         );
         assign occupied[i] = |in_flight;
         assign cnt_full[i] = overflow | (&in_flight);
@@ -862,35 +862,35 @@ module axi_demux_intf #(
     end
 
     axi_demux #(
-        .AxiIdWidth  ( AXI_ID_WIDTH  ), // ID Width
-        .AtopSupport ( ATOP_SUPPORT  ),
-        .aw_chan_t   (  aw_chan_t    ), // AW Channel Type
-        .w_chan_t    (   w_chan_t    ), //  W Channel Type
-        .b_chan_t    (   b_chan_t    ), //  B Channel Type
-        .ar_chan_t   (  ar_chan_t    ), // AR Channel Type
-        .r_chan_t    (   r_chan_t    ), //  R Channel Type
-        .axi_req_t   (  axi_req_t    ),
-        .axi_resp_t  ( axi_resp_t    ),
-        .NoMstPorts  ( NO_MST_PORTS  ),
-        .MaxTrans    ( MAX_TRANS     ),
-        .AxiLookBits ( AXI_LOOK_BITS ),
-        .UniqueIds   ( UNIQUE_IDS    ),
-        .SpillAw     ( SPILL_AW      ),
-        .SpillW      ( SPILL_W       ),
-        .SpillB      ( SPILL_B       ),
-        .SpillAr     ( SPILL_AR      ),
-        .SpillR      ( SPILL_R       )
+        .AxiIdWidth  (AXI_ID_WIDTH), // ID Width
+        .AtopSupport (ATOP_SUPPORT),
+        .aw_chan_t   (aw_chan_t),    // AW Channel Type
+        .w_chan_t    (w_chan_t),     //  W Channel Type
+        .b_chan_t    (b_chan_t),     //  B Channel Type
+        .ar_chan_t   (ar_chan_t),    // AR Channel Type
+        .r_chan_t    (r_chan_t),     //  R Channel Type
+        .axi_req_t   (axi_req_t),
+        .axi_resp_t  (axi_resp_t),
+        .NoMstPorts  (NO_MST_PORTS),
+        .MaxTrans    (MAX_TRANS),
+        .AxiLookBits (AXI_LOOK_BITS),
+        .UniqueIds   (UNIQUE_IDS),
+        .SpillAw     (SPILL_AW),
+        .SpillW      (SPILL_W),
+        .SpillB      (SPILL_B),
+        .SpillAr     (SPILL_AR),
+        .SpillR      (SPILL_R)
     ) i_axi_demux (
-        .clk_i,   // Clock
-        .rst_ni,  // Asynchronous reset active low
-        .test_i,  // Testmode enable
+        .clk_i,  // Clock
+        .rst_ni, // Asynchronous reset active low
+        .test_i, // Testmode enable
         // slave port
-        .slv_req_i       ( slv_req         ),
-        .slv_aw_select_i ( slv_aw_select_i ),
-        .slv_ar_select_i ( slv_ar_select_i ),
-        .slv_resp_o      ( slv_resp        ),
+        .slv_req_i       (slv_req),
+        .slv_aw_select_i (slv_aw_select_i),
+        .slv_ar_select_i (slv_ar_select_i),
+        .slv_resp_o      (slv_resp),
         // master port
-        .mst_reqs_o      ( mst_req         ),
-        .mst_resps_i     ( mst_resp        )
+        .mst_reqs_o      (mst_req),
+        .mst_resps_i     (mst_resp)
     );
 endmodule

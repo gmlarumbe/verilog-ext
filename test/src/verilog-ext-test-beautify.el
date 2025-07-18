@@ -24,9 +24,10 @@
 ;;
 ;;; Code:
 
-(defconst verilog-ext-test-beautify-file-list (mapcar (lambda (file)
-                                                        (file-name-concat verilog-ext-test-files-common-dir file))
-                                                      '("axi_demux.sv" "instances.sv" "ucontroller.sv")))
+(defconst verilog-ext-test-beautify-file-list (append (mapcar (lambda (file)
+                                                                (file-name-concat verilog-ext-test-files-common-dir file))
+                                                              '("axi_demux.sv" "instances.sv" "ucontroller.sv"))
+                                                      (list (file-name-concat verilog-ext-test-files-dir "github/verilog_ext_29.sv"))))
 
 (defconst verilog-ext-test-ref-dir-beautify (file-name-concat verilog-ext-test-ref-dir "beautify"))
 (defconst verilog-ext-test-dump-dir-beautify (file-name-concat verilog-ext-test-dump-dir "beautify"))

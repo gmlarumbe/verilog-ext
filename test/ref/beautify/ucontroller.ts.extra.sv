@@ -81,11 +81,11 @@ module ucontroller # (
 
     // Instances
     cpu I_CPU (
-        .Clk                          ,
-        .Rst_n                        ,
+        .Clk,
+        .Rst_n,
         // ROM Interface
-        .ROM_Data                     ,
-        .ROM_Addr                     ,
+        .ROM_Data,
+        .ROM_Addr,
         // RAM Interface
         .RAM_Addr     ( CPU_Address  ),
         .DataOut      ( CPU_DataOut  ),
@@ -99,46 +99,46 @@ module ucontroller # (
         .DMA_Ready    ( Dma_Tx_Ready ),
         .DMA_Tx_Start ( Dma_Tx_Start ),
         // ALU inteface
-        .ALU_op                       ,
-        .ALU_DataOut                  ,
-        .ALU_DataIn                   ,
-        .FlagZ                        ,
-        .FlagC                        ,
-        .FlagN                        ,
+        .ALU_op,
+        .ALU_DataOut,
+        .ALU_DataIn,
+        .FlagZ,
+        .FlagC,
+        .FlagN,
         .FlagE
     );
 
 
     alu I_ALU (
-        .Clk                    ,
-        .Rst_n                  ,
+        .Clk,
+        .Rst_n,
         .InData  ( ALU_DataIn  ),
         .OutData ( ALU_DataOut ),
-        .ALU_op                 ,
-        .FlagZ                  ,
-        .FlagC                  ,
-        .FlagN                  ,
+        .ALU_op,
+        .FlagZ,
+        .FlagC,
+        .FlagN,
         .FlagE
     );
 
 
     dma I_DMA (
-        .Clk                    ,
-        .Rst_n                  ,
+        .Clk,
+        .Rst_n,
         // CPU interface
-        .Bus_grant              ,
-        .Bus_req                ,
-        .Dma_Tx_Start           ,
-        .Dma_Tx_Ready           ,
-        .Dma_Idle               ,
+        .Bus_grant,
+        .Bus_req,
+        .Dma_Tx_Start,
+        .Dma_Tx_Ready,
+        .Dma_Idle,
         // Serial interface
-        .RX_Data                ,
-        .RX_Empty               ,
-        .RX_Full                ,
-        .Data_Read              ,
-        .TX_Ready               ,
-        .TX_Data                ,
-        .TX_Valid               ,
+        .RX_Data,
+        .RX_Empty,
+        .RX_Full,
+        .Data_Read,
+        .TX_Ready,
+        .TX_Data,
+        .TX_Valid,
         // Ram interface
         .Address ( DMA_Address ),
         .DataOut ( DMA_DataOut ),
@@ -153,57 +153,57 @@ module ucontroller # (
         .FREQ_CLK ( FREQ_CLK ),
         .TX_SPEED ( TX_SPEED )
     ) I_UART (
-        .Clk                   ,
-        .Rst_n                 ,
+        .Clk,
+        .Rst_n,
         // TX
-        .TX_Valid              ,
+        .TX_Valid,
         .TX_DataIn ( TX_Data  ),
-        .TX_Ready              ,
-        .TXD                   ,
+        .TX_Ready,
+        .TXD,
         // RX
-        .Data_Read             ,
+        .Data_Read,
         .Data_Out  ( RX_Data  ),
-        .RXD                   ,
+        .RXD,
         .Full      ( RX_Full  ),
         .Empty     ( RX_Empty )
     );
 
 
     ram_arbiter I_RAM_ARBITER (
-        .Clk                        ,
-        .Rst_n                      ,
+        .Clk,
+        .Rst_n,
         .DMA_Bus_req   ( Bus_req   ),
         .DMA_Bus_grant ( Bus_grant ),
         .DMA_Idle      ( Dma_Idle  ),
-        .CPU_DataOut                ,
-        .DMA_DataOut                ,
-        .RAM_DataIn                 ,
-        .CPU_Address                ,
-        .DMA_Address                ,
-        .RAM_Address                ,
-        .CPU_Cs                     ,
-        .DMA_Cs                     ,
-        .RAM_Cs                     ,
-        .CPU_Oen                    ,
-        .DMA_Oen                    ,
-        .RAM_Oen                    ,
-        .CPU_Wen                    ,
-        .DMA_Wen                    ,
+        .CPU_DataOut,
+        .DMA_DataOut,
+        .RAM_DataIn,
+        .CPU_Address,
+        .DMA_Address,
+        .RAM_Address,
+        .CPU_Cs,
+        .DMA_Cs,
+        .RAM_Cs,
+        .CPU_Oen,
+        .DMA_Oen,
+        .RAM_Oen,
+        .CPU_Wen,
+        .DMA_Wen,
         .RAM_Wen
     );
 
 
 
     ram I_RAM (
-        .Clk                    ,
-        .Rst_n                  ,
+        .Clk,
+        .Rst_n,
         .Cs      ( RAM_Cs      ),
         .Wen     ( RAM_Wen     ),
         .Oen     ( RAM_Oen     ),
         .Address ( RAM_Address ),
         .DataIn  ( RAM_DataIn  ),
         .DataOut ( RAM_DataOut ),
-        .Switches               ,
+        .Switches,
         .Temp
     );
 

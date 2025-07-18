@@ -78,10 +78,7 @@
   "Align THING of current module at point (ports/parameters)."
   (let ((case-fold-search nil)
         (re-open-par          "\\(\\s-*\\)(")                 ; Port opening parenthesis
-        (re-blank-open-par    "\\(\\s-*\\)(\\(\\s-*\\)")      ; Set 1 blank after port opening parenthesis
         (re-blank-closing-par "\\(\\s-*\\))")                 ; Set 1 blank before port closing parenthesis
-        (re-port-comma        "\\(\\s-*\\),")                 ; Remove blanks between closing parenthesis and port comma
-        (re-comment           "\\(\\(\\,\\|)\\)\\s-*\\)\/\/") ; Leave 1 blank before port inline comments
         (current-ids (verilog-ext-instance-at-point))
         (idx (cond ((eq thing 'parameters) 1)
                    ((eq thing 'ports) 2)
@@ -89,10 +86,15 @@
         (beg (make-marker))
         (end (make-marker))
         (comment-end (make-marker))
+        (indent-level 0)
+        (f-space (if verilog-ext-beautify-instance-extra
+                     #'just-one-space
+                   #'delete-horizontal-space))
         current-module)
     (unless current-ids
       (user-error "Not inside an instance!"))
     (setq current-module (car current-ids))
+    ;; Calculate beautifying boundaries
     (save-excursion
       (goto-char (match-beginning idx))
       (verilog-re-search-forward "(" nil t)
@@ -103,15 +105,44 @@
       (set-marker comment-end (point))
       (verilog-backward-syntactic-ws)
       (set-marker end (point)))
-    (align-regexp beg end re-open-par 1 1 t)
-    (when verilog-ext-beautify-instance-extra
-      (align-regexp beg end re-blank-open-par 2 1 t)
-      (align-regexp beg end re-blank-closing-par 1 1 t)
-      (align-regexp beg end re-port-comma 1 0 t)
-      (align-regexp beg comment-end re-comment 1 2 nil))
-    (if (eq idx 1)
-        (message "Parameters of %s aligned..." current-module)
-      (message "Ports of %s aligned..." current-module))))
+    ;; Calculate indent level
+    (when (not (equal (line-number-at-pos beg) (line-number-at-pos end))) ; Ignore one-liners
+      (save-excursion
+        (goto-char beg)
+        (while (verilog-re-search-forward re-open-par end t)
+          (funcall f-space)
+          (verilog-ext-backward-syntactic-ws)
+          (backward-char)
+          (just-one-space)
+          (when (> (current-column) indent-level)
+            (setq indent-level (current-column)))
+          (verilog-re-search-forward re-blank-closing-par end t)
+          (backward-char)
+          (funcall f-space)))
+      ;; Indent
+      (save-excursion
+        (goto-char beg)
+        (while (verilog-re-search-forward re-open-par end t)
+          (backward-char)
+          (indent-to indent-level)
+          (forward-char)))
+      ;; Calculate indent level
+      (when verilog-ext-beautify-instance-extra
+        (save-excursion
+          (goto-char beg)
+          (while (verilog-re-search-forward re-blank-closing-par end t)
+            (when (> (current-column) indent-level)
+              (setq indent-level (current-column)))))
+        ;; Indent
+        (save-excursion
+          (goto-char beg)
+          (while (verilog-re-search-forward re-blank-closing-par end t)
+            (backward-char)
+            (indent-to (1- indent-level))
+            (forward-char))))
+      (if (eq idx 1)
+          (message "Parameters of %s aligned..." current-module)
+        (message "Ports of %s aligned..." current-module)))))
 
 (defun verilog-ext-beautify--module-at-point-align-ports ()
   "Align ports of current module."

@@ -74,13 +74,13 @@ module instances;
 
 
     // Interfaces
-    test_if I_TEST_IF (.clk ( clk ), .rst_n( rst_n ));
+    test_if I_TEST_IF (.clk(clk), .rst_n(rst_n));
 
-    test_if_params # (.param1 ( param1 ), .param2( param2 )) ITEST_IF_PARAMS (.clk ( clk ), .rst_n( rst_n ));
+    test_if_params # (.param1(param1), .param2(param2)) ITEST_IF_PARAMS (.clk(clk), .rst_n(rst_n));
 
-    test_if_params_array # (.param1 ( param1 ), .param2(        param2 )) ITEST_IF_PARAMS_ARRAY[5:0] (.clk ( clk ), .rst_n( rst_n ));
+    test_if_params_array # (.param1(param1), .param2(param2)) ITEST_IF_PARAMS_ARRAY[5:0] (.clk(clk), .rst_n(rst_n));
 
-    test_if_params_empty #() I_TEST_IF_PARAMS_EMPTY (.clk ( clk ), .rst_n( rst_n ));
+    test_if_params_empty #() I_TEST_IF_PARAMS_EMPTY (.clk(clk), .rst_n(rst_n));
 
 
     // Comments and whitespaces

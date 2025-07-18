@@ -358,8 +358,8 @@ module axi_demux #(
             .WIDTH           ( IdCounterWidth ),
             .STICKY_OVERFLOW ( 1'b0           )
         ) i_counter_open_w (
-            .clk_i                               ,
-            .rst_ni                              ,
+            .clk_i,
+            .rst_ni,
             .clear_i    ( 1'b0                  ),
             .en_i       ( w_cnt_up ^ w_cnt_down ),
             .load_i     ( 1'b0                  ),
@@ -881,9 +881,9 @@ module axi_demux_intf #(
         .SpillAr     ( SPILL_AR      ),
         .SpillR      ( SPILL_R       )
     ) i_axi_demux (
-        .clk_i                              , // Clock
-        .rst_ni                             , // Asynchronous reset active low
-        .test_i                             , // Testmode enable
+        .clk_i,  // Clock
+        .rst_ni, // Asynchronous reset active low
+        .test_i, // Testmode enable
         // slave port
         .slv_req_i       ( slv_req         ),
         .slv_aw_select_i ( slv_aw_select_i ),
