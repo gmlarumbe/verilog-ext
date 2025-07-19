@@ -180,6 +180,42 @@
     "`UVM_VERSION_STRING" "`UVM_MAJOR_REV_1" "`UVM_MINOR_REV_2" "`UVM_VERSION_1_2"
     "`UVM_POST_VERSION_1_1"))
 
+(defconst verilog-ext-capf-class-builtin-methods '("randomize"))
+
+(defconst verilog-ext-capf-queue-builtin-methods
+  '("insert" "pop_front" "pop_back" "push_front" "push_back" "size" "delete"))
+
+(defconst verilog-ext-capf-array-builtin-methods
+  '("size" "delete"
+    ;; 7.12.1 Array locator method
+    "find" "find_index" "find_first" "find_first_index" "find_last" "find_last_index"
+    "min" "max" "unique" "unique_index"
+    ;; 7.12.2 Array ordering methods
+    "reverse" "sort" "rsort" "shuffle"
+    ;; 7.12.3 Array reduction methods
+    "sum" "product" "and" "or" "xor"
+    ;; 7.12.5 Array mapping method
+    "map"))
+
+(defconst verilog-ext-capf-string-builtin-methods
+  '("len" "putc" "getc" "toupper" "tolower" "compare" "icompare"
+    "substr" "atoi" "atohex" "atooct" "atobin" "atoreal" "itoa" "hextoa"
+    "octtoa" "bintoa" "realtoa"))
+
+(defconst verilog-ext-capf-enum-builtin-methods
+  '("name" "num" "first" "last" "next" "prev"))
+
+(defconst verilog-ext-capf-associative-array-builtin-methods
+  '("exists" "num" "first" "last" "next" "prev"))
+
+
+
+(defun verilog-ext-capf--add-parens (fn-list)
+  "Return list with parenthesis concatenated at the end of FN-LIST."
+  (mapcar (lambda (fn)
+            (concat fn "()"))
+          fn-list))
+
 (defun verilog-ext-capf-get-table-entry (table &optional tag)
   "Get symbol at point entry from capf TABLE.
 
@@ -187,11 +223,21 @@ If TAG is nil, search for the entry that corresponds to `symbol-at-point'.
 Otherwise search for TAG entry."
   (unless tag
     (setq tag (thing-at-point 'symbol :no-props)))
-  (gethash tag table))
+  (when table
+    (gethash tag table)))
 
 (defun verilog-ext-capf-get-entry-items (entry)
   "Get items from tags table ENTRY."
-  (plist-get entry :items))
+  (let* ((items (plist-get entry :items))
+         (locs (plist-get entry :locs))
+         (type (plist-get (car locs) :type)))
+    (cond ((equal type "class_declaration")
+           (setq items (append items (verilog-ext-capf--add-parens verilog-ext-capf-class-builtin-methods))))
+          ((and type (equal (car (split-string type)) "enum"))
+           (setq items (verilog-ext-capf--add-parens verilog-ext-capf-associative-array-builtin-methods)))
+          (t
+           nil))
+    items))
 
 (defun verilog-ext-capf-get-entry-type (entry)
   "Get type from tags table ENTRY.
@@ -204,7 +250,16 @@ Only returns the type of the first occurrence in the :locs property of ENTRY."
   "Get completion candidates from TABLE.
 
 If optional arg TAG is nil, get completions for symbol at point."
-  (verilog-ext-capf-get-entry-items (verilog-ext-capf-get-table-entry table tag)))
+  (cond ((and tag (string-match "\\[\\$\\]$" tag))
+         (verilog-ext-capf--add-parens verilog-ext-capf-queue-builtin-methods))
+        ((and tag (string-match "\\[[0-9]*\\]$" tag))
+         (verilog-ext-capf--add-parens verilog-ext-capf-array-builtin-methods))
+        ((and tag (string-match "\\[[0-9a-zA-Z\*]+\\]$" tag))
+         (verilog-ext-capf--add-parens verilog-ext-capf-associative-array-builtin-methods))
+        ((and tag (string= "string" tag))
+         (verilog-ext-capf--add-parens verilog-ext-capf-string-builtin-methods))
+        (t
+         (verilog-ext-capf-get-entry-items (verilog-ext-capf-get-table-entry table tag)))))
 
 (defun verilog-ext-capf--dot-completion-bounds ()
   "Return bounds of dot completion for `completion-at-point'.

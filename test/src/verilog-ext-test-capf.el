@@ -41,7 +41,24 @@
       (1782 "fun")        ; function completion
       (4626 "init")       ; init_rom task call
       (point-max "pac"))) ; create package at the end of the file
-    ))
+    (,(file-name-concat verilog-ext-test-files-github-dir "verilog_ext_3.sv")
+     ((668 "") ; cls_inst
+      (678 "") ; var2
+      (688 "") ; var3
+      (698 "") ; var4
+      (708 "") ; var5
+      (718 "") ; var6
+      (728 "") ; var7
+      (738 "") ; var8
+      (751 "") ; my_type
+      (762 "") ; var_e
+      (769 "") ; s
+      (805 "") ; foo_pkg::
+      (832 "") ; foo_pkg::pkg_cls::
+      (867 "") ; foo_pkg::pkg_cls::pkg_var.
+      (885 "") ; pkg_cls::
+      (895 "") ; $
+      (904 ""))))) ; `
 
 (defun verilog-ext-test-capf-anotation-fn ()
   (mapcar (lambda (cand)
@@ -54,7 +71,9 @@
     ;; Generate/update tags for test project
     (verilog-ext-test-tags-get :backend 'tree-sitter
                                :root verilog-ext-test-ucontroller-dir
-                               :dirs `(,verilog-ext-test-ucontroller-rtl-dir ,verilog-ext-test-ucontroller-tb-dir)
+                               :dirs `(,verilog-ext-test-ucontroller-rtl-dir
+                                       ,verilog-ext-test-ucontroller-tb-dir
+                                       ,verilog-ext-test-files-github-dir)
                                :rel-path t)
     (dolist (file-pos-and-init-string verilog-ext-test-capf-file-pos-init-string-alist)
       (let ((file (car file-pos-and-init-string))
@@ -82,7 +101,9 @@
     ;; Generate/update tags for test project
     (verilog-ext-test-tags-get :backend 'tree-sitter
                                :root verilog-ext-test-ucontroller-dir
-                               :dirs `(,verilog-ext-test-ucontroller-rtl-dir ,verilog-ext-test-ucontroller-tb-dir)
+                               :dirs `(,verilog-ext-test-ucontroller-rtl-dir
+                                       ,verilog-ext-test-ucontroller-tb-dir
+                                       ,verilog-ext-test-files-github-dir)
                                :rel-path t)
     ;; Test each file
     (dolist (file-pos-and-init-string verilog-ext-test-capf-file-pos-init-string-alist)
@@ -102,7 +123,9 @@
     ;; Generate/update tags for test project
     (verilog-ext-test-tags-get :backend 'tree-sitter
                                :root verilog-ext-test-ucontroller-dir
-                               :dirs `(,verilog-ext-test-ucontroller-rtl-dir ,verilog-ext-test-ucontroller-tb-dir)
+                               :dirs `(,verilog-ext-test-ucontroller-rtl-dir
+                                       ,verilog-ext-test-ucontroller-tb-dir
+                                       ,verilog-ext-test-files-github-dir)
                                :rel-path t)
     ;; Test each file
     (dolist (file-pos-and-init-string verilog-ext-test-capf-file-pos-init-string-alist)
