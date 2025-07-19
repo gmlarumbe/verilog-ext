@@ -22,7 +22,7 @@
 	       ("BIT_CYCLES" :file "../files/common/tb_program.sv" :line 39)
 	       (:type "local_parameter_declaration" :desc "    localparam integer BIT_CYCLES = FREQ_CLK / TX_SPEED;" :col 4 :parent "tb_program")
 	       ("ROM" :file "../files/common/tb_program.sv" :line 55)
-	       (:type "logic [11:0]" :desc "    logic [11:0] ROM [4096];" :col 17 :parent "tb_program")
+	       (:type "logic [11:0] [4096]" :desc "    logic [11:0] ROM [4096];" :col 17 :parent "tb_program")
 	       ("init_rom" :file "../files/common/tb_program.sv" :line 58)
 	       (:type "task_declaration" :desc "    task init_rom ();" :col 4 :parent "tb_program")
 	       ("init_values" :file "../files/common/tb_program.sv" :line 99)

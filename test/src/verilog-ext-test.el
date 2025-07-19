@@ -48,6 +48,7 @@
 (defconst verilog-ext-test-dump-dir (file-name-concat verilog-ext-test-dir "dump"))
 (defconst verilog-ext-test-files-dir (file-name-concat verilog-ext-test-dir "files"))
 (defconst verilog-ext-test-files-common-dir (file-name-concat verilog-ext-test-files-dir "common"))
+(defconst verilog-ext-test-files-github-dir (file-name-concat verilog-ext-test-files-dir "github"))
 (defconst verilog-ext-test-ucontroller-dir (file-name-concat verilog-ext-test-files-dir "ucontroller"))
 (defconst verilog-ext-test-ucontroller-rtl-dir (file-name-concat verilog-ext-test-ucontroller-dir "rtl"))
 (defconst verilog-ext-test-ucontroller-tb-dir (file-name-concat verilog-ext-test-ucontroller-dir "tb"))
