@@ -1,6 +1,8 @@
 [![MELPA](https://melpa.org/packages/verilog-ext-badge.svg)](https://melpa.org/#/verilog-ext)
 [![MELPA Stable](https://stable.melpa.org/packages/verilog-ext-badge.svg)](https://stable.melpa.org/#/verilog-ext)
 [![Build Status](https://github.com/gmlarumbe/verilog-ext/actions/workflows/build_straight.yml/badge.svg)](https://github.com/gmlarumbe/verilog-ext/actions/workflows/build_straight.yml)
+[![Build Status](https://github.com/gmlarumbe/verilog-ext/actions/workflows/build_straight_release_snapshot.yml/badge.svg)](https://github.com/gmlarumbe/verilog-ext/actions/workflows/build_straight_release_snapshot.yml)
+[![Build Status](https://github.com/gmlarumbe/verilog-ext/actions/workflows/build_straight_snapshot.yml/badge.svg)](https://github.com/gmlarumbe/verilog-ext/actions/workflows/build_straight_snapshot.yml)
 [![Build Status](https://github.com/gmlarumbe/verilog-ext/actions/workflows/build_package_melpa_basic.yml/badge.svg)](https://github.com/gmlarumbe/verilog-ext/actions/workflows/build_package_melpa_basic.yml)
 [![Build Status](https://github.com/gmlarumbe/verilog-ext/actions/workflows/build_package_melpa_stable.yml/badge.svg)](https://github.com/gmlarumbe/verilog-ext/actions/workflows/build_package_melpa_stable.yml)
 
