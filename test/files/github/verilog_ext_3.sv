@@ -55,5 +55,22 @@ module foo;
         `
     end
 
+    // Structs
+    typedef struct {
+        int a;
+        logic b;
+        type_t c;
+    } my_struct_t;
+
+    my_struct_t my_struct;
+
+    struct {
+        int a;
+        logic b;
+        type_t c;
+    } my_struct_2;
+
+    my_struct.
+    my_struct_2.
 
 endmodule : foo

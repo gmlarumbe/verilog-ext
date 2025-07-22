@@ -395,6 +395,13 @@ temp-buffer."
        "text_macro_definition"
        ;; Enum labels
        "enum_name_declaration"
+       ;; Struct members
+       "struct_union_member"
+       ;; Generic form of data_type to create hierarchy
+       ;; for struct/enum elements (only added as parents
+       ;; in the defs tags table)
+       "data_type_or_implicit"
+       "data_type_or_void"
        ;; Instances
        "module_instantiation"
        "interface_instantiation"
@@ -485,7 +492,10 @@ PARENT is passed as an argument to build the :items prop list of
          (children (cdr node))
          (ts-type (treesit-node-type ts-node))
          (is-instance (and ts-type (string-match verilog-ts-instance-re ts-type)))
-         (is-typedef-class (verilog-ts--node-is-typedef-class ts-node)))
+         (node-add-to-table-p (not (or (verilog-ts--node-is-typedef-class ts-node)
+                                       (and ts-type
+                                            (string-match "\\_<data_type_or_\\(implicit\\|void\\)\\_>" ts-type) ; Don't add to the table, only as parents
+                                            (not (treesit-search-subtree ts-node "\\_<\\(struct\\|enum\\)\\_>" nil :all)))))))
     ;; Iterate over all the nodes of the tree
     (mapc (lambda (child-node)
             (verilog-ext-tags-table-push-defs-ts--recurse :node child-node
@@ -493,7 +503,7 @@ PARENT is passed as an argument to build the :items prop list of
                                                           :file file))
           children)
     ;; Push definitions of current node
-    (when (and ts-node (not is-typedef-class)) ; root ts-node will be nil
+    (when (and ts-node node-add-to-table-p) ; root ts-node will be nil
       (goto-char (treesit-node-start ts-node))
       (if is-instance
           (puthash `(,(verilog-ts--node-instance-name ts-node) ; Key plist

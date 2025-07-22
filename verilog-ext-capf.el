@@ -103,13 +103,15 @@
     "$dumpflush" "$dumpports" "$dumpportsoff" "$dumpportson" "$dumpportsall"
     "$dumpportslimit" "$dumpportsflush"))
 
-(defconst verilog-ext-capf-directives
+(defconst verilog-ext-capf-verilog-directives
   '(;; Section 22: Compiler directives
     "`__FILE__" "`__LINE__" "`begin_keywords" "`celldefine" "`default_nettype"
     "`define" "`else" "`elsif" "`end_keywords" "`endcelldefine" "`endif" "`ifdef"
     "`ifndef" "`include" "`line" "`nounconnected_drive" "`pragma" "`resetall"
-    "`timescale" "`unconnected_drive" "`undef" "`undefineall"
-    ;; Fetched from Accellera UVM Class reference manual:
+    "`timescale" "`unconnected_drive" "`undef" "`undefineall"))
+
+(defconst verilog-ext-capf-uvm-macros
+  '(;; Fetched from Accellera UVM Class reference manual:
     ;; https://www.accellera.org/images/downloads/standards/uvm/UVM_Class_Reference_Manual_1.2.pdf
     ;; Section 21.1: Report Macros
     "`uvm_info" "`uvm_warning" "`uvm_error" "`uvm_fatal" "`uvm_info_context"
@@ -180,6 +182,9 @@
     "`UVM_VERSION_STRING" "`UVM_MAJOR_REV_1" "`UVM_MINOR_REV_2" "`UVM_VERSION_1_2"
     "`UVM_POST_VERSION_1_1"))
 
+(defconst verilog-ext-capf-directives (append verilog-ext-capf-verilog-directives
+                                              verilog-ext-capf-uvm-macros))
+
 (defconst verilog-ext-capf-class-builtin-methods '("randomize"))
 
 (defconst verilog-ext-capf-queue-builtin-methods
@@ -234,7 +239,7 @@ Otherwise search for TAG entry."
     (cond ((equal type "class_declaration")
            (setq items (append items (verilog-ext-capf--add-parens verilog-ext-capf-class-builtin-methods))))
           ((and type (equal (car (split-string type)) "enum"))
-           (setq items (verilog-ext-capf--add-parens verilog-ext-capf-associative-array-builtin-methods)))
+           (setq items (append items (verilog-ext-capf--add-parens verilog-ext-capf-enum-builtin-methods))))
           (t
            nil))
     items))
@@ -250,16 +255,20 @@ Only returns the type of the first occurrence in the :locs property of ENTRY."
   "Get completion candidates from TABLE.
 
 If optional arg TAG is nil, get completions for symbol at point."
-  (cond ((and tag (string-match "\\[\\$\\]$" tag))
-         (verilog-ext-capf--add-parens verilog-ext-capf-queue-builtin-methods))
-        ((and tag (string-match "\\[[0-9]*\\]$" tag))
-         (verilog-ext-capf--add-parens verilog-ext-capf-array-builtin-methods))
-        ((and tag (string-match "\\[[0-9a-zA-Z\*]+\\]$" tag))
-         (verilog-ext-capf--add-parens verilog-ext-capf-associative-array-builtin-methods))
-        ((and tag (string= "string" tag))
-         (verilog-ext-capf--add-parens verilog-ext-capf-string-builtin-methods))
-        (t
-         (verilog-ext-capf-get-entry-items (verilog-ext-capf-get-table-entry table tag)))))
+  (let ((non-port-tag (when tag (string-clean-whitespace (or (string-remove-prefix "input" tag)
+                                                             (string-remove-prefix "output" tag)
+                                                             (string-remove-prefix "ref" tag)
+                                                             tag)))))
+    (cond ((and non-port-tag (string-match "\\[\\$\\]$" non-port-tag))
+           (verilog-ext-capf--add-parens verilog-ext-capf-queue-builtin-methods))
+          ((and non-port-tag (string-match "\\[[0-9]*\\]$" non-port-tag))
+           (verilog-ext-capf--add-parens verilog-ext-capf-array-builtin-methods))
+          ((and non-port-tag (string-match "\\[[0-9a-zA-Z\*]+\\]$" non-port-tag))
+           (verilog-ext-capf--add-parens verilog-ext-capf-associative-array-builtin-methods))
+          ((and non-port-tag (string= "string" non-port-tag))
+           (verilog-ext-capf--add-parens verilog-ext-capf-string-builtin-methods))
+          (t ; typedef struct and typedef enum fall in this default category
+           (verilog-ext-capf-get-entry-items (verilog-ext-capf-get-table-entry table non-port-tag))))))
 
 (defun verilog-ext-capf--dot-completion-bounds ()
   "Return bounds of dot completion for `completion-at-point'.
@@ -346,9 +355,13 @@ See available types in `verilog-ext-tags-definitions-ts-re'."
          (entry (or (and defs-table (gethash cand defs-table))
                     (and inst-table (gethash cand inst-table))))
          (locs (plist-get entry :locs))
-         (type (plist-get (car locs) :type))) ; INFO: Getting the type of the first appearance
-    (cond (;; Type
-           type
+         (type (plist-get (car locs) :type))  ; INFO: Getting the type of the first appearance
+         (short-type (when type (car (split-string type)))))
+    (cond (;; Struct/enum (not typedef)
+           (and short-type (member short-type '("struct" "enum")))
+           short-type)
+          ;; Type
+          (type
            (pcase type
              ;; Builtin
              ("function" "<f>")
@@ -365,11 +378,42 @@ See available types in `verilog-ext-tags-definitions-ts-re'."
              ("constraint_declaration"        "<constraint>")
              ("covergroup_declaration"        "<covergroup>")
              (_ type)))
+          (;; Directives
+           (member cand verilog-ext-capf-verilog-directives)
+           "<directive>")
+          (;; UVM
+           (member cand verilog-ext-capf-uvm-macros)
+           "<UVM>")
+          (;; System-tf
+           (member cand verilog-ext-capf-system-tf)
+           "<system_tf>")
+          (;; Builtin
+           (member cand (verilog-ext-capf--add-parens (append verilog-ext-capf-class-builtin-methods
+                                                              verilog-ext-capf-queue-builtin-methods
+                                                              verilog-ext-capf-array-builtin-methods
+                                                              verilog-ext-capf-string-builtin-methods
+                                                              verilog-ext-capf-enum-builtin-methods
+                                                              verilog-ext-capf-associative-array-builtin-methods)))
+           "<builtin>")
           (;; Keywords
            (member cand verilog-keywords)
            "<kwd>")
           (t ;; Default
-           nil))))
+           type))))
+
+(defun verilog-ext-capf--default (defs-table inst-table refs-table)
+  "Return default completions from project tags.
+
+These tags have been collected previously on DEFS-TABLE, INST-TABLE and
+REFS-TABLE."
+  (let (completions)
+    (dolist (table `(,defs-table ,inst-table ,refs-table))
+      (when table
+        (maphash (lambda (key _value)
+                   (push key completions))
+                 table)))
+    (delete-dups completions)
+    `(,@completions ,@verilog-keywords)))
 
 (defun verilog-ext-capf ()
   "Complete with identifiers present in various hash tables.
@@ -393,12 +437,16 @@ Show annotations using function `verilog-ext-capf-annotation-function'."
                (backward-char)
                (while (eq (preceding-char) ?\]) ; Skip array indexes
                  (verilog-ext-backward-sexp))
-               (setq table-entry-value (or (verilog-ext-capf-get-table-entry defs-table)
-                                           (verilog-ext-capf-get-table-entry inst-table))) ; Search for definitions of objects and instances
-               (when table-entry-value
+               (setq table-entry-value (or (verilog-ext-capf-get-table-entry defs-table)   ; Search for definitions of objects ...
+                                           (verilog-ext-capf-get-table-entry inst-table))) ; .. and instances
+               (if (not table-entry-value)
+                   (setq completions (verilog-ext-capf--default defs-table inst-table refs-table)) ; Default fallback if no completions are available
+                 ;; Non-default, find completions depending on block-type
                  (setq block-type (verilog-ext-capf-get-entry-type table-entry-value))
-                 (setq completions (append (verilog-ext-capf-get-completions defs-table block-type)
-                                           (verilog-ext-capf-get-completions inst-table block-type)))))))
+                 (if (member (car (split-string block-type)) '("struct" "enum"))
+                     (setq completions (verilog-ext-capf-get-entry-items table-entry-value))         ; For struct/enums get items directly
+                   (setq completions (append (verilog-ext-capf-get-completions defs-table block-type) ; For the rest get the items of the block-type)
+                                             (verilog-ext-capf-get-completions inst-table block-type))))))))
           (;; Class static methods/members and package items
            (setq bounds (verilog-ext-capf--scope-completion-bounds))
            (save-excursion
@@ -407,7 +455,9 @@ Show annotations using function `verilog-ext-capf-annotation-function'."
              (while (eq (preceding-char) ?\]) ; Skip array indexes
                (verilog-ext-backward-sexp))
              (setq completions (append (verilog-ext-capf-get-completions defs-table)
-                                       (verilog-ext-capf-get-completions inst-table)))))
+                                       (verilog-ext-capf-get-completions inst-table)))
+             (unless completions
+               (setq completions (verilog-ext-capf--default defs-table inst-table refs-table)))))
           (;; System tasks and functions
            (setq bounds (verilog-ext-capf--system-tf-bounds))
            (setq completions verilog-ext-capf-system-tf))
@@ -416,13 +466,7 @@ Show annotations using function `verilog-ext-capf-annotation-function'."
            (setq completions verilog-ext-capf-directives))
           (t ; Fallback, all project completions and lang keywords
            (setq bounds (bounds-of-thing-at-point 'symbol))
-           (dolist (table `(,defs-table ,inst-table ,refs-table))
-             (when table
-               (maphash (lambda (key _value)
-                          (push key completions))
-                        table)))
-           (delete-dups completions)
-           (setq completions `(,@completions ,@verilog-keywords))))
+           (setq completions (verilog-ext-capf--default defs-table inst-table refs-table))))
     ;; Return value for `completion-at-point'
     (setq start (car bounds))
     (setq end (cdr bounds))

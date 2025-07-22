@@ -50,15 +50,18 @@
       (718 "") ; var6
       (728 "") ; var7
       (738 "") ; var8
-      (751 "") ; my_type
-      (762 "") ; var_e
+      (751 "") ; my_type (typedef enum)
+      (762 "") ; var_e (enum)
       (769 "") ; s
       (805 "") ; foo_pkg::
       (832 "") ; foo_pkg::pkg_cls::
       (867 "") ; foo_pkg::pkg_cls::pkg_var.
       (885 "") ; pkg_cls::
       (895 "") ; $
-      (904 ""))))) ; `
+      (905 "") ; `
+      (1146 "") ; my_struct (typedef struct)
+      (1163 "") ; my_struct_2 (struct)
+      ))))
 
 (defun verilog-ext-test-capf-anotation-fn ()
   (mapcar (lambda (cand)
