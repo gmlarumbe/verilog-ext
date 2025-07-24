@@ -133,44 +133,46 @@
 (defconst verilog-ext-compile-all-buf "*verilog-ext-compile")
 
 ;;;; Compilation-modes and macros
-(defmacro verilog-ext-compile-define-mode (name &rest args)
-  "Macro to define a compilation derived mode for a Verilog error regexp.
+(cl-defmacro verilog-ext-compile-define-mode (name &key desc docstring compile-re buf-name)
+  "Macro to define a compilation derived mode for a FPGA error regexp.
 
 NAME is the name of the created compilation mode.
 
-ARGS is a property list with :desc, :docstring, :compile-re and :buf-name."
-  (declare (indent 1) (debug 1))
-  (let ((desc (plist-get args :desc))
-        (docstring (plist-get args :docstring))
-        (compile-re (plist-get args :compile-re))
-        (buf-name (plist-get args :buf-name)))
-    `(define-compilation-mode ,name ,desc ,docstring
-       (setq-local compilation-error-regexp-alist (mapcar #'car ,compile-re))
-       (setq-local compilation-error-regexp-alist-alist ,compile-re)
-       (when ,buf-name
-         (rename-buffer ,buf-name))
-       (setq truncate-lines t)
-       (goto-char (point-max)))))
+The compilation-derived mode will be passed key args DESC and DOCSTRING for
+documentation.
 
-(defmacro verilog-ext-compile-define-fn (name &rest args)
+COMPILE-RE is be used to map `compilation-error-regexp-alist' and
+`compilation-error-regexp-alist-alist'.
+
+BUF-NAME determines the name of the compilation buffer."
+  (declare (indent 1) (debug 1))
+  `(define-compilation-mode ,name ,desc ,docstring
+     (setq-local compilation-error-regexp-alist (mapcar #'car ,compile-re))
+     (setq-local compilation-error-regexp-alist-alist ,compile-re)
+     (when ,buf-name (rename-buffer ,buf-name))
+     (setq truncate-lines t)
+     (setq-local compilation--start-time (float-time))
+     (goto-char (point-max))))
+
+(cl-defmacro verilog-ext-compile-define-fn (name &key docstring buf comp-mode)
   "Macro to define a function to compile with error regexp highlighting.
 
-Function will be callable by NAME.
+DOCSTRING is passed to created function named NAME to document its purpose.
 
-ARGS is a property list."
+BUF is the name of the used buffer.
+
+COMP-MODE is the name of the compilation derived mode created by macro
+`fpga-utils-define-compilation-mode'."
   (declare (indent 1) (debug 1))
-  (let ((docstring (plist-get args :docstring))
-        (buf (plist-get args :buf))
-        (comp-mode (plist-get args :comp-mode)))
-    `(defun ,name (command)
-       ,docstring
-       (when (and ,buf (get-buffer ,buf))
-         (if (y-or-n-p (format "Buffer %s is in use, kill its process and start new compilation?" ,buf))
-             (kill-buffer ,buf)
-           (user-error "Aborted")))
-       (pop-to-buffer (compile command))
-       (,comp-mode)
-       (setq-local compile-command command))))
+  `(defun ,name (command)
+     ,docstring
+     (when (and ,buf (get-buffer ,buf))
+       (if (y-or-n-p (format "Buffer %s is in use, kill its process and start new compilation?" ,buf))
+           (kill-buffer ,buf)
+         (user-error "Aborted")))
+     (pop-to-buffer (compile command))
+     (,comp-mode)
+     (setq-local compile-command command)))
 
 (verilog-ext-compile-define-mode verilog-ext-compile-verilator-mode
   :desc "Verilator"
