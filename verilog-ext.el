@@ -137,29 +137,75 @@ FEATURES can be a single feature or a list of features."
 
 
 ;;; Features
-(require 'verilog-ext-time-stamp)
-(require 'verilog-ext-block-end-comments)
 (require 'verilog-ext-utils)
-(require 'verilog-ext-hs)
-(require 'verilog-ext-compile)
-(require 'verilog-ext-nav)
-(require 'verilog-ext-font-lock)
-(require 'verilog-ext-imenu)
-(require 'verilog-ext-which-func)
-(require 'verilog-ext-ports)
-(require 'verilog-ext-beautify)
-(require 'verilog-ext-template)
-(require 'verilog-ext-typedef)
-(require 'verilog-ext-hierarchy)
-(require 'verilog-ext-tags)
-(require 'verilog-ext-capf)
-(require 'verilog-ext-xref)
-(require 'verilog-ext-formatter)
-(require 'verilog-ext-flycheck)
-(require 'verilog-ext-eglot)
-(require 'verilog-ext-lsp)
-(require 'verilog-ext-lsp-bridge)
-(require 'verilog-ext-lspce)
+
+(verilog-ext-when-feature 'hideshow
+  (require 'verilog-ext-hs))
+
+(verilog-ext-when-feature 'time-stamp
+  (require 'verilog-ext-time-stamp))
+
+(verilog-ext-when-feature 'block-end-comments
+  (require 'verilog-ext-block-end-comments))
+
+(eval-and-compile
+  (verilog-ext-when-feature 'compilation
+    (require 'verilog-ext-compile)))
+
+(verilog-ext-when-feature 'navigation
+  (require 'verilog-ext-nav))
+
+(verilog-ext-when-feature 'font-lock
+  (require 'verilog-ext-font-lock))
+
+(verilog-ext-when-feature 'imenu
+  (require 'verilog-ext-imenu))
+
+(verilog-ext-when-feature 'which-func
+  (require 'verilog-ext-which-func))
+
+(verilog-ext-when-feature 'ports
+  (require 'verilog-ext-ports))
+
+(verilog-ext-when-feature 'beautify
+  (require 'verilog-ext-beautify))
+
+(verilog-ext-when-feature 'template
+  (require 'verilog-ext-template))
+
+(verilog-ext-when-feature 'typedefs
+  (require 'verilog-ext-typedef))
+
+(verilog-ext-when-feature 'hierarchy
+  (require 'verilog-ext-hierarchy))
+
+(verilog-ext-when-feature 'tags
+  (require 'verilog-ext-tags))
+
+(verilog-ext-when-feature 'capf
+  (require 'verilog-ext-capf))
+
+(verilog-ext-when-feature 'xref
+  (require 'verilog-ext-xref))
+
+(verilog-ext-when-feature 'formatter
+  (require 'verilog-ext-formatter))
+
+(verilog-ext-when-feature 'flycheck
+  (require 'verilog-ext-flycheck))
+
+(verilog-ext-when-feature 'eglot
+  (require 'verilog-ext-eglot))
+
+(verilog-ext-when-feature 'lsp
+  (require 'verilog-ext-lsp))
+
+(verilog-ext-when-feature 'lsp-bridge
+  (require 'verilog-ext-lsp-bridge))
+
+(verilog-ext-when-feature 'lspce
+  (require 'verilog-ext-lspce))
+
 
 ;;; Major-mode
 (defvar verilog-ext-mode-map
