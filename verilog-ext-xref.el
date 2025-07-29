@@ -66,7 +66,10 @@
                                              (propertize symbol 'face 'verilog-ext-xref-match-face)
                                              (plist-get loc :desc)
                                              :fixedcase))
-        (push (xref-make desc (xref-make-file-location file line column)) xref-entries)))
+        (push (xref-make-match desc
+                               (xref-make-file-location file line column)
+                               (length symbol))
+              xref-entries)))
     xref-entries))
 
 (defun verilog-ext-xref-backend ()
