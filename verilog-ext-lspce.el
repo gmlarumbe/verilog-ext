@@ -32,6 +32,10 @@
 (require 'lspce nil :noerror) ; Set to :noerror since `lspce' is not available in MELPA
 (require 'verilog-ext-utils)
 
+(declare-function lspce--execute-command "ext:lspce")
+(declare-function lspce--add-option "ext:lspce" t 'fileonly)
+(defvar lspce-server-programs nil)
+
 (defvar verilog-ext-lspce-default-server 've-svlangserver)
 
 ;;;; svlangserver
@@ -163,10 +167,4 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
 (provide 'verilog-ext-lspce)
 
 ;;; verilog-ext-lspce.el ends here
-
-;; Silence all the lspce byte-compiler warnings:
-;;
-;; Local Variables:
-;; byte-compile-warnings: (not unresolved free-vars)
-;; End:
 

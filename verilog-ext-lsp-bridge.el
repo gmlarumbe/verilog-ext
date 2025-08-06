@@ -34,6 +34,8 @@
 (require 'lsp-bridge nil :noerror) ; Set to :noerror since `lsp-bridge' is not available in MELPA
 (require 'verilog-ext-utils)
 
+(defvar lsp-bridge-single-lang-server-mode-list nil)
+
 (defconst verilog-ext-lsp-bridge-langserver-dir
   (expand-file-name "langserver" (file-name-directory (or load-file-name (buffer-file-name)))))
 
@@ -65,10 +67,4 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
 (provide 'verilog-ext-lsp-bridge)
 
 ;;; verilog-ext-lsp-bridge.el ends here
-
-;; Silence all the lsp-bridge byte-compiler warnings:
-;;
-;; Local Variables:
-;; byte-compile-warnings: (not free-vars)
-;; End:
 
