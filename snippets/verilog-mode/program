@@ -2,7 +2,7 @@
 # key: pgm
 # --
 
-program automatic ${1:name};
+program automatic ${1:`(if (buffer-file-name) (file-name-nondirectory (file-name-sans-extension (buffer-file-name))) "name")`};
 
    // declarations
    $0

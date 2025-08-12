@@ -2,7 +2,7 @@
 # key: itf
 # --
 
-interface ${1:name} ${2:# (parameter WIDTH = 0)} (${3:input logic `verilog-ext-template-clock`, input logic `verilog-ext-template-reset`});
+interface ${1:`(if (buffer-file-name) (file-name-nondirectory (file-name-sans-extension (buffer-file-name))) "name")`} ${2:# (parameter WIDTH = 0)} (${3:input logic `verilog-ext-template-clock`, input logic `verilog-ext-template-reset`});
 
     // Itf signals
     // logic Request;

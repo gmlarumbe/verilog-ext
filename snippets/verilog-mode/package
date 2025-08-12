@@ -2,6 +2,6 @@
 # key: pkg
 # --
 
-package ${1:package_name};
+package ${1:`(if (buffer-file-name) (file-name-nondirectory (file-name-sans-extension (buffer-file-name))) "package_name")`};
   $0
 endpackage: $1
