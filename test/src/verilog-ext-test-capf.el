@@ -61,6 +61,8 @@
       (905 "") ; `
       (1146 "") ; my_struct (typedef struct)
       (1163 "") ; my_struct_2 (struct)
+      (1482 "") ; foo_fun_arg
+      (1500 "") ; foo_task_arg
       ))))
 
 (defun verilog-ext-test-capf-anotation-fn ()

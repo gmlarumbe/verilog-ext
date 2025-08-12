@@ -255,15 +255,23 @@ Only returns the type of the first occurrence in the :locs property of ENTRY."
   "Get completion candidates from TABLE.
 
 If optional arg TAG is nil, get completions for symbol at point."
-  (let ((non-port-tag (when tag (string-clean-whitespace (or (string-remove-prefix "input" tag)
-                                                             (string-remove-prefix "output" tag)
-                                                             (string-remove-prefix "ref" tag)
-                                                             tag)))))
-    (cond ((and non-port-tag (string-match "\\[\\$\\]$" non-port-tag))
+  (let* ((non-port-tag (when tag
+                         (string-clean-whitespace (or (and (string-match "^input\\s-+" tag)
+                                                           (replace-regexp-in-string "^input\\s-+" "" tag))
+                                                      (and (string-match "^output\\s-+" tag)
+                                                           (replace-regexp-in-string "^output\\s-+" "" tag))
+                                                      (and (string-match "^ref\\s-+" tag)
+                                                           (replace-regexp-in-string "^ref\\s-+" "" tag))
+                                                      tag))))
+         (unpacked-dim-tag (when non-port-tag
+                             (car (last (split-string non-port-tag "/"))))))
+    (cond ((and non-port-tag (string-match "\\[\\$\\]$" unpacked-dim-tag))
            (verilog-ext-capf--add-parens verilog-ext-capf-queue-builtin-methods))
-          ((and non-port-tag (string-match "\\[[0-9]*\\]$" non-port-tag))
+          ((and non-port-tag (or (string-match "\\[[0-9]*\\]$" unpacked-dim-tag)
+                                 (and (string-match "\\[\\(?1:.*\\)\\]$" unpacked-dim-tag)
+                                      (not (member (match-string-no-properties 1) verilog-keywords)))))
            (verilog-ext-capf--add-parens verilog-ext-capf-array-builtin-methods))
-          ((and non-port-tag (string-match "\\[[0-9a-zA-Z\*]+\\]$" non-port-tag))
+          ((and non-port-tag (string-match "\\[[0-9a-zA-Z\*]+\\]$" unpacked-dim-tag))
            (verilog-ext-capf--add-parens verilog-ext-capf-associative-array-builtin-methods))
           ((and non-port-tag (string= "string" non-port-tag))
            (verilog-ext-capf--add-parens verilog-ext-capf-string-builtin-methods))

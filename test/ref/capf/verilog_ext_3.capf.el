@@ -28,7 +28,7 @@
        :annotation-function verilog-ext-capf-annotation-function :company-docsig identity))
  ((738 "")
   (738 738
-       ("exists()" "num()" "first()" "last()" "next()" "prev()" "exists()" "num()" "first()" "last()" "next()" "prev()")
+       ("size()" "delete()" "find()" "find_index()" "find_first()" "find_first_index()" "find_last()" "find_last_index()" "min()" "max()" "unique()" "unique_index()" "reverse()" "sort()" "rsort()" "shuffle()" "sum()" "product()" "and()" "or()" "xor()" "map()" "size()" "delete()" "find()" "find_index()" "find_first()" "find_first_index()" "find_last()" "find_last_index()" "min()" "max()" "unique()" "unique_index()" "reverse()" "sort()" "rsort()" "shuffle()" "sum()" "product()" "and()" "or()" "xor()" "map()")
        :annotation-function verilog-ext-capf-annotation-function :company-docsig identity))
  ((751 "")
   (751 751
@@ -73,4 +73,12 @@
  ((1163 "")
   (1163 1163
 	("a" "b" "c")
+	:annotation-function verilog-ext-capf-annotation-function :company-docsig identity))
+ ((1482 "")
+  (1482 1482
+	("size()" "delete()" "find()" "find_index()" "find_first()" "find_first_index()" "find_last()" "find_last_index()" "min()" "max()" "unique()" "unique_index()" "reverse()" "sort()" "rsort()" "shuffle()" "sum()" "product()" "and()" "or()" "xor()" "map()" "size()" "delete()" "find()" "find_index()" "find_first()" "find_first_index()" "find_last()" "find_last_index()" "min()" "max()" "unique()" "unique_index()" "reverse()" "sort()" "rsort()" "shuffle()" "sum()" "product()" "and()" "or()" "xor()" "map()")
+	:annotation-function verilog-ext-capf-annotation-function :company-docsig identity))
+ ((1500 "")
+  (1500 1500
+	("size()" "delete()" "find()" "find_index()" "find_first()" "find_first_index()" "find_last()" "find_last_index()" "min()" "max()" "unique()" "unique_index()" "reverse()" "sort()" "rsort()" "shuffle()" "sum()" "product()" "and()" "or()" "xor()" "map()" "size()" "delete()" "find()" "find_index()" "find_first()" "find_first_index()" "find_last()" "find_last_index()" "min()" "max()" "unique()" "unique_index()" "reverse()" "sort()" "rsort()" "shuffle()" "sum()" "product()" "and()" "or()" "xor()" "map()")
 	:annotation-function verilog-ext-capf-annotation-function :company-docsig identity)))

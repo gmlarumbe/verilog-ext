@@ -74,3 +74,20 @@ module foo;
     my_struct_2.
 
 endmodule : foo
+
+
+module foo_tf_args;
+
+    function void foo_function(input logic [$clog2(NUM_BITS)-1:0] foo_fun_arg [NUM_BITS]);
+        //
+    endfunction : foo_function
+
+    function void foo_task(input logic [$clog2(NUM_BITS)-1:0] foo_task_arg [NUM_BITS]);
+        //
+    endfunction : foo_task
+
+
+    foo_fun_arg.
+    foo_task_arg.
+
+endmodule : foo_tf_args
