@@ -34,7 +34,7 @@
 
 (declare-function lspce--execute-command "ext:lspce")
 (declare-function lspce--add-option "ext:lspce" t 'fileonly)
-(defvar lspce-server-programs nil)
+(defvar lspce-server-programs)
 
 (defvar verilog-ext-lspce-default-server 've-svlangserver)
 

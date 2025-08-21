@@ -34,7 +34,7 @@
 (require 'lsp-bridge nil :noerror) ; Set to :noerror since `lsp-bridge' is not available in MELPA
 (require 'verilog-ext-utils)
 
-(defvar lsp-bridge-single-lang-server-mode-list nil)
+(defvar lsp-bridge-single-lang-server-mode-list)
 
 (defconst verilog-ext-lsp-bridge-langserver-dir
   (expand-file-name "langserver" (file-name-directory (or load-file-name (buffer-file-name)))))

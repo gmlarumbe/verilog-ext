@@ -48,6 +48,39 @@
 
 ;;; Code:
 
+(declare-function verilog-ext-which-func "verilog-ext-which-func")
+(declare-function verilog-ext-imenu-index "verilog-ext-imenu")
+(declare-function verilog-ext-time-stamp-mode "verilog-ext-time-stamp")
+(declare-function verilog-ext-block-end-comments-to-names-mode "verilog-ext-block-end-comments")
+(declare-function verilog-ext-capf-set "verilog-ext-capf")
+(declare-function verilog-ext-xref-set "verilog-ext-xref")
+(declare-function verilog-ext-navigation-ag-rg-hook "verilog-ext-nav")
+(declare-function verilog-ext-typedef-set "verilog-ext-typedef")
+(declare-function verilog-ext-hs-setup "verilog-ext-hs")
+(declare-function verilog-ext-formatter-setup "verilog-ext-formatter")
+(declare-function verilog-ext-template-add-snippets "verilog-ext-template")
+(declare-function verilog-ext-flycheck-setup "verilog-ext-flycheck")
+(declare-function verilog-ext-lspce-set-server "verilog-ext-lspce")
+(declare-function verilog-ext-lsp-bridge-set-server "verilog-ext-lsp-bridge")
+(declare-function verilog-ext-lsp-set-server "verilog-ext-lsp")
+(declare-function verilog-ext-lsp-setup "verilog-ext-lsp")
+(declare-function verilog-ext-eglot-set-server "verilog-ext-eglot")
+(declare-function verilog-ext-hierarchy-setup "verilog-ext-hierarchy")
+(declare-function verilog-ext-tags-setup "verilog-ext-tags")
+(declare-function verilog-ext-font-lock-setup "verilog-ext-font-lock")
+
+(defvar verilog-ext-eglot-default-server)
+(defvar verilog-ext-lsp-mode-default-server)
+(defvar verilog-ext-lsp-bridge-default-server)
+(defvar verilog-ext-lspce-default-server)
+(defvar verilog-ext-hierarchy-vhier-use-open-buffers)
+(defvar verilog-ext-hierarchy-vhier-open-dirs)
+(defvar verilog-ext-hierarchy-vhier-open-files)
+(defvar verilog-ext-flycheck-use-open-buffers)
+(defvar verilog-ext-flycheck-dirs)
+(defvar verilog-ext-flycheck-files)
+
+
 ;;; Customization
 (defgroup verilog-ext nil
   "Verilog Extensions."
@@ -148,9 +181,8 @@ FEATURES can be a single feature or a list of features."
 (verilog-ext-when-feature 'block-end-comments
   (require 'verilog-ext-block-end-comments))
 
-(eval-and-compile
-  (verilog-ext-when-feature 'compilation
-    (require 'verilog-ext-compile)))
+(verilog-ext-when-feature 'compilation
+  (require 'verilog-ext-compile))
 
 (verilog-ext-when-feature 'navigation
   (require 'verilog-ext-nav))
