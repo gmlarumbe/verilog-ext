@@ -27,5 +27,4 @@ ucontroller/tb/tb_ram.sv
 ucontroller/tb/tb_top.sv
 ucontroller/tb/tb_uart.sv
 common/instances.sv
-common/misc.sv
 common/ucontroller.sv

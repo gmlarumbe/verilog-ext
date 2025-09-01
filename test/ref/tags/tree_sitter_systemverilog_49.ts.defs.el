@@ -1,0 +1,13 @@
+#s(hash-table test equal data
+	      (("a" :file "../files/github/tree_sitter_systemverilog_49.sv" :line 2)
+	       (:type "wire" :desc "  wire a, b, c, d;" :col 7 :parent "test")
+	       ("b" :file "../files/github/tree_sitter_systemverilog_49.sv" :line 2)
+	       (:type "wire" :desc "  wire a, b, c, d;" :col 10 :parent "test")
+	       ("c" :file "../files/github/tree_sitter_systemverilog_49.sv" :line 2)
+	       (:type "wire" :desc "  wire a, b, c, d;" :col 13 :parent "test")
+	       ("d" :file "../files/github/tree_sitter_systemverilog_49.sv" :line 2)
+	       (:type "wire" :desc "  wire a, b, c, d;" :col 16 :parent "test")
+	       ("z" :file "../files/github/tree_sitter_systemverilog_49.sv" :line 3)
+	       (:type "reg" :desc "  reg z;" :col 6 :parent "test")
+	       ("test" :file "../files/github/tree_sitter_systemverilog_49.sv" :line 1)
+	       (:type "module_declaration" :desc "module test;" :col 0 :parent nil)))

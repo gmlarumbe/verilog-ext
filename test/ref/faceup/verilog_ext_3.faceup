@@ -1,0 +1,93 @@
+«k:package» «f:foo_pkg»«:verilog-ext-font-lock-punctuation-face:;»
+
+    «m:// »«x:Declarations
+»    «k:class» «f:pkg_cls»«:verilog-ext-font-lock-punctuation-face:;»
+        «t:int» pkg_member«:verilog-ext-font-lock-punctuation-face:;»
+
+        «t:logic» pkg_var «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:5»«:verilog-ext-font-lock-brackets-face:][»«:verilog-ext-font-lock-brackets-content-face:$»«:verilog-ext-font-lock-brackets-face:]»«:verilog-ext-font-lock-punctuation-face:;»
+
+        «k:function»«t: »«k:new»«:verilog-ext-font-lock-parenthesis-face:(»«t:string» name«:verilog-ext-font-lock-punctuation-face:=»«s:"asdf"»«:verilog-ext-font-lock-punctuation-face:,» «:verilog-ext-font-lock-uvm-classes-face:uvm_component» parent«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+            «k:super»«:verilog-ext-font-lock-operator-face:.»«k:new»«:verilog-ext-font-lock-parenthesis-face:(»name«:verilog-ext-font-lock-punctuation-face:,» parent«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+        «k:endfunction» «:verilog-ext-font-lock-punctuation-face::» «k:new»
+
+    «k:endclass»«:verilog-ext-font-lock-punctuation-face::» pkg_cls
+
+«k:endpackage» «:verilog-ext-font-lock-punctuation-face::» pkg_cls
+
+
+«k:module» «f:foo»«:verilog-ext-font-lock-punctuation-face:;»
+
+    «:verilog-ext-font-lock-typedef-face:pkg_cls» cls_inst«:verilog-ext-font-lock-punctuation-face:;»
+
+    «t:logic»       var2 «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:5»«:verilog-ext-font-lock-brackets-face:][»«:verilog-ext-font-lock-brackets-content-face:$»«:verilog-ext-font-lock-brackets-face:]»«:verilog-ext-font-lock-punctuation-face:;»
+    «t:logic»       var3 «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:5»«:verilog-ext-font-lock-brackets-face:]»«:verilog-ext-font-lock-punctuation-face:;»
+    «t:wire» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]»  var4 «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:5»«:verilog-ext-font-lock-brackets-face:]»«:verilog-ext-font-lock-punctuation-face:;»
+    «t:wire» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]»  var5 «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:$»«:verilog-ext-font-lock-brackets-face:]» «:verilog-ext-font-lock-punctuation-face:=» «:verilog-ext-font-lock-punctuation-face:'»«:verilog-ext-font-lock-curly-braces-face:{»0«:verilog-ext-font-lock-punctuation-face:,» 1«:verilog-ext-font-lock-curly-braces-face:}»«:verilog-ext-font-lock-punctuation-face:;»
+    «t:wire» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]»  var6 «:verilog-ext-font-lock-brackets-face:[]»«:verilog-ext-font-lock-punctuation-face:;»
+    «t:wire» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]»  var7 «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7»«:verilog-ext-font-lock-brackets-face:]»«:verilog-ext-font-lock-punctuation-face:;»
+    «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:7:0»«:verilog-ext-font-lock-brackets-face:]» var8 «:verilog-ext-font-lock-brackets-face:[»«t:int»«:verilog-ext-font-lock-brackets-face:]»«:verilog-ext-font-lock-punctuation-face:;»
+
+    «k:typedef» «k:enum» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:2:0»«:verilog-ext-font-lock-brackets-face:]» «:verilog-ext-font-lock-curly-braces-face:{»A«:verilog-ext-font-lock-punctuation-face:,» B«:verilog-ext-font-lock-curly-braces-face:}» «:verilog-ext-font-lock-typedef-face:type_t»«:verilog-ext-font-lock-punctuation-face:;»
+    «:verilog-ext-font-lock-typedef-face:type_t» my_type«:verilog-ext-font-lock-punctuation-face:;»
+    «k:enum» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:2:0»«:verilog-ext-font-lock-brackets-face:]» «:verilog-ext-font-lock-curly-braces-face:{»A«:verilog-ext-font-lock-punctuation-face:,» B«:verilog-ext-font-lock-curly-braces-face:}» «:verilog-ext-font-lock-typedef-face:var_e»«:verilog-ext-font-lock-punctuation-face:;»
+
+    «t:string» s«:verilog-ext-font-lock-punctuation-face:;»
+
+    «m:// »«x:Completions
+»    cls_inst«:verilog-ext-font-lock-operator-face:.»
+    var2«:verilog-ext-font-lock-operator-face:.»
+    var3«:verilog-ext-font-lock-operator-face:.»
+    var4«:verilog-ext-font-lock-operator-face:.»
+    var5«:verilog-ext-font-lock-operator-face:.»
+    var6«:verilog-ext-font-lock-operator-face:.»
+    var7«:verilog-ext-font-lock-operator-face:.»
+    var8«:verilog-ext-font-lock-operator-face:.»
+    my_type«:verilog-ext-font-lock-operator-face:.»
+    var_e«:verilog-ext-font-lock-operator-face:.»
+    s«:verilog-ext-font-lock-operator-face:.»
+
+    «k:always» «:verilog-ext-font-lock-grouping-keywords-face:begin»
+        foo_pkg«:verilog-ext-font-lock-punctuation-face:::»
+        foo_pkg«:verilog-ext-font-lock-punctuation-face:::»pkg_cls«:verilog-ext-font-lock-punctuation-face:::»
+        foo_pkg«:verilog-ext-font-lock-punctuation-face:::»pkg_cls«:verilog-ext-font-lock-punctuation-face:::»pkg_var«:verilog-ext-font-lock-operator-face:.»
+        pkg_cls«:verilog-ext-font-lock-punctuation-face:::»
+        $
+        `
+    «:verilog-ext-font-lock-grouping-keywords-face:end»
+
+    «m:// »«x:Structs
+»    «k:typedef» «k:struct» «:verilog-ext-font-lock-curly-braces-face:{»
+        «t:int» a«:verilog-ext-font-lock-punctuation-face:;»
+        «t:logic» b«:verilog-ext-font-lock-punctuation-face:;»
+        «:verilog-ext-font-lock-typedef-face:type_t» c«:verilog-ext-font-lock-punctuation-face:;»
+    «:verilog-ext-font-lock-curly-braces-face:}» «:verilog-ext-font-lock-typedef-face:my_struct_t»«:verilog-ext-font-lock-punctuation-face:;»
+
+    «:verilog-ext-font-lock-typedef-face:my_struct_t» my_struct«:verilog-ext-font-lock-punctuation-face:;»
+
+    «k:struct» «:verilog-ext-font-lock-curly-braces-face:{»
+        «t:int» a«:verilog-ext-font-lock-punctuation-face:;»
+        «t:logic» b«:verilog-ext-font-lock-punctuation-face:;»
+        «:verilog-ext-font-lock-typedef-face:type_t» c«:verilog-ext-font-lock-punctuation-face:;»
+    «:verilog-ext-font-lock-curly-braces-face:}» «:verilog-ext-font-lock-typedef-face:my_struct_2»«:verilog-ext-font-lock-punctuation-face:;»
+
+    my_struct«:verilog-ext-font-lock-operator-face:.»
+    my_struct_2«:verilog-ext-font-lock-operator-face:.»
+
+«k:endmodule» «:verilog-ext-font-lock-punctuation-face::» foo
+
+
+«k:module» «f:foo_tf_args»«:verilog-ext-font-lock-punctuation-face:;»
+
+    «k:function» «k:void» «f:foo_function»«:verilog-ext-font-lock-parenthesis-face:(»«:verilog-ext-font-lock-direction-face:input» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«b:$clog2»«:verilog-ext-font-lock-parenthesis-face:(»NUM_BITS«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-operator-face:-»1«:verilog-ext-font-lock-punctuation-face::»0«:verilog-ext-font-lock-brackets-face:]» foo_fun_arg «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:NUM_BITS»«:verilog-ext-font-lock-brackets-face:]»«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+        «m://»«x:
+»    «k:endfunction» «:verilog-ext-font-lock-punctuation-face::» foo_function
+
+    «k:function» «k:void» «f:foo_task»«:verilog-ext-font-lock-parenthesis-face:(»«:verilog-ext-font-lock-direction-face:input» «t:logic» «:verilog-ext-font-lock-brackets-face:[»«b:$clog2»«:verilog-ext-font-lock-parenthesis-face:(»NUM_BITS«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-operator-face:-»1«:verilog-ext-font-lock-punctuation-face::»0«:verilog-ext-font-lock-brackets-face:]» foo_task_arg «:verilog-ext-font-lock-brackets-face:[»«:verilog-ext-font-lock-brackets-content-face:NUM_BITS»«:verilog-ext-font-lock-brackets-face:]»«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+        «m://»«x:
+»    «k:endfunction» «:verilog-ext-font-lock-punctuation-face::» foo_task
+
+
+    foo_fun_arg«:verilog-ext-font-lock-operator-face:.»
+    foo_task_arg«:verilog-ext-font-lock-operator-face:.»
+
+«k:endmodule» «:verilog-ext-font-lock-punctuation-face::» foo_tf_args

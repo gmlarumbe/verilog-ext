@@ -605,6 +605,11 @@
        #("function void uvm_component::m_do_pre_abort;" 14 27
 	 (face verilog-ext-xref-match-face))
        #s(xref-file-location "uvm_component.svh" 2958 14)
+       13)
+    #s(xref-match-item
+       #("        function new(string name=\"asdf\", uvm_component parent);" 41 54
+	 (face verilog-ext-xref-match-face))
+       #s(xref-file-location "../github/verilog_ext_3.sv" 9 41)
        13))
  (#s(xref-match-item
      #("      beat = new;" 13 16
@@ -771,6 +776,16 @@
        #("    schedule = new(\"uvm_sched\", UVM_PHASE_SCHEDULE);" 15 18
 	 (face verilog-ext-xref-match-face))
        #s(xref-file-location "uvm_component.svh" 2174 15)
+       3)
+    #s(xref-match-item
+       #("            super.new(name, parent);" 18 21
+	 (face verilog-ext-xref-match-face))
+       #s(xref-file-location "../github/verilog_ext_3.sv" 10 18)
+       3)
+    #s(xref-match-item
+       #("        endfunction : new" 22 25
+	 (face verilog-ext-xref-match-face))
+       #s(xref-file-location "../github/verilog_ext_3.sv" 11 22)
        3))
  nil
  (#s(xref-match-item

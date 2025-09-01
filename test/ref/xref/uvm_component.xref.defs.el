@@ -53,6 +53,11 @@
        #("function uvm_component::new (string name, uvm_component parent);" 24 27
 	 (face verilog-ext-xref-match-face))
        #s(xref-file-location "uvm_component.svh" 1480 0)
+       3)
+    #s(xref-match-item
+       #("        function new(string name=\"asdf\", uvm_component parent);" 17 20
+	 (face verilog-ext-xref-match-face))
+       #s(xref-file-location "../github/verilog_ext_3.sv" 9 8)
        3))
  (#s(xref-match-item
      #("  extern virtual function uvm_component get_parent ();" 40 50

@@ -1,0 +1,15 @@
+«k:module» «f:test»«:verilog-ext-font-lock-punctuation-face:;»
+  «t:wire» a«:verilog-ext-font-lock-punctuation-face:,» b«:verilog-ext-font-lock-punctuation-face:,» c«:verilog-ext-font-lock-punctuation-face:,» d«:verilog-ext-font-lock-punctuation-face:;»
+  «t:reg» z«:verilog-ext-font-lock-punctuation-face:;»
+  «k:always» «:verilog-ext-font-lock-time-event-face:@»«:verilog-ext-font-lock-parenthesis-face:(»«:verilog-ext-font-lock-punctuation-face:*»«:verilog-ext-font-lock-parenthesis-face:)» «:verilog-ext-font-lock-grouping-keywords-face:begin»
+    «k:if» «:verilog-ext-font-lock-parenthesis-face:(»a«:verilog-ext-font-lock-parenthesis-face:)»
+      z «:verilog-ext-font-lock-punctuation-face:=» a«:verilog-ext-font-lock-punctuation-face:;»
+    «k:else» «k:if» «:verilog-ext-font-lock-parenthesis-face:(»b«:verilog-ext-font-lock-parenthesis-face:)»
+      z «:verilog-ext-font-lock-punctuation-face:=» b«:verilog-ext-font-lock-punctuation-face:;»
+    «k:else»
+      «k:if» «:verilog-ext-font-lock-parenthesis-face:(»c«:verilog-ext-font-lock-parenthesis-face:)»
+        z «:verilog-ext-font-lock-punctuation-face:=» c«:verilog-ext-font-lock-punctuation-face:;»
+      «k:else»
+        z «:verilog-ext-font-lock-punctuation-face:=» d«:verilog-ext-font-lock-punctuation-face:;»
+  «:verilog-ext-font-lock-grouping-keywords-face:end»
+«k:endmodule»

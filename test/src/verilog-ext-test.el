@@ -53,8 +53,12 @@
 (defconst verilog-ext-test-ucontroller-rtl-dir (file-name-concat verilog-ext-test-ucontroller-dir "rtl"))
 (defconst verilog-ext-test-ucontroller-tb-dir (file-name-concat verilog-ext-test-ucontroller-dir "tb"))
 
-(defconst verilog-ext-test-common-file-list (test-hdl-directory-files verilog-ext-test-files-common-dir
-                                                                      verilog-ext-file-extension-re))
+(defconst verilog-ext-test-common-file-list
+  (append (test-hdl-directory-files verilog-ext-test-files-common-dir
+                                    verilog-ext-file-extension-re)
+          (test-hdl-directory-files verilog-ext-test-files-github-dir
+                                    verilog-ext-file-extension-re)))
+
 
 ;;;; Tests
 (require 'verilog-ext-test-faceup)

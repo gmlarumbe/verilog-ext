@@ -1,5 +1,4 @@
 common/axi_demux.sv
 common/axi_test.sv
-common/misc.sv
 common/tb_program.sv
 common/uvm_component.svh

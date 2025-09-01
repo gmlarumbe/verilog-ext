@@ -1,0 +1,11 @@
+#s(hash-table test equal data
+	      (("foo" :file "../files/github/verilog_ts_mode_3.sv" :line 2)
+	       (:desc "module foo" :col 7)
+	       ("bar_pkg" :file "../files/github/verilog_ts_mode_3.sv" :line 3)
+	       (:desc "import bar_pkg::*;" :col 7)
+	       ("baz_pkg" :file "../files/github/verilog_ts_mode_3.sv" :line 4)
+	       (:desc "  import baz_pkg::*;" :col 9)
+	       ("clk" :file "../files/github/verilog_ts_mode_3.sv" :line 6)
+	       (:desc "  input wire clk," :col 13)
+	       ("rst" :file "../files/github/verilog_ts_mode_3.sv" :line 7)
+	       (:desc "  input wire rst" :col 13)))

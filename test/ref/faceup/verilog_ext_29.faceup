@@ -1,0 +1,24 @@
+«k:module» «f:foo»«:verilog-ext-font-lock-punctuation-face:;»
+
+«:verilog-ext-font-lock-module-face:foo_module» «:verilog-ext-font-lock-time-event-face:#»«:verilog-ext-font-lock-parenthesis-face:(»
+«:verilog-ext-font-lock-operator-face:.»«:verilog-ext-font-lock-port-connection-face:G_SOME_CONSTANT» «:verilog-ext-font-lock-parenthesis-face:(»   5«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:,»
+«:verilog-ext-font-lock-operator-face:.»«:verilog-ext-font-lock-port-connection-face:G_SOME_OTHER_CONSTANT» «:verilog-ext-font-lock-parenthesis-face:(»   5«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:,»
+«:verilog-ext-font-lock-operator-face:.»«:verilog-ext-font-lock-port-connection-face:G_EVEN_SOME_OTHER_CONSTANT»     «:verilog-ext-font-lock-parenthesis-face:(»  «:verilog-ext-font-lock-parenthesis-face:)»
+«:verilog-ext-font-lock-parenthesis-face:)» «:verilog-ext-font-lock-instance-face:my_foo» «:verilog-ext-font-lock-parenthesis-face:(»
+«:verilog-ext-font-lock-operator-face:.»«:verilog-ext-font-lock-port-connection-face:clk»    «:verilog-ext-font-lock-parenthesis-face:(»my_clk                           «:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:,» «m:// »«x:asdf
+»«:verilog-ext-font-lock-operator-face:.»«:verilog-ext-font-lock-port-connection-face:reset» «:verilog-ext-font-lock-parenthesis-face:(» my_reset«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:,»
+
+«m:// »«x:Comment regarding the ports below (because sometimes it's warranted)
+»«:verilog-ext-font-lock-operator-face:.»«:verilog-ext-font-lock-port-connection-face:port_a» «:verilog-ext-font-lock-parenthesis-face:(»my_a                             «:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:,»«m:// »«x:asdf 2
+»«:verilog-ext-font-lock-operator-face:.»«:verilog-ext-font-lock-port-connection-face:port_b»«:verilog-ext-font-lock-parenthesis-face:(» my_b                             «:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:,»            «m:// »«x:asdf3
+»
+«m://»«x:Another comment (with paren)
+»«:verilog-ext-font-lock-operator-face:.»«:verilog-ext-font-lock-port-connection-face:port_c»   «:verilog-ext-font-lock-parenthesis-face:(» my_c                             «:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:,»
+«:verilog-ext-font-lock-operator-face:.»«:verilog-ext-font-lock-port-connection-face:port_d» «:verilog-ext-font-lock-parenthesis-face:(» my_d                             «:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:,»
+
+«m:// »«x:Some implicit port connections
+»«:verilog-ext-font-lock-operator-face:.»«:verilog-ext-font-lock-port-connection-face:port_e»«:verilog-ext-font-lock-punctuation-face:,»
+«:verilog-ext-font-lock-operator-face:.»«:verilog-ext-font-lock-port-connection-face:port_f»
+«:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+
+«k:endmodule»
