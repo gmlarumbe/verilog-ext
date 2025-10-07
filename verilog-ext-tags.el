@@ -370,6 +370,7 @@ temp-buffer."
        "package_declaration"
        ;; Classes
        "class_declaration"
+       "interface_class_declaration"
        ;; Tasks/functions
        "function_declaration"
        "task_declaration"
@@ -382,6 +383,11 @@ temp-buffer."
        "covergroup_declaration"
        ;; Constraints
        "constraint_declaration"
+       ;; Clocking block
+       "clocking_declaration"
+       ;; SVA
+       "property_declaration"
+       "sequence_declaration"
        ;; Ports/arguments
        "ansi_port_declaration"
        "tf_port_item"
