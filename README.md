@@ -384,7 +384,7 @@ Enhanced `which-func` support: show current block/instance at point in the mode-
 
 ## Typedefs ##
 
-Add support for syntax-higlighting and alignment via
+Only for `verilog-mode`: add support for syntax-higlighting and alignment via
 `verilog-pretty-declarations` of user defined types and classes.
 
 <img src="https://github.com/gmlarumbe/verilog-ext/assets/51021955/5e654ba5-6eaa-4699-865c-628cadeda75a" width=80%>
