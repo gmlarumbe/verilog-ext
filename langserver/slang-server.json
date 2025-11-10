@@ -1,0 +1,9 @@
+{
+  "name": "slang-server",
+  "languageId": "verilog",
+  "command": [
+    "slang-server"
+  ],
+
+  "settings": {}
+}
