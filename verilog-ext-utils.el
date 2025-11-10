@@ -135,8 +135,11 @@ type_t foo1, foo2 , foo4, foo6[], foo7 [25], foo8 ;")
     (ve-svlangserver "svlangserver"           "svlangserver.json")
     (ve-verible-ls   "verible-verilog-ls"     "verible.json")
     (ve-svls         "svls"                   "svls.json")
-    (ve-veridian     "veridian"               "veridian.json"))
-  "Verilog-ext available LSP servers.")
+    (ve-veridian     "veridian"               "veridian.json")
+    (ve-slang-server "slang-server"           "slang-server.json"))
+  "Verilog-ext available LSP servers.
+First arg corresponds to the command to be executed.
+Second arg is the JSON file used for `lsp-bridge'")
 (defconst verilog-ext-lsp-server-ids (mapcar #'car verilog-ext-lsp-available-servers))
 
 ;;;;; Misc
