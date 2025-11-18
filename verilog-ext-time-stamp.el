@@ -65,6 +65,14 @@ specified by `time-stamp-format' between them."
   :group 'verilog-ext-time-stamp)
 
 
+(defun verilog-ext-time-stamp-hook ()
+  "Intermediary hook to preserve correct order of local hook value setting.
+
+This is needed when mixing Emacs local hooks in file local variables and using
+`add-hook' with the local argument."
+  (when (derived-mode-p 'verilog-mode)
+    (add-hook 'before-save-hook #'time-stamp nil :local)))
+
 (define-minor-mode verilog-ext-time-stamp-mode
   "Setup `time-stamp' format for Verilog files.
 By default `time-stamp' looks for the pattern in the first 8 lines.
@@ -76,8 +84,8 @@ and `time-stamp-end' for custom scenarios."
   (setq-local time-stamp-start verilog-ext-time-stamp-start)
   (setq-local time-stamp-end verilog-ext-time-stamp-end)
   (if verilog-ext-time-stamp-mode
-      (add-hook 'before-save-hook #'time-stamp nil :local)
-    (remove-hook 'before-save-hook #'time-stamp :local)))
+      (add-hook 'hack-local-variables-hook #'verilog-ext-time-stamp-hook)
+    (remove-hook 'hack-local-variables-hook #'verilog-ext-time-stamp-hook)))
 
 
 (provide 'verilog-ext-time-stamp)
