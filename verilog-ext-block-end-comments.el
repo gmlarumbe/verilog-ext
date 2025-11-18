@@ -57,13 +57,22 @@ Examples: endmodule // module_name             → endmodule : module_name
       (when (not (member (match-string-no-properties 2) verilog-keywords))
         (replace-match "\\1 : \\2")))))
 
+(defun verilog-ext-block-end-comments-to-names-hook ()
+  "Intermediary hook to preserve correct order of local hook value setting.
+
+This is needed when mixing Emacs local hooks in file local variables and using
+`add-hook' with the local argument."
+  (when (derived-mode-p 'verilog-mode)
+    (add-hook 'before-save-hook #'verilog-ext-block-end-comments-to-names nil :local)))
+
 (define-minor-mode verilog-ext-block-end-comments-to-names-mode
   "Minor mode to convert block end comments to block names after saving a file.
+
 See `verilog-ext-block-end-comments-to-names' for an example."
   :global nil
   (if verilog-ext-block-end-comments-to-names-mode
-      (add-hook 'before-save-hook #'verilog-ext-block-end-comments-to-names nil :local)
-    (remove-hook 'before-save-hook #'verilog-ext-block-end-comments-to-names :local)))
+      (add-hook 'hack-local-variables-hook #'verilog-ext-block-end-comments-to-names-hook)
+    (remove-hook 'hack-local-variables-hook #'verilog-ext-block-end-comments-to-names-hook)))
 
 
 
