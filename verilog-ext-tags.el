@@ -390,6 +390,7 @@ temp-buffer."
        "sequence_declaration"
        ;; Ports/arguments
        "ansi_port_declaration"
+       "list_of_port_identifiers" ; Non-ANSI
        "tf_port_item"
        ;; Variable/net/parameter/type declarations
        "variable_decl_assignment"
@@ -498,6 +499,7 @@ PARENT is passed as an argument to build the :items prop list of
          (children (cdr node))
          (ts-type (treesit-node-type ts-node))
          (is-instance (and ts-type (string-match verilog-ts-instance-re ts-type)))
+         (is-non-ansi-port-list (and ts-type (string-match "\\_<list_of_port_identifiers\\_>" ts-type)))
          (node-add-to-table-p (not (or (verilog-ts--node-is-typedef-class ts-node)
                                        (and ts-type
                                             (string-match "\\_<data_type_or_\\(implicit\\|void\\)\\_>" ts-type) ; Don't add to the table, only as parents
@@ -511,22 +513,38 @@ PARENT is passed as an argument to build the :items prop list of
     ;; Push definitions of current node
     (when (and ts-node node-add-to-table-p) ; root ts-node will be nil
       (goto-char (treesit-node-start ts-node))
-      (if is-instance
-          (puthash `(,(verilog-ts--node-instance-name ts-node) ; Key plist
-                     :file ,file
-                     :line ,(line-number-at-pos))
-                   `(:type ,(verilog-ts--node-identifier-name ts-node) ; Value plist
-                     :col ,(current-column)
-                     :parent ,(verilog-ts--node-identifier-name parent))
-                   verilog-ext-tags-inst-current-file)
-        (puthash `(,(verilog-ts--node-identifier-name ts-node) ; Key plist
-                   :file ,file
-                   :line ,(line-number-at-pos))
-                 `(:type ,(verilog-ts--node-identifier-type ts-node) ; Value plist
-                   :desc ,(verilog-ext-tags-desc)
-                   :col ,(current-column)
-                   :parent ,(verilog-ext-tags-table-push-defs-ts--parent ts-node ts-type parent))
-                 verilog-ext-tags-defs-current-file)))))
+      (cond (is-instance
+             (puthash `(,(verilog-ts--node-instance-name ts-node) ; Key plist
+                        :file ,file
+                        :line ,(line-number-at-pos))
+                      `(:type ,(verilog-ts--node-identifier-name ts-node) ; Value plist
+                        :col ,(current-column)
+                        :parent ,(verilog-ts--node-identifier-name parent))
+                      verilog-ext-tags-inst-current-file))
+            (is-non-ansi-port-list
+             (let ((port-identifier-nodes (mapcar #'car (cdr (treesit-induce-sparse-tree ts-node "\\_<simple_identifier\\_>"))))
+                   port-id-type)
+               (dolist (port-id-node port-identifier-nodes)
+                 (setq port-id-type (string-trim-right (buffer-substring-no-properties
+                                                        (treesit-node-start (verilog-ts--node-has-parent-recursive port-id-node "\\_<port_declaration\\_>"))
+                                                        (treesit-node-start ts-node))))
+                 (puthash `(,(treesit-node-text port-id-node :no-prop) ; Key plist
+                            :file ,file
+                            :line ,(line-number-at-pos))
+                          `(:type ,port-id-type ; Value plist
+                            :desc ,(verilog-ext-tags-desc)
+                            :col ,(current-column)
+                            :parent ,(verilog-ext-tags-table-push-defs-ts--parent ts-node ts-type parent))
+                          verilog-ext-tags-defs-current-file))))
+            (t
+             (puthash `(,(verilog-ts--node-identifier-name ts-node) ; Key plist
+                        :file ,file
+                        :line ,(line-number-at-pos))
+                      `(:type ,(verilog-ts--node-identifier-type ts-node) ; Value plist
+                        :desc ,(verilog-ext-tags-desc)
+                        :col ,(current-column)
+                        :parent ,(verilog-ext-tags-table-push-defs-ts--parent ts-node ts-type parent))
+                      verilog-ext-tags-defs-current-file))))))
 
 (defun verilog-ext-tags-table-push-refs-ts (file)
   "Push current FILE references using tree-sitter.
