@@ -1,0 +1,53 @@
+«m:// »«x:Generate a synchronous reset
+»«m:// »«x:Reset signal (active low) is released on falling edge of the
+»«m:// »«x:clock, to generate timing violation on rising edges on the clock
+»«k:module» «f:reset_generator» «:verilog-ext-font-lock-parenthesis-face:(»«m:/*»«x:AUTOARG*/»
+                        «m:// »«x:Outputs
+»                        rst_n«:verilog-ext-font-lock-punctuation-face:,»
+                        «m:// »«x:Inputs
+»                        clk«:verilog-ext-font-lock-punctuation-face:,» rst_async
+                        «:verilog-ext-font-lock-parenthesis-face:)»«:verilog-ext-font-lock-punctuation-face:;»
+
+   «:verilog-ext-font-lock-direction-face:input» «t:wire» clk«:verilog-ext-font-lock-punctuation-face:;»
+   «:verilog-ext-font-lock-direction-face:input»      rst_async«:verilog-ext-font-lock-punctuation-face:;» «m:// »«x:asynchronous reset
+»   «:verilog-ext-font-lock-direction-face:output»     rst_n«:verilog-ext-font-lock-punctuation-face:;»    «m:// »«x:synchronous reset
+»
+   «:verilog-ext-font-lock-direction-face:input»      unused«:verilog-ext-font-lock-punctuation-face:,» unused2«:verilog-ext-font-lock-punctuation-face:;» «m:// »«x:Added to test tags for list_of_port_identifiers
+»
+   «m:/*»«x:AUTOINPUT*/»
+   «m:/*»«x:AUTOOUTPUT*/»
+
+   «m:/*»«x:AUTOREG*/»
+   «m:/*»«x:AUTOWIRE*/»
+
+   «t:reg»        rst_async_m«:verilog-ext-font-lock-punctuation-face:;» «m:// »«x:can be metastable
+»   «t:reg»        rst_async_r«:verilog-ext-font-lock-punctuation-face:;» «m:// »«x:can be metastable
+»
+   «k:always» «:verilog-ext-font-lock-time-event-face:@»«:verilog-ext-font-lock-parenthesis-face:(»«k:negedge» clk «t:or» «k:negedge» rst_async«:verilog-ext-font-lock-parenthesis-face:)» «:verilog-ext-font-lock-grouping-keywords-face:begin»
+      «k:if»«:verilog-ext-font-lock-parenthesis-face:(»rst_async «:verilog-ext-font-lock-punctuation-face:==» «:verilog-ext-font-lock-width-num-face:1»«:verilog-ext-font-lock-punctuation-face:'»«:verilog-ext-font-lock-width-type-face:b»0«:verilog-ext-font-lock-parenthesis-face:)» «:verilog-ext-font-lock-grouping-keywords-face:begin»
+         «m:/*»«x:AUTORESET*/»
+         «m:// »«x:Beginning of autoreset for uninitialized flops
+»         rst_async_m «:verilog-ext-font-lock-punctuation-face:<=» «:verilog-ext-font-lock-width-num-face:1»«:verilog-ext-font-lock-punctuation-face:'»«:verilog-ext-font-lock-width-type-face:h»0«:verilog-ext-font-lock-punctuation-face:;»
+         rst_async_r «:verilog-ext-font-lock-punctuation-face:<=» «:verilog-ext-font-lock-width-num-face:1»«:verilog-ext-font-lock-punctuation-face:'»«:verilog-ext-font-lock-width-type-face:h»0«:verilog-ext-font-lock-punctuation-face:;»
+         «m:// »«x:End of automatics
+»      «:verilog-ext-font-lock-grouping-keywords-face:end»
+      «k:else» «:verilog-ext-font-lock-grouping-keywords-face:begin»
+         rst_async_m «:verilog-ext-font-lock-punctuation-face:<=» «:verilog-ext-font-lock-width-num-face:1»«:verilog-ext-font-lock-punctuation-face:'»«:verilog-ext-font-lock-width-type-face:b»1«:verilog-ext-font-lock-punctuation-face:;» «m:// »«x:Can be metastable
+»         rst_async_r «:verilog-ext-font-lock-punctuation-face:<=» rst_async_m«:verilog-ext-font-lock-punctuation-face:;»
+      «:verilog-ext-font-lock-grouping-keywords-face:end»
+   «:verilog-ext-font-lock-grouping-keywords-face:end»
+
+   «m:// »«x:renaming
+»   «k:assign» rst_n «:verilog-ext-font-lock-punctuation-face:=» rst_async_r«:verilog-ext-font-lock-punctuation-face:;»
+
+
+
+
+«k:endmodule» «:verilog-ext-font-lock-punctuation-face::» reset_generator
+«m:/*»«x:
+ Local Variables:
+ verilog-library-directories:(
+ "."
+ )
+ End:
+ */»
