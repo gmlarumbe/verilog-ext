@@ -58,6 +58,14 @@ To install it via [straight](https://github.com/radian-software/straight.el) wit
 (use-package verilog-ext)
 ```
 
+### GUIX ###
+
+To install via [Guix](https://guix.gnu.org) use:
+
+``` shell
+$ guix install emacs-verilog-ext
+```
+
 ## Basic config ##
 
 The most basic configuration just requires choosing which features you
