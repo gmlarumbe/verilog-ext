@@ -1,0 +1,9 @@
+{
+  "name": "vide",
+  "languageId": "verilog",
+  "command": [
+    "vide"
+  ],
+
+  "settings": {}
+}
