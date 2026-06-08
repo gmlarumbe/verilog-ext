@@ -23,6 +23,7 @@
 ;; Support for various SystemVerilog language servers
 ;;     - hdl_checker: https://github.com/suoto/hdl_checker
 ;;     - svlangserver: https://github.com/imc-trading/svlangserver
+;;     - vide: https://github.com/pascal-lab/vide
 ;;     - verible: https://github.com/chipsalliance/verible/tree/master/verilog/tools/ls
 ;;     - svls: https://github.com/dalance/svls
 ;;     - veridian: https://github.com/vivekmalneedi/veridian

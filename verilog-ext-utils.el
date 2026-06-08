@@ -133,6 +133,7 @@ type_t foo1, foo2 , foo4, foo6[], foo7 [25], foo8 ;")
 (defconst verilog-ext-lsp-available-servers
   '((ve-hdl-checker  ("hdl_checker" "--lsp")  "hdl-checker.json")
     (ve-svlangserver "svlangserver"           "svlangserver.json")
+    (ve-vide         "vide"                   "vide.json")
     (ve-verible-ls   "verible-verilog-ls"     "verible.json")
     (ve-svls         "svls"                   "svls.json")
     (ve-veridian     "veridian"               "veridian.json")

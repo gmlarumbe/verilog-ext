@@ -26,6 +26,7 @@
 ;;  - Additional:
 ;;     - hdl_checker: https://github.com/suoto/hdl_checker
 ;;     - svlangserver: https://github.com/imc-trading/svlangserver
+;;     - vide: https://github.com/pascal-lab/vide
 ;;     - svls: https://github.com/dalance/svls
 ;;     - veridian: https://github.com/vivekmalneedi/veridian
 
@@ -67,4 +68,3 @@ Override any previous configuration for `verilog-mode' and `verilog-ts-mode'."
 (provide 'verilog-ext-lsp-bridge)
 
 ;;; verilog-ext-lsp-bridge.el ends here
-
