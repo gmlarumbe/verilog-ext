@@ -6,7 +6,7 @@
 ;; URL: https://github.com/gmlarumbe/verilog-ext
 ;; Version: 0.8.0
 ;; Keywords: Verilog, IDE, Tools
-;; Package-Requires: ((emacs "29.1") (verilog-mode "2024.3.1.121933719") (verilog-ts-mode "0.5.0") (lsp-mode "8.0.0") (ag "0.48") (ripgrep "0.4.0") (hydra "0.15.0") (apheleia "3.1") (yasnippet "0.14.0") (flycheck "32") (async "1.9.7"))
+;; Package-Requires: ((emacs "29.1") (verilog-mode "2024.3.1.121933719") (verilog-ts-mode "0.5.0") (lsp-mode "8.0.0") (rg "2.3.0") (hydra "0.15.0") (apheleia "3.1") (yasnippet "0.14.0") (flycheck "32") (async "1.9.7"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@
 (declare-function verilog-ext-block-end-comments-to-names-mode "verilog-ext-block-end-comments")
 (declare-function verilog-ext-capf-set "verilog-ext-capf")
 (declare-function verilog-ext-xref-set "verilog-ext-xref")
-(declare-function verilog-ext-navigation-ag-rg-hook "verilog-ext-nav")
+(declare-function verilog-ext-navigation-rg-hook "verilog-ext-nav")
 (declare-function verilog-ext-typedef-set "verilog-ext-typedef")
 (declare-function verilog-ext-hs-setup "verilog-ext-hs")
 (declare-function verilog-ext-formatter-setup "verilog-ext-formatter")
@@ -315,9 +315,8 @@ FEATURES can be a single feature or a list of features."
     (verilog-ext-hs-setup))
   (verilog-ext-when-feature 'typedefs
     (verilog-ext-typedef-set))
-  ;; Jump to parent module ag/ripgrep hooks
-  (add-hook 'ag-search-finished-hook #'verilog-ext-navigation-ag-rg-hook)
-  (add-hook 'ripgrep-search-finished-hook #'verilog-ext-navigation-ag-rg-hook))
+  ;; Jump to parent module rg.el hook
+  (add-hook 'rg-finish-functions #'verilog-ext-navigation-rg-hook))
 
 ;;;###autoload
 (define-minor-mode verilog-ext-mode

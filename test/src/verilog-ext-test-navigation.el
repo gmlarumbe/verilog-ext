@@ -55,27 +55,43 @@
 
 
 
-(cl-defun verilog-ext-test-jump-to-parent-module (&key mode engine)
-  (cl-letf (((symbol-function 'compilation-start)
-             (lambda (command &optional mode name-function highlight-regexp)
-               (butlast (split-string (shell-command-to-string command) "\n") 4)))
-            ((symbol-function 'verilog-ext-buffer-proj-root)
-             (lambda (&optional project)
-               verilog-ext-test-files-common-dir)))
-    (let* ((verilog-ext-jump-to-parent-module-engine engine)
-           ;; INFO: Using let-binding in ripgrep.el arguments for compatibility with release 0.4.0 (Feb 2017) for MELPA Stable tests
-           ;;
-           ;; From man rg(1):
-           ;;
-           ;; --vimgrep
-           ;;     Show results with every match on its own line, including line
-           ;;     numbers and column numbers. With this option, a line with more than
-           ;;     one match will be printed more than once.
-           (ripgrep-highlight-search nil)
-           (ripgrep-arguments '("--vimgrep")))
-      ;; Core after all the function setup, using default args for ag and rg
+;; Function mocking done according to the snippet below in rg.el:
+;;
+;; (with-current-buffer (compilation-start command 'rg-mode #'rg-buffer-name)
+;;   (rg-mode-init search)))))
+;;
+(defvar verilog-ext-test-jump-to-parent-module-cmd-output)
+
+(cl-defun verilog-ext-test-jump-to-parent-module (&key mode)
+  (let (;; INFO: Using let-binding in rg.el arguments for compatibility with release 0.4.0 (Feb 2017) for MELPA Stable tests
+        ;;
+        ;; From man rg(1):
+        ;;
+        ;; --vimgrep
+        ;;     Show results with every match on its own line, including line
+        ;;     numbers and column numbers. With this option, a line with more than
+        ;;     one match will be printed more than once.
+        ;;
+        ;; --sort path: used to force deterministic ordering, and as a side effect disable parallelism
+        ;;              (so that gen output for comparison will always be the same)
+        (rg-required-command-line-flags '("-n"
+                                          "--vimgrep"
+                                          "--sort"
+                                          "path"))
+        (rg-buffer-name "*rg*"))
+    (cl-letf (((symbol-function 'verilog-ext-buffer-proj-root)
+               (lambda (&optional project)
+                 verilog-ext-test-files-common-dir))
+              ((symbol-function 'compilation-start)
+               (lambda (command &optional mode name-function highlight-regexp)
+                 (setq verilog-ext-test-jump-to-parent-module-cmd-output (butlast (split-string (shell-command-to-string command) "\n") 4))
+                 (get-buffer-create rg-buffer-name)))
+              ((symbol-function 'rg-mode-init)
+               (lambda (search)
+                 nil)))
       (funcall mode)
-      (verilog-ext-jump-to-parent-module))))
+      (verilog-ext-jump-to-parent-module)
+      verilog-ext-test-jump-to-parent-module-cmd-output)))
 
 (defun verilog-ext-test-navigation-interactive-fwd-fn ()
   "Hack to emulate the point position when using interactive navigation.
@@ -213,22 +229,13 @@ It did work locally though."
                                :args '(:mode verilog-ts-mode
                                        :fn verilog-ext-find-function-task-bwd
                                        :start-pos-max t))
-  ;; Jump-to-parent ag
-  (test-hdl-gen-expected-files :file-list verilog-ext-test-navigation-jump-to-parent-file-list
-                               :dest-dir verilog-ext-test-ref-dir-navigation
-                               :out-file-ext "ag"
-                               :process-fn 'eval
-                               :fn #'verilog-ext-test-jump-to-parent-module
-                               :args `(:mode verilog-mode
-                                       :engine "ag"))
   ;; Jump-to-parent rg
   (test-hdl-gen-expected-files :file-list verilog-ext-test-navigation-jump-to-parent-file-list
                                :dest-dir verilog-ext-test-ref-dir-navigation
                                :out-file-ext "rg"
                                :process-fn 'eval
                                :fn #'verilog-ext-test-jump-to-parent-module
-                               :args `(:mode verilog-mode
-                                       :engine "rg"))
+                               :args `(:mode verilog-mode))
   ;; Defun level up
   (dolist (file-and-pos verilog-ext-test-navigation-defun-up-file-and-pos)
     (let ((file (car file-and-pos))
@@ -399,18 +406,6 @@ It did work locally though."
                                   (file-name-concat verilog-ext-test-ref-dir-navigation (test-hdl-basename file "ts.tf.bwd.el"))))))
 
 
-(ert-deftest navigation::jump-to-parent-module-ag ()
-  ;; INFO: block_ws_1 referenced in instances.sv:94 but not working with current regexp
-  (dolist (file verilog-ext-test-navigation-jump-to-parent-file-list)
-    (should (test-hdl-files-equal (test-hdl-process-file :test-file file
-                                                         :dump-file (file-name-concat verilog-ext-test-dump-dir-navigation (test-hdl-basename file "ag"))
-                                                         :process-fn 'eval
-                                                         :fn #'verilog-ext-test-jump-to-parent-module
-                                                         :args '(:mode verilog-mode
-                                                                 :engine "ag"))
-                                  (file-name-concat verilog-ext-test-ref-dir-navigation (test-hdl-basename file "ag"))))))
-
-
 (ert-deftest navigation::jump-to-parent-module-rg ()
   ;; INFO: block_ws_1 referenced in instances.sv:94 but not working with current regexp
   (dolist (file verilog-ext-test-navigation-jump-to-parent-file-list)
@@ -418,8 +413,7 @@ It did work locally though."
                                                          :dump-file (file-name-concat verilog-ext-test-dump-dir-navigation (test-hdl-basename file "rg"))
                                                          :process-fn 'eval
                                                          :fn #'verilog-ext-test-jump-to-parent-module
-                                                         :args '(:mode verilog-mode
-                                                                 :engine "rg"))
+                                                         :args '(:mode verilog-mode))
                                   (file-name-concat verilog-ext-test-ref-dir-navigation (test-hdl-basename file "rg"))))))
 
 
