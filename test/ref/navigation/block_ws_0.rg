@@ -1,1 +1,1 @@
-("./instances.sv:87:5:    block_ws_0" "" "1 matches" "1 matched lines" "1 files contained matches" "6 files searched" "35 bytes printed")
+("test/files/common/instances.sv:87:5:    block_ws_0" "test/ref/beautify/instances.extra.sv:87:5:    block_ws_0" "test/ref/beautify/instances.sv:87:5:    block_ws_0" "test/ref/beautify/instances.ts.extra.sv:87:5:    block_ws_0" "test/ref/beautify/instances.ts.sv:87:5:    block_ws_0" "test/ref/indent/instances.sv:87:5:    block_ws_0" "" "6 matches" "6 matched lines" "6 files contained matches" "318 files searched" "322 bytes printed")

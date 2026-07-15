@@ -24,23 +24,9 @@
 
 ;;; Code:
 
-(require 'ag)
-(require 'ripgrep)
+(require 'rg)
 (require 'xref)
 (require 'verilog-ext-utils)
-
-
-;;;; Custom
-(defgroup verilog-ext-nav nil
-  "Verilog-ext navigation."
-  :group 'verilog-ext)
-
-(defcustom verilog-ext-jump-to-parent-module-engine "ag"
-  "Default program to find parent module instantiations.
-Either `rg' or `ag' are implemented."
-  :type '(choice (const :tag "silver searcher" "ag")
-                 (const :tag "ripgrep"         "rg"))
-  :group 'verilog-ext-nav)
 
 
 ;;;; Defuns
@@ -932,75 +918,65 @@ Otherwise move to previous paragraph."
 ;;;; Jump to parent module
 (defvar verilog-ext-jump-to-parent-module-point-marker nil
   "Point marker to save the state of the buffer where the search was started.
-Used in ag/rg end of search hooks to conditionally set the xref marker stack.")
+Used in rg end of search hooks to conditionally set the xref marker stack.")
 (defvar verilog-ext-jump-to-parent-module-name nil)
 (defvar verilog-ext-jump-to-parent-module-dir nil)
 (defvar verilog-ext-jump-to-parent-trigger nil
-  "Variable to run the post ag/rg command hook.
-Runs only when the ag/rg search was triggered by
+  "Variable to run the post rg command hook.
+Runs only when the rg search was triggered by
 `verilog-ext-jump-to-parent-module' command.")
 (defvar verilog-ext-jump-to-parent-module-starting-windows nil
   "Variable to register how many windows are open when trying to jump-to-parent.")
 
-(defun verilog-ext-jump-to-parent-module ()
-  "Find current module/interface instantiations via `ag'/`rg'.
+(rg-define-search verilog-ext-rg-pcre
+  :format regexp
+  :dir project
+  :files "verilog"
+  :flags '("--pcre2" "--multiline" "--stats" "--ignore-case"))
 
-Configuration should be done so that `verilog-ext-navigation-ag-rg-hook' is run
+(defun verilog-ext-jump-to-parent-module ()
+  "Find current module/interface instantiations via `rg'.
+
+Configuration should be done so that `verilog-ext-navigation-rg-hook' is run
 after the search has been done."
   (interactive)
-  (let* ((proj-dir (verilog-ext-buffer-proj-root))
-         (module-name (or (verilog-ext-select-file-module buffer-file-name)
-                          (error "No module/interface found @ %s" buffer-file-name)))
-         (module-instance-pcre ; Many thanks to Kaushal Modi for this PCRE
-          (concat "^\\s*\\K"                          ; Initial blank before module name. Do not highlighting anything till the name
-                  "\\b(" module-name ")\\b"           ; Module name identifier
-                  "(?="                             ; Lookahead to avoid matching
-                  "(\\s+|("                          ; Either one or more spaces before the instance name, or...
-                  "(\\s*\#\\s*\\((\\n|.)*?\\))+"           ; ... hardware parameters, '(\n|.)*?' does non-greedy multi-line grep
-                  "(\\n|.)*?"                        ; Optional newline/space before instance name/first port name
-                  "([^.])*?"                        ; Do not match more than 1 ".PARAM (PARAM_VAL),"
-                  "))"                              ; Close capture groups before matching identifier
-                  "\\b(" verilog-identifier-re ")\\b" ; Instance name
-                  "(?=[^a-zA-Z0-9_]*\\()"             ; Nested lookahead (space/newline after instance name and before opening parenthesis)
-                  ")")))                            ; Closing lookahead
-    ;; Check we are in a project
-    (unless proj-dir
-      (user-error "Not in a Verilog project buffer"))
-    ;; Update variables used by the ag/rg search finished hooks
-    (setq verilog-ext-jump-to-parent-module-name module-name)
-    (setq verilog-ext-jump-to-parent-module-dir proj-dir)
-    (setq verilog-ext-jump-to-parent-module-starting-windows (length (window-list)))
-    ;; Perform project based search
-    (cond
-     ;; Try ripgrep
-     ((and (string= verilog-ext-jump-to-parent-module-engine "rg")
-           (executable-find "rg"))
-      (let ((rg-extra-args '("-t" "verilog" "--pcre2" "--multiline" "--stats")))
-        (setq verilog-ext-jump-to-parent-module-point-marker (point-marker))
-        (setq verilog-ext-jump-to-parent-trigger t)
-        (ripgrep-regexp module-instance-pcre proj-dir rg-extra-args)))
-     ;; Try ag
-     ((and (string= verilog-ext-jump-to-parent-module-engine "ag")
-           (executable-find "ag"))
-      (let ((ag-arguments ag-arguments)
-            (extra-ag-args '("--verilog" "--stats")))
-        (dolist (extra-ag-arg extra-ag-args)
-          (add-to-list 'ag-arguments extra-ag-arg :append))
-        (setq verilog-ext-jump-to-parent-module-point-marker (point-marker))
-        (setq verilog-ext-jump-to-parent-trigger t)
-        (ag-regexp module-instance-pcre proj-dir)))
-     ;; Fallback
-     (t
-      (error "Did not find `rg' nor `ag' in $PATH")))))
+  (if (not (executable-find "rg"))
+      (error "Did not find `rg' in $PATH")
+    (let* ((proj-dir (verilog-ext-buffer-proj-root))
+           (module-name (or (verilog-ext-select-file-module buffer-file-name)
+                            (error "No module/interface found @ %s" buffer-file-name)))
+           (module-instance-pcre ; Many thanks to Kaushal Modi for this PCRE
+            (concat "^\\s*\\K"                          ; Initial blank before module name. Do not highlighting anything till the name
+                    "\\b(" module-name ")\\b"           ; Module name identifier
+                    "(?="                             ; Lookahead to avoid matching
+                    "(\\s+|("                          ; Either one or more spaces before the instance name, or...
+                    "(\\s*\#\\s*\\((\\n|.)*?\\))+"           ; ... hardware parameters, '(\n|.)*?' does non-greedy multi-line grep
+                    "(\\n|.)*?"                        ; Optional newline/space before instance name/first port name
+                    "([^.])*?"                        ; Do not match more than 1 ".PARAM (PARAM_VAL),"
+                    "))"                              ; Close capture groups before matching identifier
+                    "\\b(" verilog-identifier-re ")\\b" ; Instance name
+                    "(?=[^a-zA-Z0-9_]*\\()"             ; Nested lookahead (space/newline after instance name and before opening parenthesis)
+                    ")")))                            ; Closing lookahead
+      ;; Check we are in a project
+      (unless proj-dir
+        (user-error "Not in a Verilog project buffer"))
+      ;; Update variables used by the rg search finished hooks
+      (setq verilog-ext-jump-to-parent-module-name module-name)
+      (setq verilog-ext-jump-to-parent-module-dir proj-dir)
+      (setq verilog-ext-jump-to-parent-module-starting-windows (length (window-list)))
+      (setq verilog-ext-jump-to-parent-module-point-marker (point-marker))
+      (setq verilog-ext-jump-to-parent-trigger t)
+      ;; Perform project based search
+      (verilog-ext-rg-pcre module-instance-pcre))))
 
-(defun verilog-ext-navigation-ag-rg-hook-cleanup ()
+(defun verilog-ext-navigation-rg-hook-cleanup ()
   "Handle buffer killing depending on the number of active windows."
   (if (> verilog-ext-jump-to-parent-module-starting-windows 1)
       (kill-buffer (current-buffer))
     (other-window 1)
     (delete-window)))
 
-(defun verilog-ext-navigation-ag-rg-hook ()
+(defun verilog-ext-navigation-rg-hook (_buffer _status)
   "Jump to the first result and push xref marker if there were any matches.
 Kill the buffer if there is only one match."
   (when verilog-ext-jump-to-parent-trigger
@@ -1014,14 +990,14 @@ Kill the buffer if there is only one match."
       (cond ((eq num-matches 1)
              (xref-push-marker-stack verilog-ext-jump-to-parent-module-point-marker)
              (next-error)
-             (verilog-ext-navigation-ag-rg-hook-cleanup)
+             (verilog-ext-navigation-rg-hook-cleanup)
              (message "Jump to only match for [%s] @ %s" module-name dir))
             ((> num-matches 1)
              (xref-push-marker-stack verilog-ext-jump-to-parent-module-point-marker)
              (next-error)
              (message "Showing matches for [%s] @ %s" module-name dir))
             (t
-             (verilog-ext-navigation-ag-rg-hook-cleanup)
+             (verilog-ext-navigation-rg-hook-cleanup)
              (message "No matches found")))
       (setq verilog-ext-jump-to-parent-trigger nil))))
 
