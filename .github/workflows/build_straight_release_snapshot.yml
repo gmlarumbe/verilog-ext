@@ -1,8 +1,6 @@
 name: ERT-straight-release-snapshot
 
 on:
-  push:
-  pull_request:
   workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
   schedule:
     - cron: '0 0 * * *' # daily
