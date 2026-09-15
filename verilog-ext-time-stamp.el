@@ -43,7 +43,7 @@
   :type 'string
   :group 'verilog-ext-time-stamp)
 
-(defcustom verilog-ext-time-stamp-format  "%:y/%02m/%02d"
+(defcustom verilog-ext-time-stamp-format  "%:Y/%02m/%02d"
   "`time-stamp' format.  See `time-stamp-format'."
   :type 'string
   :group 'verilog-ext-time-stamp)
