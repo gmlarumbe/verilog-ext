@@ -70,17 +70,17 @@ Compilation:
 Vhier:
  - :command-file - vhier command file
  - :lib-search-path - list of dirs to look for include directories or libraries."
-  :type '(repeat
-          (list (string :tag "Project")
-                (plist :tag "Properties"
-                       :options ((:root string)
-                                 (:dirs (repeat directory))
-                                 (:ignore-dirs (repeat directory))
-                                 (:files (repeat file))
-                                 (:ignore-files (repeat file))
-                                 (:compile-cmd string)
-                                 (:command-file file)
-                                 (:lib-search-path (repeat directory))))))
+  :type '(alist
+          :key-type (string :tag "Project")
+          :value-type (plist :tag "Properties"
+                             :options ((:root string)
+                                       (:dirs (repeat directory))
+                                       (:ignore-dirs (repeat directory))
+                                       (:files (repeat file))
+                                       (:ignore-files (repeat file))
+                                       (:compile-cmd string)
+                                       (:command-file file)
+                                       (:lib-search-path (repeat directory)))))
   :group 'verilog-ext)
 
 
