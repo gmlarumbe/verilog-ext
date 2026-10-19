@@ -288,29 +288,29 @@ module axi_demux #(
                 // only applies if ATOPs are supported at all).
                 if (!aw_id_cnt_full && (w_open != {IdCounterWidth{1'b1}}) &&
                     (!(ar_id_cnt_full && slv_aw_chan.atop[axi_pkg::ATOP_R_RESP]) ||
-                    !AtopSupport)) begin
-                        // There is a valid AW vector make the id lookup and go further, if it passes.
-                        // Also stall if previous transmitted AWs still have active W's in flight.
-                        // This prevents deadlocking of the W channel. The counters are there for the
-                        // Handling of the B responses.
-                        if (slv_aw_valid &&
-                            ((w_open == '0) || (w_select == slv_aw_select)) &&
-                            (!aw_select_occupied || (slv_aw_select == lookup_aw_select))) begin
-                                // connect the handshake
-                                aw_valid = 1'b1;
-                                // push arbitration to the W FIFO regardless, do not wait for the AW transaction
-                                w_cnt_up = 1'b1;
-                                // on AW transaction
-                                if (aw_ready) begin
-                                    slv_aw_ready = 1'b1;
-                                    atop_inject  = slv_aw_chan.atop[axi_pkg::ATOP_R_RESP] & AtopSupport;
-                                    // no AW transaction this cycle, lock the decision
-                                end else begin
-                                    lock_aw_valid_d = 1'b1;
-                                    load_aw_lock    = 1'b1;
+                        !AtopSupport)) begin
+                            // There is a valid AW vector make the id lookup and go further, if it passes.
+                            // Also stall if previous transmitted AWs still have active W's in flight.
+                            // This prevents deadlocking of the W channel. The counters are there for the
+                            // Handling of the B responses.
+                            if (slv_aw_valid &&
+                                ((w_open == '0) || (w_select == slv_aw_select)) &&
+                                (!aw_select_occupied || (slv_aw_select == lookup_aw_select))) begin
+                                    // connect the handshake
+                                    aw_valid = 1'b1;
+                                    // push arbitration to the W FIFO regardless, do not wait for the AW transaction
+                                    w_cnt_up = 1'b1;
+                                    // on AW transaction
+                                    if (aw_ready) begin
+                                        slv_aw_ready = 1'b1;
+                                        atop_inject  = slv_aw_chan.atop[axi_pkg::ATOP_R_RESP] & AtopSupport;
+                                        // no AW transaction this cycle, lock the decision
+                                    end else begin
+                                        lock_aw_valid_d = 1'b1;
+                                        load_aw_lock    = 1'b1;
+                                    end
                                 end
-                            end
-                    end
+                        end
             end
         end
 
