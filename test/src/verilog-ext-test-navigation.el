@@ -78,6 +78,7 @@
                                           "--vimgrep"
                                           "--sort"
                                           "path"))
+        (rg-use-json-output nil)
         (rg-buffer-name "*rg*"))
     (cl-letf (((symbol-function 'verilog-ext-buffer-proj-root)
                (lambda (&optional project)
