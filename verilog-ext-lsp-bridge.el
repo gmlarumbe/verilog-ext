@@ -29,6 +29,7 @@
 ;;     - vide: https://github.com/pascal-lab/vide
 ;;     - svls: https://github.com/dalance/svls
 ;;     - veridian: https://github.com/vivekmalneedi/veridian
+;;     - slang-server: https://github.com/hudson-trading/slang-server
 
 ;;; Code:
 

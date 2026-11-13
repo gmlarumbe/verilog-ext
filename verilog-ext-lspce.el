@@ -27,6 +27,7 @@
 ;;     - verible: https://github.com/chipsalliance/verible/tree/master/verilog/tools/ls
 ;;     - svls: https://github.com/dalance/svls
 ;;     - veridian: https://github.com/vivekmalneedi/veridian
+;;     - slang-server: https://github.com/hudson-trading/slang-server
 
 ;;; Code:
 

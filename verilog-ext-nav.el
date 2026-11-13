@@ -978,15 +978,17 @@ after the search has been done."
 
 (defun verilog-ext-navigation-rg-hook (_buffer _status)
   "Jump to the first result and push xref marker if there were any matches.
-Kill the buffer if there is only one match."
+Kill the buffer or delete window if there is only one match."
   (when verilog-ext-jump-to-parent-trigger
     (let ((module-name (propertize verilog-ext-jump-to-parent-module-name 'face 'verilog-ext-font-lock-module-face))
           (dir verilog-ext-jump-to-parent-module-dir)
-          (num-matches))
+          (num-matches 0)
+          num-matches-str)
       (save-excursion
         (goto-char (point-min))
-        (re-search-forward "^\\([0-9]+\\) matches\\s-*$" nil :noerror)
-        (setq num-matches (string-to-number (match-string-no-properties 1))))
+        (re-search-forward "(\\([0-9]+\\) matches found)" nil :noerror)
+        (when (setq num-matches-str (match-string-no-properties 1))
+          (setq num-matches (string-to-number num-matches-str))))
       (cond ((eq num-matches 1)
              (xref-push-marker-stack verilog-ext-jump-to-parent-module-point-marker)
              (next-error)
