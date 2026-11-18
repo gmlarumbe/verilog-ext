@@ -67,7 +67,7 @@ $ guix install emacs-verilog-ext
 ## Basic config ##
 
 The most basic configuration just requires choosing which features you
-want to load, setup the minor-mode and add it as a hook for `verilog-mode`.
+want to load, setup the minor-mode and add it as a hook for `verilog-mode`/`verilog-ts-mode`.
 By default all features are enabled:
 
 ```elisp
@@ -97,14 +97,14 @@ By default all features are enabled:
         ports))
 (require 'verilog-ext)
 (verilog-ext-mode-setup)
-(add-hook 'verilog-mode-hook #'verilog-ext-mode)
+(add-hook 'verilog-mode-hook #'verilog-ext-mode) ; Add to `verilog-ts-mode-hook` if using `verilog-ts-mode`
 ```
 
 If installed and loaded via `use-package`:
 
 ```elisp
 (use-package verilog-ext
-  :hook ((verilog-mode . verilog-ext-mode))
+  :hook ((verilog-mode . verilog-ext-mode)) ; Add to `verilog-ts-mode-hook` if using `verilog-ts-mode`
   :init
   ;; Can also be set through `M-x RET customize-group RET verilog-ext':
   ;; Comment out/remove the ones you do not need
@@ -267,6 +267,8 @@ Auto-configure various SystemVerilog language servers for `lsp-bridge`, `lsp-mod
 - [verible](https://github.com/chipsalliance/verible/tree/master/verilog/tools/ls)
 - [svls](https://github.com/dalance/svls)
 - [veridian](https://github.com/vivekmalneedi/veridian)
+- [slang-server](https://github.com/hudson-trading/slang-server)
+
 
 For configuration instructions, see the [wiki](https://github.com/gmlarumbe/verilog-ext/wiki/Language-Server-Protocol)
 
